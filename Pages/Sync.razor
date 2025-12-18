@@ -1,0 +1,264 @@
+@page "/sync"
+@using pwa_camera_poc_blazor.Models
+@inject IIndexedDbService DbService
+@inject IAuthService AuthService
+@inject ToastService ToastService
+@inject AppState appState
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Sincronização - ASPEC Capture</PageTitle>
+
+<div class="sync-container">
+    <div class="sync-header">
+        <h1>Sincronização Cloud</h1>
+        <p>Envie seus itens capturados localmente para o servidor ASPEC.</p>
+    </div>
+
+    <div class="sync-stats-cards">
+        <div class="stat-card">
+            <span class="stat-value">@unsyncedItems.Count</span>
+            <span class="stat-label">Pendentes</span>
+        </div>
+        <div class="stat-card success">
+            <span class="stat-value">@syncedCount</span>
+            <span class="stat-label">Sincronizados</span>
+        </div>
+    </div>
+
+    @if (unsyncedItems.Any())
+    {
+        <div class="sync-actions">
+            <button class="btn btn-primary btn-lg @(isSyncing ? "btn-loading" : "")" @onclick="SyncAll"
+                disabled="@isSyncing">
+                @(isSyncing ? "Sincronizando..." : "Sincronizar Tudo Agora")
+            </button>
+        </div>
+
+        <div class="unsynced-list">
+            <h3>Itens Pendentes (@unsyncedItems.Count)</h3>
+            <div class="list-container">
+                @foreach (var item in unsyncedItems)
+                {
+                    <div class="sync-item-row">
+                        <div class="item-info">
+                            <span class="item-name">@item.Name</span>
+                            <span class="item-code">@item.Code</span>
+                        </div>
+                        <div class="item-date">
+                            @item.Timestamp.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                        <div class="item-status">
+                            <span class="status-badge pending">Pendente</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="empty-sync">
+            <div class="empty-icon">✅</div>
+            <h3>Tudo em dia!</h3>
+            <p>Todos os itens capturados já estão sincronizados com a nuvem.</p>
+        </div>
+    }
+</div>
+
+<style>
+    .sync-container {
+        padding: 1.5rem;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .sync-header {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .sync-header h1 {
+        font-size: 1.75rem;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .sync-header p {
+        color: var(--text-secondary);
+    }
+
+    .sync-stats-cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stat-card.success {
+        border-color: rgba(16, 185, 129, 0.2);
+        background: rgba(16, 185, 129, 0.05);
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .stat-card.success .stat-value {
+        color: var(--success-color);
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
+    }
+
+    .sync-actions {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .unsynced-list h3 {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+
+    .list-container {
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .sync-item-row {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .sync-item-row:last-child {
+        border-bottom: none;
+    }
+
+    .item-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .item-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .item-code {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+
+    .item-date {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin: 0 1rem;
+    }
+
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+
+    .status-badge.pending {
+        background: rgba(245, 158, 11, 0.1);
+        color: #d97706;
+    }
+
+    .empty-sync {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--surface-color);
+        border-radius: 20px;
+        border: 1px dashed var(--border-color);
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-lg {
+        padding: 0.75rem 2rem;
+        font-size: 1.1rem;
+        border-radius: 12px;
+    }
+</style>
+
+@code {
+    private List<InventoryItem> unsyncedItems = new();
+    private int syncedCount = 0;
+    private bool isSyncing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStats();
+    }
+
+    private async Task LoadStats()
+    {
+        var allItems = await DbService.GetAllAsync<InventoryItem>("items");
+        unsyncedItems = allItems.Where(i => !i.Synced).OrderByDescending(i => i.Timestamp).ToList();
+        syncedCount = allItems.Count(i => i.Synced);
+        appState.PendingSyncCount = unsyncedItems.Count;
+    }
+
+    private async Task SyncAll()
+    {
+        if (isSyncing) return;
+        isSyncing = true;
+
+        try
+        {
+            // Simular chamada de API para cada item
+            int successCount = 0;
+            foreach (var item in unsyncedItems.ToList())
+            {
+                // Aqui seria a chamada real de API: await Http.PostAsJsonAsync("api/sync", item);
+                await Task.Delay(500); // Simula rede
+
+                item.Synced = true;
+                await DbService.UpdateAsync("items", item);
+                successCount++;
+
+                // Atualiza UI progressivamente se desejar, mas vamos carregar no fim
+            }
+
+            ToastService.ShowSuccess($"{successCount} itens sincronizados com sucesso!");
+            await LoadStats();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError("Erro durante a sincronização: " + ex.Message);
+        }
+        finally
+        {
+            isSyncing = false;
+        }
+    }
+}

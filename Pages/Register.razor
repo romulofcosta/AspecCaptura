@@ -279,8 +279,7 @@
         }
         else
         {
-            // Note: Our interop getFromIndex handles this
-            filteredCities = await JSRuntime.InvokeAsync<List<City>>("dbInterop.getFromIndex", "cities", "stateId",
+            filteredCities = await DbService.GetAllFromIndexAsync<City>("cities", "stateId",
             selectedStateId);
         }
     }
@@ -290,7 +289,7 @@
         if (int.TryParse(e.Value?.ToString(), out var cityId))
         {
             selectedCityId = cityId;
-            availableUnits = await JSRuntime.InvokeAsync<List<Unit>>("dbInterop.getFromIndex", "units", "cityId", cityId);
+            availableUnits = await DbService.GetAllFromIndexAsync<Unit>("units", "cityId", cityId);
         }
         else
         {

@@ -12,6 +12,7 @@ namespace pwa_camera_poc_blazor.Services.Storage
         // Operações Genéricas
         Task<T> GetAsync<T>(string storeName, object key);
         Task<T> GetFromIndexAsync<T>(string storeName, string indexName, object value);
+        Task<List<T>> GetAllFromIndexAsync<T>(string storeName, string indexName, object value);
         Task<List<T>> GetAllAsync<T>(string storeName);
         Task<T> AddAsync<T>(string storeName, T item);
         Task<T> UpdateAsync<T>(string storeName, T item);

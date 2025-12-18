@@ -1,5 +1,5 @@
 self.assetsManifest = {
-  "version": "g0MOv+UO",
+  "version": "Qd9wphr4",
   "assets": [
     {
       "hash": "sha256-XiUUs33CdZCkYKtpj8YZINjN7OFZ2CNxfz+BsMsGpgw=",
@@ -762,7 +762,7 @@ self.assetsManifest = {
       "url": "_framework/WindowsBase.wasm"
     },
     {
-      "hash": "sha256-PNLmSAPJoqpNBoSGM84QNz+inhebE4umBR5X8z/k6CE=",
+      "hash": "sha256-u92unYpHx49Zb+gbx3grsTtBs3hxuvmaAxESKRd+BTI=",
       "url": "_framework/blazor.boot.json"
     },
     {
@@ -818,11 +818,11 @@ self.assetsManifest = {
       "url": "_framework/netstandard.wasm"
     },
     {
-      "hash": "sha256-ejWJONChIWtusefcitEEf8uuGvDavHH9MMD2rTLiWdM=",
+      "hash": "sha256-APOwdXJbqHVxA6swtl2plSTT8cqM79aHY94ZuX1DYJU=",
       "url": "_framework/pwa-camera-poc-blazor.pdb"
     },
     {
-      "hash": "sha256-5VOs3VQmGD52r/XPq6rpzQJ5kze1Yz6Bug2tR35G/hU=",
+      "hash": "sha256-wuklEuKsYa9vggjbEuqVSoP3pL3wA8lB3MSag8UJv04=",
       "url": "_framework/pwa-camera-poc-blazor.wasm"
     },
     {
@@ -842,7 +842,7 @@ self.assetsManifest = {
       "url": "icon-512.png"
     },
     {
-      "hash": "sha256-Ffpx83UkB7X55K8BtyEqJ2XZepbmJfMwZjOCtjKrg1Y=",
+      "hash": "sha256-TTr8k3rjM+pUJxqjjnKGPH+6g4eq8/b7ai5VM/hU14Y=",
       "url": "index.html"
     },
     {
@@ -854,7 +854,7 @@ self.assetsManifest = {
       "url": "js/camera-interop.js"
     },
     {
-      "hash": "sha256-Rgzfrz3cbd3CVvkiw1moqZLcH4LXffr4RzlXtkGHYdY=",
+      "hash": "sha256-A0vQTbRTCJY6Ozl4QkodvX/TyeJC0Hn0Xqjop6hUz+I=",
       "url": "js/db-interop.js"
     },
     {

@@ -1,17 +1,22 @@
 @inherits LayoutComponentBase
+@implements IDisposable
 @inject ToastService ToastService
 @inject NavigationManager Navigation
+@inject AppState appState
+@inject IIndexedDbService DbService
+@inject IAuthService AuthService
 
 <div class="app-container">
     <Header OnToggleMenu="ToggleMenu" />
 
-    <NavMenu IsOpen="isMenuOpen" OnClose="ToggleMenu" />
+    <NavMenu IsOpen="isMenuOpen" OnClose="ToggleMenu" OnUnitSelected="HandleUnitSelected" />
 
     <main class="main-content">
         @Body
     </main>
 
-    <Footer ActiveTab="@activeTab" OnTabChanged="HandleTabChanged" OnCaptureClick="HandleCaptureClick" />
+    <Footer ActiveTab="@activeTab" PendingSyncCount="@appState.PendingSyncCount" OnTabChanged="HandleTabChanged"
+        OnCaptureClick="HandleCaptureClick" />
 
     <Toast @ref="toastComponent" />
 </div>
@@ -21,9 +26,24 @@
     private string activeTab = "home";
     private Toast? toastComponent;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         ToastService.OnShow += ShowToast;
+        appState.OnChange += StateHasChanged;
+
+        await UpdateSyncCount();
+
+        var user = await AuthService.GetCurrentUserAsync();
+        if (user != null)
+        {
+            appState.CurrentUnitId = user.CurrentUnitId;
+        }
+    }
+
+    private async Task UpdateSyncCount()
+    {
+        var items = await DbService.GetAllAsync<InventoryItem>("items");
+        appState.PendingSyncCount = items.Count(i => !i.Synced);
     }
 
     private void ToggleMenu()
@@ -40,7 +60,8 @@
     {
         activeTab = tab;
         if (tab == "home") Navigation.NavigateTo("/");
-        // Other tabs could be sub-pages or sections
+        else if (tab == "stats") Navigation.NavigateTo("/stats");
+        else if (tab == "sync") Navigation.NavigateTo("/sync");
     }
 
     private void HandleCaptureClick()
@@ -48,8 +69,15 @@
         Navigation.NavigateTo("/camera");
     }
 
+    private void HandleUnitSelected(int unitId)
+    {
+        appState.CurrentUnitId = unitId;
+        // appState.OnChange will trigger re-renders in listening components
+    }
+
     public void Dispose()
     {
         ToastService.OnShow -= ShowToast;
+        appState.OnChange -= StateHasChanged;
     }
 }

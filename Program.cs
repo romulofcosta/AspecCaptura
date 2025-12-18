@@ -19,6 +19,7 @@ builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<CameraService>();
 builder.Services.AddScoped<ToastService>();
+builder.Services.AddScoped<AppState>();
 
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();

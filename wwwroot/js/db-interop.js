@@ -133,6 +133,17 @@ window.dbInterop = {
         });
     },
 
+    getAllFromIndex: async function (storeName, indexName, value) {
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([storeName], 'readonly');
+            const store = transaction.objectStore(storeName);
+            const index = store.index(indexName);
+            const request = index.getAll(value);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    },
+
     getItemsByUnit: async function (unitId) {
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['items'], 'readonly');

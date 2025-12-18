@@ -1040,6 +1040,6 @@ C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debu
 C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\bin\Debug\net8.0\wwwroot\_framework\blazor.webassembly.5656vx8xqo.js
 C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\bin\Debug\net8.0\wwwroot\_framework\blazor.webassembly.5656vx8xqo.js.gz
 C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debug\net8.0\compressed\bx9a3fd9w0-{0}-5656vx8xqo-5656vx8xqo.gz
-C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debug\net8.0\compressed\76pxtk1o7k-{0}-5cbejgvosr-5cbejgvosr.gz
-C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debug\net8.0\compressed\ez6zr36gct-{0}-urxuv81ep9-urxuv81ep9.gz
-C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debug\net8.0\compressed\ivlo998pjj-{0}-0zx9e42lpz-0zx9e42lpz.gz
+C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debug\net8.0\compressed\76pxtk1o7k-{0}-i0b4dnbprr-i0b4dnbprr.gz
+C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debug\net8.0\compressed\ez6zr36gct-{0}-82b8xuxg9w-82b8xuxg9w.gz
+C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debug\net8.0\compressed\ivlo998pjj-{0}-b4qil5mfhc-b4qil5mfhc.gz

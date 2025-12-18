@@ -1,0 +1,269 @@
+@page "/stats"
+@using pwa_camera_poc_blazor.Models
+@inject IIndexedDbService DbService
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Estatísticas - ASPEC Capture</PageTitle>
+
+<div class="stats-container">
+    <div class="stats-header">
+        <h1>Visão Geral do Inventário</h1>
+        <p>Acompanhe o progresso das capturas e distribuição por categoria.</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stats-card highlight">
+            <div class="stat-icon">📦</div>
+            <div class="stat-content">
+                <span class="stat-value">@items.Count</span>
+                <span class="stat-label">Total de Itens</span>
+            </div>
+        </div>
+
+        <div class="stats-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-content">
+                <span class="stat-value">@todayCount</span>
+                <span class="stat-label">Capturados Hoje</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-section">
+        <div class="chart-card">
+            <h3>Por Categoria</h3>
+            <div class="category-bars">
+                @foreach (var cat in categoryStats)
+                {
+                    <div class="category-row">
+                        <div class="category-info">
+                            <span class="cat-name">@cat.Key</span>
+                            <span class="cat-count">@cat.Value</span>
+                        </div>
+                        <div class="progress-bg">
+                            <div class="progress-fill" style="width: @(CalculatePercentage(cat.Value))%"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="recent-activity">
+        <h3>Últimas Capturas</h3>
+        <div class="activity-timeline">
+            @foreach (var item in items.OrderByDescending(i => i.Timestamp).Take(5))
+            {
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <span class="time">@item.Timestamp.ToString("HH:mm")</span>
+                        <span class="name">@item.Name</span>
+                        <span class="meta">@item.Category • @item.Code</span>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .stats-container {
+        padding: 1.5rem;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .stats-header {
+        margin-bottom: 2.5rem;
+    }
+
+    .stats-header h1 {
+        font-size: 1.75rem;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-header p {
+        color: var(--text-secondary);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .stats-card {
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stats-card.highlight {
+        border-color: var(--primary-color);
+        background: linear-gradient(135deg, var(--surface-color) 0%, rgba(var(--primary-rgb), 0.05) 100%);
+    }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        line-height: 1;
+    }
+
+    .stat-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
+    }
+
+    .charts-section {
+        margin-bottom: 2.5rem;
+    }
+
+    .chart-card {
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 1.5rem;
+    }
+
+    .chart-card h3 {
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .category-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .category-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .category-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+    }
+
+    .cat-name {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .cat-count {
+        color: var(--text-secondary);
+    }
+
+    .progress-bg {
+        height: 8px;
+        background: var(--bg-body);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--primary-color);
+        border-radius: 4px;
+        transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .recent-activity h3 {
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .activity-timeline {
+        padding-left: 1rem;
+        border-left: 2px solid var(--border-color);
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+        padding-left: 1.5rem;
+    }
+
+    .timeline-item:last-child {
+        padding-bottom: 0;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: -1.45rem;
+        top: 0.25rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        border: 2px solid var(--surface-color);
+    }
+
+    .timeline-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .time {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.15rem;
+    }
+
+    .name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .meta {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+</style>
+
+@code {
+    private List<InventoryItem> items = new();
+    private int todayCount = 0;
+    private Dictionary<string, int> categoryStats = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = await DbService.GetAllAsync<InventoryItem>("items");
+        todayCount = items.Count(i => i.Timestamp.Date == DateTime.Today);
+
+        categoryStats = items.GroupBy(i => i.Category)
+        .ToDictionary(g => g.Key, g => g.Count())
+        .OrderByDescending(x => x.Value)
+        .ToDictionary(x => x.Key, x => x.Value);
+    }
+
+    private double CalculatePercentage(int count)
+    {
+        if (items.Count == 0) return 0;
+        return (double)count / items.Count * 100;
+    }
+}

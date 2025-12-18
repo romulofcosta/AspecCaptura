@@ -3,6 +3,8 @@
 @inject IAuthService AuthService
 @inject IIndexedDbService DbService
 @inject NavigationManager Navigation
+@inject AppState appState
+@implements IDisposable
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Inventário - ASPEC Capture</PageTitle>
@@ -11,16 +13,25 @@
     <!-- Search and Filter Bar -->
     <div class="search-bar">
         <div class="search-input-wrapper">
-            <span class="search-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg></span>
-            <input type="text" id="search-input" placeholder="Buscar por nome, código ou categoria..." @bind="searchQuery" @bind:event="oninput">
+            <span class="search-icon"><svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="M21 21l-4.3-4.3" />
+                </svg></span>
+            <input type="text" id="search-input" placeholder="Buscar por nome, código ou categoria..."
+                @bind="searchQuery" @bind:event="oninput">
             @if (!string.IsNullOrEmpty(searchQuery))
             {
-                <button id="clear-search-btn" class="clear-btn" @onclick="ClearSearch" aria-label="Limpar busca"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18" /><path d="M6 6l12 12" /></svg></button>
+                <button id="clear-search-btn" class="clear-btn" @onclick="ClearSearch" aria-label="Limpar busca"><svg
+                        viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M18 6L6 18" />
+                        <path d="M6 6l12 12" />
+                    </svg></button>
             }
         </div>
 
         <div id="search-controls" class="search-controls">
-            <button id="filter-btn" class="icon-btn @(showFilters ? "active" : "")" @onclick="ToggleFilters" aria-label="Filtros" title="Filtros">
+            <button id="filter-btn" class="icon-btn @(showFilters ? "active" : "")" @onclick="ToggleFilters"
+                aria-label="Filtros" title="Filtros">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M4 6h16" />
                     <circle cx="8" cy="6" r="2" />
@@ -31,17 +42,27 @@
                 </svg>
             </button>
             <div class="view-toggle">
-                <button id="toggle-view" class="icon-btn @(viewMode == "grid" ? "grid-active" : "list-active")" @onclick="ToggleViewMode" aria-label="Alternar Visualização" title="Alternar Visualização">
+                <button id="toggle-view" class="icon-btn @(viewMode == "grid" ? "grid-active" : "list-active")"
+                @onclick="ToggleViewMode" aria-label="Alternar Visualização" title="Alternar Visualização">
                     @if (viewMode == "grid")
                     {
                         <span class="icon-grid">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" /><rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" /></svg>
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="3" y="3" width="8" height="8" rx="1" />
+                                <rect x="13" y="3" width="8" height="8" rx="1" />
+                                <rect x="3" y="13" width="8" height="8" rx="1" />
+                                <rect x="13" y="13" width="8" height="8" rx="1" />
+                            </svg>
                         </span>
                     }
                     else
                     {
                         <span class="icon-list">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16" /><path d="M4 12h16" /><path d="M4 18h16" /></svg>
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M4 6h16" />
+                                <path d="M4 12h16" />
+                                <path d="M4 18h16" />
+                            </svg>
                         </span>
                     }
                 </button>
@@ -56,7 +77,8 @@
             <div class="filter-chips">
                 @foreach (var category in categories)
                 {
-                    <button class="chip @(selectedCategory == category ? "active" : "")" @onclick="() => SelectCategory(category)">@category</button>
+                    <button class="chip @(selectedCategory == category ? "active" : "")"
+                    @onclick="() => SelectCategory(category)">@category</button>
                 }
             </div>
         </div>
@@ -99,9 +121,11 @@
         @if (totalPages > 1)
         {
             <div id="pagination" class="pagination">
-                <button id="prev-page-btn" class="btn btn-secondary" disabled="@(currentPage == 1)" @onclick="PrevPage">← Anterior</button>
+                <button id="prev-page-btn" class="btn btn-secondary" disabled="@(currentPage == 1)" @onclick="PrevPage">←
+                    Anterior</button>
                 <span id="page-info" class="page-info">Página @currentPage de @totalPages</span>
-                <button id="next-page-btn" class="btn btn-secondary" disabled="@(currentPage == totalPages)" @onclick="NextPage">Próxima →</button>
+                <button id="next-page-btn" class="btn btn-secondary" disabled="@(currentPage == totalPages)"
+                @onclick="NextPage">Próxima →</button>
             </div>
         }
     }
@@ -117,7 +141,7 @@
     private string viewMode = "grid";
     private bool showFilters = false;
     private bool isLoading = true;
-    
+
     // Pagination
     private int currentPage = 1;
     private int pageSize = 12;
@@ -126,11 +150,22 @@
     private bool isModalOpen = false;
     private InventoryItem? selectedItem;
 
-    private readonly string[] categories = { "Todas", "Móveis", "Eletrônicos", "Equipamentos", "Ferramentas", "Materiais", "Outros" };
+    private readonly string[] categories = { "Todas", "Móveis", "Eletrônicos", "Equipamentos", "Ferramentas", "Materiais",
+"Outros" };
 
     protected override async Task OnInitializedAsync()
     {
+        appState.OnChange += HandleStateChange;
         await LoadItems();
+    }
+
+    private async void HandleStateChange()
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadItems();
+            StateHasChanged();
+        });
     }
 
     private async Task LoadItems()
@@ -161,7 +196,7 @@
     private void ToggleFilters() => showFilters = !showFilters;
     private void ToggleViewMode() => viewMode = viewMode == "grid" ? "list" : "grid";
     private void ClearSearch() => searchQuery = "";
-    
+
     private void SelectCategory(string category)
     {
         selectedCategory = category;
@@ -187,10 +222,10 @@
 
             if (!string.IsNullOrWhiteSpace(searchQuery))
             {
-                result = result.Where(i => 
-                    i.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) || 
-                    i.Code.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) || 
-                    i.Category.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+                result = result.Where(i =>
+                i.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                i.Code.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                i.Category.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
                 );
             }
 
@@ -237,5 +272,10 @@
         // For now, redirect to a camera/form page in edit mode?
         // Navigation.NavigateTo($"/edit/{item.Id}");
         CloseModal();
+    }
+
+    public void Dispose()
+    {
+        appState.OnChange -= HandleStateChange;
     }
 }

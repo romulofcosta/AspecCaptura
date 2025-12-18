@@ -9,43 +9,6 @@
   "ProjectWorkspaceState": {
     "TagHelpers": [
       {
-        "HashCode": -871138909,
-        "Kind": "Components.Component",
-        "Name": "pwa_camera_poc_blazor.App",
-        "AssemblyName": "pwa-camera-poc-blazor",
-        "CaseSensitive": true,
-        "TagMatchingRules": [
-          {
-            "TagName": "App"
-          }
-        ],
-        "Metadata": {
-          "Common.TypeName": "pwa_camera_poc_blazor.App",
-          "Common.TypeNameIdentifier": "App",
-          "Common.TypeNamespace": "pwa_camera_poc_blazor",
-          "Runtime.Name": "Components.IComponent"
-        }
-      },
-      {
-        "HashCode": -1479228182,
-        "Kind": "Components.Component",
-        "Name": "pwa_camera_poc_blazor.App",
-        "AssemblyName": "pwa-camera-poc-blazor",
-        "CaseSensitive": true,
-        "TagMatchingRules": [
-          {
-            "TagName": "pwa_camera_poc_blazor.App"
-          }
-        ],
-        "Metadata": {
-          "Common.TypeName": "pwa_camera_poc_blazor.App",
-          "Common.TypeNameIdentifier": "App",
-          "Common.TypeNamespace": "pwa_camera_poc_blazor",
-          "Components.NameMatch": "Components.FullyQualifiedNameMatch",
-          "Runtime.Name": "Components.IComponent"
-        }
-      },
-      {
         "HashCode": 230026041,
         "Kind": "Components.Component",
         "Name": "pwa_camera_poc_blazor.Components.Layout.AuthLayout",
@@ -149,6 +112,166 @@
           "Components.IsSpecialKind": "Components.ChildContent",
           "Components.NameMatch": "Components.FullyQualifiedNameMatch",
           "Runtime.Name": "Components.None"
+        }
+      },
+      {
+        "HashCode": 2099344493,
+        "Kind": "Components.Component",
+        "Name": "pwa_camera_poc_blazor.Components.Layout.Header",
+        "AssemblyName": "pwa-camera-poc-blazor",
+        "CaseSensitive": true,
+        "TagMatchingRules": [
+          {
+            "TagName": "Header"
+          }
+        ],
+        "BoundAttributes": [
+          {
+            "Kind": "Components.Component",
+            "Name": "OnToggleMenu",
+            "TypeName": "Microsoft.AspNetCore.Components.EventCallback",
+            "Metadata": {
+              "Common.PropertyName": "OnToggleMenu",
+              "Common.GloballyQualifiedTypeName": "global::Microsoft.AspNetCore.Components.EventCallback",
+              "Components.EventCallback": "True"
+            }
+          }
+        ],
+        "Metadata": {
+          "Common.TypeName": "pwa_camera_poc_blazor.Components.Layout.Header",
+          "Common.TypeNameIdentifier": "Header",
+          "Common.TypeNamespace": "pwa_camera_poc_blazor.Components.Layout",
+          "Runtime.Name": "Components.IComponent"
+        }
+      },
+      {
+        "HashCode": -1189696700,
+        "Kind": "Components.Component",
+        "Name": "pwa_camera_poc_blazor.Components.Layout.Header",
+        "AssemblyName": "pwa-camera-poc-blazor",
+        "CaseSensitive": true,
+        "TagMatchingRules": [
+          {
+            "TagName": "pwa_camera_poc_blazor.Components.Layout.Header"
+          }
+        ],
+        "BoundAttributes": [
+          {
+            "Kind": "Components.Component",
+            "Name": "OnToggleMenu",
+            "TypeName": "Microsoft.AspNetCore.Components.EventCallback",
+            "Metadata": {
+              "Common.PropertyName": "OnToggleMenu",
+              "Common.GloballyQualifiedTypeName": "global::Microsoft.AspNetCore.Components.EventCallback",
+              "Components.EventCallback": "True"
+            }
+          }
+        ],
+        "Metadata": {
+          "Common.TypeName": "pwa_camera_poc_blazor.Components.Layout.Header",
+          "Common.TypeNameIdentifier": "Header",
+          "Common.TypeNamespace": "pwa_camera_poc_blazor.Components.Layout",
+          "Components.NameMatch": "Components.FullyQualifiedNameMatch",
+          "Runtime.Name": "Components.IComponent"
+        }
+      },
+      {
+        "HashCode": -1778454738,
+        "Kind": "Components.Component",
+        "Name": "pwa_camera_poc_blazor.Components.Layout.NavMenu",
+        "AssemblyName": "pwa-camera-poc-blazor",
+        "CaseSensitive": true,
+        "TagMatchingRules": [
+          {
+            "TagName": "NavMenu"
+          }
+        ],
+        "BoundAttributes": [
+          {
+            "Kind": "Components.Component",
+            "Name": "IsOpen",
+            "TypeName": "System.Boolean",
+            "Metadata": {
+              "Common.PropertyName": "IsOpen",
+              "Common.GloballyQualifiedTypeName": "global::System.Boolean"
+            }
+          },
+          {
+            "Kind": "Components.Component",
+            "Name": "OnClose",
+            "TypeName": "Microsoft.AspNetCore.Components.EventCallback",
+            "Metadata": {
+              "Common.PropertyName": "OnClose",
+              "Common.GloballyQualifiedTypeName": "global::Microsoft.AspNetCore.Components.EventCallback",
+              "Components.EventCallback": "True"
+            }
+          },
+          {
+            "Kind": "Components.Component",
+            "Name": "OnUnitSelected",
+            "TypeName": "Microsoft.AspNetCore.Components.EventCallback<System.Int32>",
+            "Metadata": {
+              "Common.PropertyName": "OnUnitSelected",
+              "Common.GloballyQualifiedTypeName": "global::Microsoft.AspNetCore.Components.EventCallback<global::System.Int32>",
+              "Components.EventCallback": "True"
+            }
+          }
+        ],
+        "Metadata": {
+          "Common.TypeName": "pwa_camera_poc_blazor.Components.Layout.NavMenu",
+          "Common.TypeNameIdentifier": "NavMenu",
+          "Common.TypeNamespace": "pwa_camera_poc_blazor.Components.Layout",
+          "Runtime.Name": "Components.IComponent"
+        }
+      },
+      {
+        "HashCode": 1042065781,
+        "Kind": "Components.Component",
+        "Name": "pwa_camera_poc_blazor.Components.Layout.NavMenu",
+        "AssemblyName": "pwa-camera-poc-blazor",
+        "CaseSensitive": true,
+        "TagMatchingRules": [
+          {
+            "TagName": "pwa_camera_poc_blazor.Components.Layout.NavMenu"
+          }
+        ],
+        "BoundAttributes": [
+          {
+            "Kind": "Components.Component",
+            "Name": "IsOpen",
+            "TypeName": "System.Boolean",
+            "Metadata": {
+              "Common.PropertyName": "IsOpen",
+              "Common.GloballyQualifiedTypeName": "global::System.Boolean"
+            }
+          },
+          {
+            "Kind": "Components.Component",
+            "Name": "OnClose",
+            "TypeName": "Microsoft.AspNetCore.Components.EventCallback",
+            "Metadata": {
+              "Common.PropertyName": "OnClose",
+              "Common.GloballyQualifiedTypeName": "global::Microsoft.AspNetCore.Components.EventCallback",
+              "Components.EventCallback": "True"
+            }
+          },
+          {
+            "Kind": "Components.Component",
+            "Name": "OnUnitSelected",
+            "TypeName": "Microsoft.AspNetCore.Components.EventCallback<System.Int32>",
+            "Metadata": {
+              "Common.PropertyName": "OnUnitSelected",
+              "Common.GloballyQualifiedTypeName": "global::Microsoft.AspNetCore.Components.EventCallback<global::System.Int32>",
+              "Components.EventCallback": "True"
+            }
+          }
+        ],
+        "Metadata": {
+          "Common.TypeName": "pwa_camera_poc_blazor.Components.Layout.NavMenu",
+          "Common.TypeNameIdentifier": "NavMenu",
+          "Common.TypeNamespace": "pwa_camera_poc_blazor.Components.Layout",
+          "Components.NameMatch": "Components.FullyQualifiedNameMatch",
+          "Runtime.Name": "Components.IComponent"
         }
       },
       {
@@ -289,67 +412,6 @@
         }
       },
       {
-        "HashCode": 2099344493,
-        "Kind": "Components.Component",
-        "Name": "pwa_camera_poc_blazor.Components.Layout.Header",
-        "AssemblyName": "pwa-camera-poc-blazor",
-        "CaseSensitive": true,
-        "TagMatchingRules": [
-          {
-            "TagName": "Header"
-          }
-        ],
-        "BoundAttributes": [
-          {
-            "Kind": "Components.Component",
-            "Name": "OnToggleMenu",
-            "TypeName": "Microsoft.AspNetCore.Components.EventCallback",
-            "Metadata": {
-              "Common.PropertyName": "OnToggleMenu",
-              "Common.GloballyQualifiedTypeName": "global::Microsoft.AspNetCore.Components.EventCallback",
-              "Components.EventCallback": "True"
-            }
-          }
-        ],
-        "Metadata": {
-          "Common.TypeName": "pwa_camera_poc_blazor.Components.Layout.Header",
-          "Common.TypeNameIdentifier": "Header",
-          "Common.TypeNamespace": "pwa_camera_poc_blazor.Components.Layout",
-          "Runtime.Name": "Components.IComponent"
-        }
-      },
-      {
-        "HashCode": -1189696700,
-        "Kind": "Components.Component",
-        "Name": "pwa_camera_poc_blazor.Components.Layout.Header",
-        "AssemblyName": "pwa-camera-poc-blazor",
-        "CaseSensitive": true,
-        "TagMatchingRules": [
-          {
-            "TagName": "pwa_camera_poc_blazor.Components.Layout.Header"
-          }
-        ],
-        "BoundAttributes": [
-          {
-            "Kind": "Components.Component",
-            "Name": "OnToggleMenu",
-            "TypeName": "Microsoft.AspNetCore.Components.EventCallback",
-            "Metadata": {
-              "Common.PropertyName": "OnToggleMenu",
-              "Common.GloballyQualifiedTypeName": "global::Microsoft.AspNetCore.Components.EventCallback",
-              "Components.EventCallback": "True"
-            }
-          }
-        ],
-        "Metadata": {
-          "Common.TypeName": "pwa_camera_poc_blazor.Components.Layout.Header",
-          "Common.TypeNameIdentifier": "Header",
-          "Common.TypeNamespace": "pwa_camera_poc_blazor.Components.Layout",
-          "Components.NameMatch": "Components.FullyQualifiedNameMatch",
-          "Runtime.Name": "Components.IComponent"
-        }
-      },
-      {
         "HashCode": -1521489512,
         "Kind": "Components.Component",
         "Name": "pwa_camera_poc_blazor.Components.Layout.MainLayout",
@@ -453,105 +515,6 @@
           "Components.IsSpecialKind": "Components.ChildContent",
           "Components.NameMatch": "Components.FullyQualifiedNameMatch",
           "Runtime.Name": "Components.None"
-        }
-      },
-      {
-        "HashCode": -1778454738,
-        "Kind": "Components.Component",
-        "Name": "pwa_camera_poc_blazor.Components.Layout.NavMenu",
-        "AssemblyName": "pwa-camera-poc-blazor",
-        "CaseSensitive": true,
-        "TagMatchingRules": [
-          {
-            "TagName": "NavMenu"
-          }
-        ],
-        "BoundAttributes": [
-          {
-            "Kind": "Components.Component",
-            "Name": "IsOpen",
-            "TypeName": "System.Boolean",
-            "Metadata": {
-              "Common.PropertyName": "IsOpen",
-              "Common.GloballyQualifiedTypeName": "global::System.Boolean"
-            }
-          },
-          {
-            "Kind": "Components.Component",
-            "Name": "OnClose",
-            "TypeName": "Microsoft.AspNetCore.Components.EventCallback",
-            "Metadata": {
-              "Common.PropertyName": "OnClose",
-              "Common.GloballyQualifiedTypeName": "global::Microsoft.AspNetCore.Components.EventCallback",
-              "Components.EventCallback": "True"
-            }
-          },
-          {
-            "Kind": "Components.Component",
-            "Name": "OnUnitSelected",
-            "TypeName": "Microsoft.AspNetCore.Components.EventCallback<System.Int32>",
-            "Metadata": {
-              "Common.PropertyName": "OnUnitSelected",
-              "Common.GloballyQualifiedTypeName": "global::Microsoft.AspNetCore.Components.EventCallback<global::System.Int32>",
-              "Components.EventCallback": "True"
-            }
-          }
-        ],
-        "Metadata": {
-          "Common.TypeName": "pwa_camera_poc_blazor.Components.Layout.NavMenu",
-          "Common.TypeNameIdentifier": "NavMenu",
-          "Common.TypeNamespace": "pwa_camera_poc_blazor.Components.Layout",
-          "Runtime.Name": "Components.IComponent"
-        }
-      },
-      {
-        "HashCode": 1042065781,
-        "Kind": "Components.Component",
-        "Name": "pwa_camera_poc_blazor.Components.Layout.NavMenu",
-        "AssemblyName": "pwa-camera-poc-blazor",
-        "CaseSensitive": true,
-        "TagMatchingRules": [
-          {
-            "TagName": "pwa_camera_poc_blazor.Components.Layout.NavMenu"
-          }
-        ],
-        "BoundAttributes": [
-          {
-            "Kind": "Components.Component",
-            "Name": "IsOpen",
-            "TypeName": "System.Boolean",
-            "Metadata": {
-              "Common.PropertyName": "IsOpen",
-              "Common.GloballyQualifiedTypeName": "global::System.Boolean"
-            }
-          },
-          {
-            "Kind": "Components.Component",
-            "Name": "OnClose",
-            "TypeName": "Microsoft.AspNetCore.Components.EventCallback",
-            "Metadata": {
-              "Common.PropertyName": "OnClose",
-              "Common.GloballyQualifiedTypeName": "global::Microsoft.AspNetCore.Components.EventCallback",
-              "Components.EventCallback": "True"
-            }
-          },
-          {
-            "Kind": "Components.Component",
-            "Name": "OnUnitSelected",
-            "TypeName": "Microsoft.AspNetCore.Components.EventCallback<System.Int32>",
-            "Metadata": {
-              "Common.PropertyName": "OnUnitSelected",
-              "Common.GloballyQualifiedTypeName": "global::Microsoft.AspNetCore.Components.EventCallback<global::System.Int32>",
-              "Components.EventCallback": "True"
-            }
-          }
-        ],
-        "Metadata": {
-          "Common.TypeName": "pwa_camera_poc_blazor.Components.Layout.NavMenu",
-          "Common.TypeNameIdentifier": "NavMenu",
-          "Common.TypeNamespace": "pwa_camera_poc_blazor.Components.Layout",
-          "Components.NameMatch": "Components.FullyQualifiedNameMatch",
-          "Runtime.Name": "Components.IComponent"
         }
       },
       {
@@ -845,80 +808,6 @@
         }
       },
       {
-        "HashCode": -413161803,
-        "Kind": "Components.Component",
-        "Name": "pwa_camera_poc_blazor.Pages.Camera",
-        "AssemblyName": "pwa-camera-poc-blazor",
-        "CaseSensitive": true,
-        "TagMatchingRules": [
-          {
-            "TagName": "Camera"
-          }
-        ],
-        "Metadata": {
-          "Common.TypeName": "pwa_camera_poc_blazor.Pages.Camera",
-          "Common.TypeNameIdentifier": "Camera",
-          "Common.TypeNamespace": "pwa_camera_poc_blazor.Pages",
-          "Runtime.Name": "Components.IComponent"
-        }
-      },
-      {
-        "HashCode": -1948005363,
-        "Kind": "Components.Component",
-        "Name": "pwa_camera_poc_blazor.Pages.Camera",
-        "AssemblyName": "pwa-camera-poc-blazor",
-        "CaseSensitive": true,
-        "TagMatchingRules": [
-          {
-            "TagName": "pwa_camera_poc_blazor.Pages.Camera"
-          }
-        ],
-        "Metadata": {
-          "Common.TypeName": "pwa_camera_poc_blazor.Pages.Camera",
-          "Common.TypeNameIdentifier": "Camera",
-          "Common.TypeNamespace": "pwa_camera_poc_blazor.Pages",
-          "Components.NameMatch": "Components.FullyQualifiedNameMatch",
-          "Runtime.Name": "Components.IComponent"
-        }
-      },
-      {
-        "HashCode": -1327533698,
-        "Kind": "Components.Component",
-        "Name": "pwa_camera_poc_blazor.Pages.Home",
-        "AssemblyName": "pwa-camera-poc-blazor",
-        "CaseSensitive": true,
-        "TagMatchingRules": [
-          {
-            "TagName": "Home"
-          }
-        ],
-        "Metadata": {
-          "Common.TypeName": "pwa_camera_poc_blazor.Pages.Home",
-          "Common.TypeNameIdentifier": "Home",
-          "Common.TypeNamespace": "pwa_camera_poc_blazor.Pages",
-          "Runtime.Name": "Components.IComponent"
-        }
-      },
-      {
-        "HashCode": -1676334514,
-        "Kind": "Components.Component",
-        "Name": "pwa_camera_poc_blazor.Pages.Home",
-        "AssemblyName": "pwa-camera-poc-blazor",
-        "CaseSensitive": true,
-        "TagMatchingRules": [
-          {
-            "TagName": "pwa_camera_poc_blazor.Pages.Home"
-          }
-        ],
-        "Metadata": {
-          "Common.TypeName": "pwa_camera_poc_blazor.Pages.Home",
-          "Common.TypeNameIdentifier": "Home",
-          "Common.TypeNamespace": "pwa_camera_poc_blazor.Pages",
-          "Components.NameMatch": "Components.FullyQualifiedNameMatch",
-          "Runtime.Name": "Components.IComponent"
-        }
-      },
-      {
         "HashCode": -1365137396,
         "Kind": "Components.Component",
         "Name": "pwa_camera_poc_blazor.Pages.Login",
@@ -1025,6 +914,191 @@
           "Common.TypeName": "pwa_camera_poc_blazor.Pages.Register",
           "Common.TypeNameIdentifier": "Register",
           "Common.TypeNamespace": "pwa_camera_poc_blazor.Pages",
+          "Components.NameMatch": "Components.FullyQualifiedNameMatch",
+          "Runtime.Name": "Components.IComponent"
+        }
+      },
+      {
+        "HashCode": -913050954,
+        "Kind": "Components.Component",
+        "Name": "pwa_camera_poc_blazor.Pages.Stats",
+        "AssemblyName": "pwa-camera-poc-blazor",
+        "CaseSensitive": true,
+        "TagMatchingRules": [
+          {
+            "TagName": "Stats"
+          }
+        ],
+        "Metadata": {
+          "Common.TypeName": "pwa_camera_poc_blazor.Pages.Stats",
+          "Common.TypeNameIdentifier": "Stats",
+          "Common.TypeNamespace": "pwa_camera_poc_blazor.Pages",
+          "Runtime.Name": "Components.IComponent"
+        }
+      },
+      {
+        "HashCode": 1540961123,
+        "Kind": "Components.Component",
+        "Name": "pwa_camera_poc_blazor.Pages.Stats",
+        "AssemblyName": "pwa-camera-poc-blazor",
+        "CaseSensitive": true,
+        "TagMatchingRules": [
+          {
+            "TagName": "pwa_camera_poc_blazor.Pages.Stats"
+          }
+        ],
+        "Metadata": {
+          "Common.TypeName": "pwa_camera_poc_blazor.Pages.Stats",
+          "Common.TypeNameIdentifier": "Stats",
+          "Common.TypeNamespace": "pwa_camera_poc_blazor.Pages",
+          "Components.NameMatch": "Components.FullyQualifiedNameMatch",
+          "Runtime.Name": "Components.IComponent"
+        }
+      },
+      {
+        "HashCode": -413161803,
+        "Kind": "Components.Component",
+        "Name": "pwa_camera_poc_blazor.Pages.Camera",
+        "AssemblyName": "pwa-camera-poc-blazor",
+        "CaseSensitive": true,
+        "TagMatchingRules": [
+          {
+            "TagName": "Camera"
+          }
+        ],
+        "Metadata": {
+          "Common.TypeName": "pwa_camera_poc_blazor.Pages.Camera",
+          "Common.TypeNameIdentifier": "Camera",
+          "Common.TypeNamespace": "pwa_camera_poc_blazor.Pages",
+          "Runtime.Name": "Components.IComponent"
+        }
+      },
+      {
+        "HashCode": -1948005363,
+        "Kind": "Components.Component",
+        "Name": "pwa_camera_poc_blazor.Pages.Camera",
+        "AssemblyName": "pwa-camera-poc-blazor",
+        "CaseSensitive": true,
+        "TagMatchingRules": [
+          {
+            "TagName": "pwa_camera_poc_blazor.Pages.Camera"
+          }
+        ],
+        "Metadata": {
+          "Common.TypeName": "pwa_camera_poc_blazor.Pages.Camera",
+          "Common.TypeNameIdentifier": "Camera",
+          "Common.TypeNamespace": "pwa_camera_poc_blazor.Pages",
+          "Components.NameMatch": "Components.FullyQualifiedNameMatch",
+          "Runtime.Name": "Components.IComponent"
+        }
+      },
+      {
+        "HashCode": -139307900,
+        "Kind": "Components.Component",
+        "Name": "pwa_camera_poc_blazor.Pages.Sync",
+        "AssemblyName": "pwa-camera-poc-blazor",
+        "CaseSensitive": true,
+        "TagMatchingRules": [
+          {
+            "TagName": "Sync"
+          }
+        ],
+        "Metadata": {
+          "Common.TypeName": "pwa_camera_poc_blazor.Pages.Sync",
+          "Common.TypeNameIdentifier": "Sync",
+          "Common.TypeNamespace": "pwa_camera_poc_blazor.Pages",
+          "Runtime.Name": "Components.IComponent"
+        }
+      },
+      {
+        "HashCode": 1597384665,
+        "Kind": "Components.Component",
+        "Name": "pwa_camera_poc_blazor.Pages.Sync",
+        "AssemblyName": "pwa-camera-poc-blazor",
+        "CaseSensitive": true,
+        "TagMatchingRules": [
+          {
+            "TagName": "pwa_camera_poc_blazor.Pages.Sync"
+          }
+        ],
+        "Metadata": {
+          "Common.TypeName": "pwa_camera_poc_blazor.Pages.Sync",
+          "Common.TypeNameIdentifier": "Sync",
+          "Common.TypeNamespace": "pwa_camera_poc_blazor.Pages",
+          "Components.NameMatch": "Components.FullyQualifiedNameMatch",
+          "Runtime.Name": "Components.IComponent"
+        }
+      },
+      {
+        "HashCode": -1327533698,
+        "Kind": "Components.Component",
+        "Name": "pwa_camera_poc_blazor.Pages.Home",
+        "AssemblyName": "pwa-camera-poc-blazor",
+        "CaseSensitive": true,
+        "TagMatchingRules": [
+          {
+            "TagName": "Home"
+          }
+        ],
+        "Metadata": {
+          "Common.TypeName": "pwa_camera_poc_blazor.Pages.Home",
+          "Common.TypeNameIdentifier": "Home",
+          "Common.TypeNamespace": "pwa_camera_poc_blazor.Pages",
+          "Runtime.Name": "Components.IComponent"
+        }
+      },
+      {
+        "HashCode": -1676334514,
+        "Kind": "Components.Component",
+        "Name": "pwa_camera_poc_blazor.Pages.Home",
+        "AssemblyName": "pwa-camera-poc-blazor",
+        "CaseSensitive": true,
+        "TagMatchingRules": [
+          {
+            "TagName": "pwa_camera_poc_blazor.Pages.Home"
+          }
+        ],
+        "Metadata": {
+          "Common.TypeName": "pwa_camera_poc_blazor.Pages.Home",
+          "Common.TypeNameIdentifier": "Home",
+          "Common.TypeNamespace": "pwa_camera_poc_blazor.Pages",
+          "Components.NameMatch": "Components.FullyQualifiedNameMatch",
+          "Runtime.Name": "Components.IComponent"
+        }
+      },
+      {
+        "HashCode": -871138909,
+        "Kind": "Components.Component",
+        "Name": "pwa_camera_poc_blazor.App",
+        "AssemblyName": "pwa-camera-poc-blazor",
+        "CaseSensitive": true,
+        "TagMatchingRules": [
+          {
+            "TagName": "App"
+          }
+        ],
+        "Metadata": {
+          "Common.TypeName": "pwa_camera_poc_blazor.App",
+          "Common.TypeNameIdentifier": "App",
+          "Common.TypeNamespace": "pwa_camera_poc_blazor",
+          "Runtime.Name": "Components.IComponent"
+        }
+      },
+      {
+        "HashCode": -1479228182,
+        "Kind": "Components.Component",
+        "Name": "pwa_camera_poc_blazor.App",
+        "AssemblyName": "pwa-camera-poc-blazor",
+        "CaseSensitive": true,
+        "TagMatchingRules": [
+          {
+            "TagName": "pwa_camera_poc_blazor.App"
+          }
+        ],
+        "Metadata": {
+          "Common.TypeName": "pwa_camera_poc_blazor.App",
+          "Common.TypeNameIdentifier": "App",
+          "Common.TypeNamespace": "pwa_camera_poc_blazor",
           "Components.NameMatch": "Components.FullyQualifiedNameMatch",
           "Runtime.Name": "Components.IComponent"
         }
@@ -18172,8 +18246,18 @@
       "FileKind": "component"
     },
     {
+      "FilePath": "c:\\Users\\romulo.costa\\.gemini\\antigravity\\scratch\\pwa-camera-poc-blazor\\Pages\\Stats.razor",
+      "TargetPath": "Pages\\Stats.razor",
+      "FileKind": "component"
+    },
+    {
       "FilePath": "c:\\Users\\romulo.costa\\.gemini\\antigravity\\scratch\\pwa-camera-poc-blazor\\Pages\\Home.razor",
       "TargetPath": "Pages\\Home.razor",
+      "FileKind": "component"
+    },
+    {
+      "FilePath": "c:\\Users\\romulo.costa\\.gemini\\antigravity\\scratch\\pwa-camera-poc-blazor\\Pages\\Sync.razor",
+      "TargetPath": "Pages\\Sync.razor",
       "FileKind": "component"
     },
     {

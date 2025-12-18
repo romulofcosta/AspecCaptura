@@ -6,6 +6,7 @@
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 @inject ToastService ToastService
+@inject AppState appState
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Capturar - ASPEC Capture</PageTitle>
@@ -202,6 +203,7 @@
             itemModel.Synced = false;
 
             await DbService.AddAsync("items", itemModel);
+            appState.PendingSyncCount++; // Update global badge
             ToastService.ShowSuccess("Item salvo com sucesso!");
             Navigation.NavigateTo("/");
         }
