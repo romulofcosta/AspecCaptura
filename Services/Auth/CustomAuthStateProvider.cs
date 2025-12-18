@@ -1,0 +1,43 @@
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Authorization;
+using pwa_camera_poc_blazor.Models; // For implicit usage if needed, but session is UserSession
+using pwa_camera_poc_blazor.Services.Storage;
+
+namespace pwa_camera_poc_blazor.Services.Auth
+{
+    public class CustomAuthStateProvider : AuthenticationStateProvider
+    {
+        private readonly ILocalStorageService _localStorage;
+        private const string SESSION_KEY = "pwa-inventory-session";
+
+        public CustomAuthStateProvider(ILocalStorageService localStorage)
+        {
+            _localStorage = localStorage;
+        }
+
+        public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+        {
+            var session = await _localStorage.GetItemAsync<UserSession>(SESSION_KEY);
+
+            if (session == null)
+            {
+                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+            }
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, session.Username),
+                new Claim("UnitId", session.UnitId.ToString())
+            };
+
+            var identity = new ClaimsIdentity(claims, "Custom Auth");
+            return new AuthenticationState(new ClaimsPrincipal(identity));
+        }
+
+        public void NotifyAuthenticationStateChanged()
+        {
+            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        }
+    }
+}

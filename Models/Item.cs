@@ -1,0 +1,28 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace pwa_camera_poc_blazor.Models
+{
+    public class InventoryItem
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Name { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
+        public string Category { get; set; } = "Geral";
+        public string Location { get; set; } = string.Empty;
+        public string Observations { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+        public bool Synced { get; set; } = false;
+        public int? UnitId { get; set; }
+
+        // Armazenamento de imagens (Base64)
+        public List<string> Photos { get; set; } = new();
+
+        // Propriedade auxiliar para capa
+        public string? CoverImage => Photos.FirstOrDefault();
+
+        // Extra property for 'EntityId' migration support?
+        // public int? EntityId { get; set; }
+    }
+}

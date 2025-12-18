@@ -1,0 +1,21 @@
+@inject IJSRuntime JSRuntime
+
+<header class="app-header">
+    <div class="header-content">
+        <h1 class="app-brand"><img src="favicon.png" alt="Aspec Capture" class="app-logo"> Aspec Capture</h1>
+        <div class="header-actions">
+            <button id="menu-btn" class="icon-btn" aria-label="Menu Principal" @onclick="ToggleMenu">
+                <span>☰</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+@code {
+    [Parameter] public EventCallback OnToggleMenu { get; set; }
+
+    private async Task ToggleMenu()
+    {
+        await OnToggleMenu.InvokeAsync();
+    }
+}

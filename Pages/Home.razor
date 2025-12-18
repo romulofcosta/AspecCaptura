@@ -1,0 +1,241 @@
+﻿@page "/"
+@using pwa_camera_poc_blazor.Models
+@inject IAuthService AuthService
+@inject IIndexedDbService DbService
+@inject NavigationManager Navigation
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Inventário - ASPEC Capture</PageTitle>
+
+<div id="inventory-section" class="inventory-section">
+    <!-- Search and Filter Bar -->
+    <div class="search-bar">
+        <div class="search-input-wrapper">
+            <span class="search-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg></span>
+            <input type="text" id="search-input" placeholder="Buscar por nome, código ou categoria..." @bind="searchQuery" @bind:event="oninput">
+            @if (!string.IsNullOrEmpty(searchQuery))
+            {
+                <button id="clear-search-btn" class="clear-btn" @onclick="ClearSearch" aria-label="Limpar busca"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18" /><path d="M6 6l12 12" /></svg></button>
+            }
+        </div>
+
+        <div id="search-controls" class="search-controls">
+            <button id="filter-btn" class="icon-btn @(showFilters ? "active" : "")" @onclick="ToggleFilters" aria-label="Filtros" title="Filtros">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 6h16" />
+                    <circle cx="8" cy="6" r="2" />
+                    <path d="M4 12h16" />
+                    <circle cx="16" cy="12" r="2" />
+                    <path d="M4 18h16" />
+                    <circle cx="10" cy="18" r="2" />
+                </svg>
+            </button>
+            <div class="view-toggle">
+                <button id="toggle-view" class="icon-btn @(viewMode == "grid" ? "grid-active" : "list-active")" @onclick="ToggleViewMode" aria-label="Alternar Visualização" title="Alternar Visualização">
+                    @if (viewMode == "grid")
+                    {
+                        <span class="icon-grid">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" /><rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" /></svg>
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="icon-list">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16" /><path d="M4 12h16" /><path d="M4 18h16" /></svg>
+                        </span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Panel -->
+    <div id="filter-panel" class="filter-panel @(showFilters ? "" : "hidden")">
+        <div class="filter-group">
+            <label>Categoria:</label>
+            <div class="filter-chips">
+                @foreach (var category in categories)
+                {
+                    <button class="chip @(selectedCategory == category ? "active" : "")" @onclick="() => SelectCategory(category)">@category</button>
+                }
+            </div>
+        </div>
+        <div class="filter-group">
+            <label>Ordenar por:</label>
+            <select id="sort-select" @onchange="OnSortChanged">
+                <option value="newest">Mais recentes</option>
+                <option value="oldest">Mais antigos</option>
+                <option value="name-asc">Nome (A-Z)</option>
+                <option value="name-desc">Nome (Z-A)</option>
+                <option value="code-asc">Código (A-Z)</option>
+            </select>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="loading-state">Carregando itens...</div>
+    }
+    else if (!filteredItems.Any())
+    {
+        <!-- Empty State -->
+        <div id="empty-state" class="empty-state">
+            <div class="empty-icon">📸</div>
+            <h3>Nenhum item no inventário</h3>
+            <p>Comece capturando fotos dos itens que deseja inventariar</p>
+        </div>
+    }
+    else
+    {
+        <!-- Gallery Grid/List -->
+        <div id="gallery-grid" class="gallery-grid @(viewMode == "list" ? "list-view" : "")">
+            @foreach (var item in pagedItems)
+            {
+                <ItemCard Item="item" OnView="() => OpenModal(item)" />
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages > 1)
+        {
+            <div id="pagination" class="pagination">
+                <button id="prev-page-btn" class="btn btn-secondary" disabled="@(currentPage == 1)" @onclick="PrevPage">← Anterior</button>
+                <span id="page-info" class="page-info">Página @currentPage de @totalPages</span>
+                <button id="next-page-btn" class="btn btn-secondary" disabled="@(currentPage == totalPages)" @onclick="NextPage">Próxima →</button>
+            </div>
+        }
+    }
+</div>
+
+<ItemModal IsOpen="isModalOpen" Item="selectedItem" OnClose="CloseModal" OnDelete="HandleDelete" OnEdit="HandleEdit" />
+
+@code {
+    private List<InventoryItem> items = new();
+    private string searchQuery = "";
+    private string selectedCategory = "Todas";
+    private string sortOrder = "newest";
+    private string viewMode = "grid";
+    private bool showFilters = false;
+    private bool isLoading = true;
+    
+    // Pagination
+    private int currentPage = 1;
+    private int pageSize = 12;
+
+    // Modal
+    private bool isModalOpen = false;
+    private InventoryItem? selectedItem;
+
+    private readonly string[] categories = { "Todas", "Móveis", "Eletrônicos", "Equipamentos", "Ferramentas", "Materiais", "Outros" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadItems();
+    }
+
+    private async Task LoadItems()
+    {
+        isLoading = true;
+        try
+        {
+            var user = await AuthService.GetCurrentUserAsync();
+            if (user?.CurrentUnitId != null)
+            {
+                items = await DbService.GetItemsByUnitAsync(user.CurrentUnitId.Value);
+            }
+            else
+            {
+                items = new List<InventoryItem>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error loading items: " + ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ToggleFilters() => showFilters = !showFilters;
+    private void ToggleViewMode() => viewMode = viewMode == "grid" ? "list" : "grid";
+    private void ClearSearch() => searchQuery = "";
+    
+    private void SelectCategory(string category)
+    {
+        selectedCategory = category;
+        currentPage = 1;
+    }
+
+    private void OnSortChanged(ChangeEventArgs e)
+    {
+        sortOrder = e.Value?.ToString() ?? "newest";
+        currentPage = 1;
+    }
+
+    private IEnumerable<InventoryItem> filteredItems
+    {
+        get
+        {
+            var result = items.AsEnumerable();
+
+            if (selectedCategory != "Todas")
+            {
+                result = result.Where(i => i.Category == selectedCategory);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                result = result.Where(i => 
+                    i.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) || 
+                    i.Code.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) || 
+                    i.Category.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+                );
+            }
+
+            result = sortOrder switch
+            {
+                "oldest" => result.OrderBy(i => i.Timestamp),
+                "name-asc" => result.OrderBy(i => i.Name),
+                "name-desc" => result.OrderByDescending(i => i.Name),
+                "code-asc" => result.OrderBy(i => i.Code),
+                _ => result.OrderByDescending(i => i.Timestamp)
+            };
+
+            return result;
+        }
+    }
+
+    private int totalPages => (int)Math.Ceiling((double)filteredItems.Count() / pageSize);
+    private IEnumerable<InventoryItem> pagedItems => filteredItems.Skip((currentPage - 1) * pageSize).Take(pageSize);
+
+    private void PrevPage() { if (currentPage > 1) currentPage--; }
+    private void NextPage() { if (currentPage < totalPages) currentPage++; }
+
+    private void OpenModal(InventoryItem item)
+    {
+        selectedItem = item;
+        isModalOpen = true;
+    }
+
+    private void CloseModal()
+    {
+        isModalOpen = false;
+        selectedItem = null;
+    }
+
+    private async Task HandleDelete(InventoryItem item)
+    {
+        await DbService.DeleteAsync("items", item.Id);
+        items.Remove(item);
+        CloseModal();
+    }
+
+    private void HandleEdit(InventoryItem item)
+    {
+        // For now, redirect to a camera/form page in edit mode?
+        // Navigation.NavigateTo($"/edit/{item.Id}");
+        CloseModal();
+    }
+}

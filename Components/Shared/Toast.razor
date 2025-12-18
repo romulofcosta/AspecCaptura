@@ -1,0 +1,30 @@
+<div id="toast" class="toast @(IsVisible ? "" : "hidden") @TypeClass"
+    style="@(IsVisible ? "display:block;" : "display:none;")">
+    <div id="toast-message">@Message</div>
+</div>
+
+@code {
+    private bool IsVisible = false;
+    private string Message = "";
+    private string TypeClass = ""; // success, error, info
+
+    public void Show(string message, string type = "info")
+    {
+        Message = message;
+        TypeClass = type == "success" ? "success" : (type == "error" ? "error" : ""); // Map to CSS classes if needed
+                                                                                      // Assuming CSS handles .success etc on .toast or .auth-alert logic
+                                                                                      // Original JS: showToast('...', 'success').
+                                                                                      // CSS likely has .toast.success or similar.
+                                                                                      // I will just pass the type as class.
+        TypeClass = type;
+
+        IsVisible = true;
+        StateHasChanged();
+
+        Task.Delay(3000).ContinueWith(_ =>
+        {
+            IsVisible = false;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+}

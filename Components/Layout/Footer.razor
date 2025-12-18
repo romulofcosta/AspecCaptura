@@ -1,0 +1,65 @@
+<nav class="app-footer">
+    <div class="footer-content">
+        <button class="footer-btn @(ActiveTab == "home" ? "active" : "")"
+        @onclick='() => OnTabChanged.InvokeAsync("home")'>
+            <span class="footer-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 10l9-7 9 7v10H6V10" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </span>
+        </button>
+        <button class="footer-btn @(ActiveTab == "stats" ? "active" : "")"
+        @onclick='() => OnTabChanged.InvokeAsync("stats")'>
+            <span class="footer-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 20h16" />
+                    <path d="M6 16V10" />
+                    <path d="M11 16V6" />
+                    <path d="M16 16V12" />
+                </svg>
+            </span>
+        </button>
+        <button class="footer-capture-btn" aria-label="Capturar foto" @onclick="OnCaptureClick">
+            <span class="footer-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="4" y="8" width="16" height="10" rx="2" />
+                    <circle cx="12" cy="13" r="3" />
+                </svg>
+            </span>
+        </button>
+        <button class="footer-btn @(ActiveTab == "sync" ? "active" : "")"
+        @onclick='() => OnTabChanged.InvokeAsync("sync")'>
+            <div class="icon-wrapper">
+                <span class="footer-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M17 1l4 4-4 4" />
+                        <path d="M7 23l-4-4 4-4" />
+                        <path d="M21 5a9 9 0 0 0-15-3" />
+                        <path d="M3 19a9 9 0 0 0 15 3" />
+                    </svg>
+                </span>
+                @if (PendingSyncCount > 0)
+                {
+                    <span class="sync-badge pending">!</span>
+                }
+            </div>
+        </button>
+        <button class="footer-btn" @onclick="OnExportClick">
+            <span class="footer-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 3v12" />
+                    <path d="M8 11l4 4 4-4" />
+                    <path d="M4 21h16" />
+                </svg>
+            </span>
+        </button>
+    </div>
+</nav>
+
+@code {
+    [Parameter] public string ActiveTab { get; set; } = "home";
+    [Parameter] public int PendingSyncCount { get; set; } = 0;
+    [Parameter] public EventCallback<string> OnTabChanged { get; set; }
+    [Parameter] public EventCallback OnCaptureClick { get; set; }
+    [Parameter] public EventCallback OnExportClick { get; set; }
+}

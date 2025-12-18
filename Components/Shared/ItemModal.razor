@@ -1,0 +1,68 @@
+@using pwa_camera_poc_blazor.Models
+
+<div id="item-modal" class="modal @(IsOpen ? "" : "hidden")" style="@(IsOpen ? "display:flex;" : "display:none;")">
+    <div class="modal-content">
+        @if (Item != null)
+        {
+            <div class="modal-header">
+                <h2 id="modal-title">Detalhes do Item</h2>
+                <button id="close-modal-btn" class="icon-btn" @onclick="Close">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-image-container">
+                    <img id="modal-image" src="@Item.CoverImage" alt="@Item.Name">
+                </div>
+                <div class="modal-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Nome:</span>
+                        <span id="detail-name" class="detail-value">@Item.Name</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Código:</span>
+                        <span id="detail-code" class="detail-value">@Item.Code</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Categoria:</span>
+                        <span id="detail-category" class="detail-value">@Item.Category</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Localização:</span>
+                        <span id="detail-location" class="detail-value">@Item.Location</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Observações:</span>
+                        <span id="detail-observations" class="detail-value">@Item.Observations</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Data de Cadastro:</span>
+                        <span id="detail-date" class="detail-value">@Item.Timestamp.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span id="detail-sync-status" class="detail-value">@(Item.Synced ? "Sincronizado" :
+                        "Pendente")</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <div class="edit-actions">
+                    <button id="edit-item-btn" class="btn btn-secondary edit-btn" @onclick="HandleEdit">✏️ Editar</button>
+                    <button id="close-item-btn" class="btn btn-secondary close-btn" @onclick="Close">Fechar</button>
+                </div>
+                <button id="delete-item-btn" class="btn btn-danger" @onclick="HandleDelete">🗑️ Excluir</button>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public InventoryItem? Item { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<InventoryItem> OnDelete { get; set; }
+    [Parameter] public EventCallback<InventoryItem> OnEdit { get; set; }
+
+    private async Task Close() => await OnClose.InvokeAsync();
+    private async Task HandleDelete() => await OnDelete.InvokeAsync(Item!);
+    private async Task HandleEdit() => await OnEdit.InvokeAsync(Item!);
+}

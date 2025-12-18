@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>ASPEC Camera Inventory</title>
+    <base href="/" />
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem('pwa-inventory-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="pwa-camera-poc-blazor.styles.css" rel="stylesheet" />
+    <link href="manifest.json" rel="manifest" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
+    <script type="importmap">{
+  "imports": {
+    "./_framework/blazor.webassembly.js": "./_framework/blazor.webassembly.5656vx8xqo.js",
+    "./js/app.js": "./js/app.9ivyvv3r84.js",
+    "./js/camera-interop.js": "./js/camera-interop.0e48z129is.js",
+    "./js/db-interop.js": "./js/db-interop.6hduwdmi14.js",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.min.js": "./lib/bootstrap/dist/js/bootstrap.bundle.min.493y06b0oq.js",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.js": "./lib/bootstrap/dist/js/bootstrap.bundle.qki272d568.js",
+    "./lib/bootstrap/dist/js/bootstrap.esm.js": "./lib/bootstrap/dist/js/bootstrap.esm.f492bwil9u.js",
+    "./lib/bootstrap/dist/js/bootstrap.esm.min.js": "./lib/bootstrap/dist/js/bootstrap.esm.min.jj8uyg4cgr.js",
+    "./lib/bootstrap/dist/js/bootstrap.min.js": "./lib/bootstrap/dist/js/bootstrap.min.63fj8s7r0e.js",
+    "./lib/bootstrap/dist/js/bootstrap.js": "./lib/bootstrap/dist/js/bootstrap.qmoexk8e25.js"
+  },
+  "scopes": {},
+  "integrity": {
+    "./_framework/blazor.webassembly.5656vx8xqo.js": "sha256-rcIWTVNnYus6VWf2Z2U1g/JzlC07Ym02cFjHtI59Xsc=",
+    "./_framework/blazor.webassembly.js": "sha256-rcIWTVNnYus6VWf2Z2U1g/JzlC07Ym02cFjHtI59Xsc=",
+    "./_framework/dotnet.js": "sha256-shrivv+AA9mejPe5Z3aXpzf6r0C+U+vlsY87ADEM23w=",
+    "./_framework/dotnet.native.js": "sha256-vtotCeXt2UD6oc459laJT32vBgigZ+eLoUmdeFkvYDk=",
+    "./_framework/dotnet.runtime.js": "sha256-6bV/iAemowb59rmItegP8VsxwWpWUNyMb0Q76Fvvsjo=",
+    "./js/app.9ivyvv3r84.js": "sha256-/+BMcDakrYOWdVyVYmhSThd4sqfSHDkCrX/wMwt5SUs=",
+    "./js/app.js": "sha256-/+BMcDakrYOWdVyVYmhSThd4sqfSHDkCrX/wMwt5SUs=",
+    "./js/camera-interop.0e48z129is.js": "sha256-yDDurxOVY8j9tApxKTbXx6e08ss7iywKlCry8jChYbI=",
+    "./js/camera-interop.js": "sha256-yDDurxOVY8j9tApxKTbXx6e08ss7iywKlCry8jChYbI=",
+    "./js/db-interop.6hduwdmi14.js": "sha256-Rgzfrz3cbd3CVvkiw1moqZLcH4LXffr4RzlXtkGHYdY=",
+    "./js/db-interop.js": "sha256-Rgzfrz3cbd3CVvkiw1moqZLcH4LXffr4RzlXtkGHYdY=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.js": "sha256-dnZ0LdNozfiIxyWR3Y+4Oj+q6LIKu8qWKwTX8RSVfAY=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.min.493y06b0oq.js": "sha256-CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC+mjoJimHGw=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.min.js": "sha256-CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC+mjoJimHGw=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.qki272d568.js": "sha256-dnZ0LdNozfiIxyWR3Y+4Oj+q6LIKu8qWKwTX8RSVfAY=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.f492bwil9u.js": "sha256-r2W78+2A10BXP2NXl5bNSkWYoGeE8qBeJVCXs6WwCik=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.js": "sha256-r2W78+2A10BXP2NXl5bNSkWYoGeE8qBeJVCXs6WwCik=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.min.jj8uyg4cgr.js": "sha256-QZdFT1ZNdly4rmgUBtXmXFS9BU1FTa+sPe6h794sFRQ=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.min.js": "sha256-QZdFT1ZNdly4rmgUBtXmXFS9BU1FTa+sPe6h794sFRQ=",
+    "./lib/bootstrap/dist/js/bootstrap.js": "sha256-MgWDkoRpqtQmjMv9IPJx3SPxDx0tp0toAmC50mOALvs=",
+    "./lib/bootstrap/dist/js/bootstrap.min.63fj8s7r0e.js": "sha256-3gQJhtmj7YnV1fmtbVcnAV6eI4ws0Tr48bVZCThtCGQ=",
+    "./lib/bootstrap/dist/js/bootstrap.min.js": "sha256-3gQJhtmj7YnV1fmtbVcnAV6eI4ws0Tr48bVZCThtCGQ=",
+    "./lib/bootstrap/dist/js/bootstrap.qmoexk8e25.js": "sha256-MgWDkoRpqtQmjMv9IPJx3SPxDx0tp0toAmC50mOALvs="
+  }
+}</script>
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+    <script src="js/app.js"></script>
+    <script src="js/db-interop.js"></script>
+    <script src="js/camera-interop.js"></script>
+    <script src="_framework/blazor.webassembly.5656vx8xqo.js"></script>
+    <script>navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' });</script>
+</body>
+
+</html>

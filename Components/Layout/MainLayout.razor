@@ -1,0 +1,55 @@
+@inherits LayoutComponentBase
+@inject ToastService ToastService
+@inject NavigationManager Navigation
+
+<div class="app-container">
+    <Header OnToggleMenu="ToggleMenu" />
+
+    <NavMenu IsOpen="isMenuOpen" OnClose="ToggleMenu" />
+
+    <main class="main-content">
+        @Body
+    </main>
+
+    <Footer ActiveTab="@activeTab" OnTabChanged="HandleTabChanged" OnCaptureClick="HandleCaptureClick" />
+
+    <Toast @ref="toastComponent" />
+</div>
+
+@code {
+    private bool isMenuOpen = false;
+    private string activeTab = "home";
+    private Toast? toastComponent;
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnShow += ShowToast;
+    }
+
+    private void ToggleMenu()
+    {
+        isMenuOpen = !isMenuOpen;
+    }
+
+    private void ShowToast(string message, string type)
+    {
+        toastComponent?.Show(message, type);
+    }
+
+    private void HandleTabChanged(string tab)
+    {
+        activeTab = tab;
+        if (tab == "home") Navigation.NavigateTo("/");
+        // Other tabs could be sub-pages or sections
+    }
+
+    private void HandleCaptureClick()
+    {
+        Navigation.NavigateTo("/camera");
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnShow -= ShowToast;
+    }
+}
