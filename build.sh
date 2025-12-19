@@ -5,7 +5,6 @@
 set -e
 
 echo "Iniciando instalação do .NET 8..."
-# Instala o .NET no diretório .dotnet na raiz do projeto para persistência relativa
 curl -sSL https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh
 chmod +x dotnet-install.sh
 ./dotnet-install.sh --channel 8.0 --install-dir "$PWD/.dotnet"
@@ -17,13 +16,22 @@ export PATH="$DOTNET_ROOT:$PATH"
 echo "Verificando versão do dotnet:"
 dotnet --version
 
+echo "Limpando diretórios de publicação antigos..."
+rm -rf bin/Release/net8.0/publish
+
 echo "Executando dotnet publish..."
-# Publica o projeto no diretório específico solicitado
 dotnet publish pwa-camera-poc-blazor.csproj -c Release -o bin/Release/net8.0/publish
 
 echo "Ajustando estrutura de arquivos para o Netlify..."
-# Move o conteúdo de wwwroot para a raiz do diretório de publicação
-# Isso garante que index.html e _framework fiquem no local esperado pelo Netlify
-cp -r bin/Release/net8.0/publish/wwwroot/* bin/Release/net8.0/publish/
+# Garante que os arquivos do framework e assets estejam na raiz do diretório de publicação
+if [ -d "bin/Release/net8.0/publish/wwwroot" ]; then
+    echo "Movendo conteúdo de wwwroot para a raiz..."
+    cp -rv bin/Release/net8.0/publish/wwwroot/* bin/Release/net8.0/publish/
+    # Opcional: remover a pasta wwwroot vazia para evitar confusão
+    # rm -rf bin/Release/net8.0/publish/wwwroot
+fi
+
+echo "Conteúdo final do diretório de publicação:"
+ls -F bin/Release/net8.0/publish/
 
 echo "Build concluído com sucesso."
