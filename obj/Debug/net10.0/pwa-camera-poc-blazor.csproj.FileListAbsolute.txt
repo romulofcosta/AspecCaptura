@@ -1,9 +1,0 @@
-C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debug\net10.0\EmbeddedAttribute.cs
-C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debug\net10.0\ValidatableTypeAttribute.cs
-C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debug\net10.0\pwa-camera-poc-blazor.csproj.AssemblyReference.cache
-C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debug\net10.0\rpswa.dswa.cache.json
-C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debug\net10.0\pwa-camera-poc-blazor.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debug\net10.0\pwa-camera-poc-blazor.AssemblyInfoInputs.cache
-C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debug\net10.0\pwa-camera-poc-blazor.AssemblyInfo.cs
-C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debug\net10.0\pwa-camera-poc-blazor.csproj.CoreCompileInputs.cache
-C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\obj\Debug\net10.0\pwa-camera-poc-blazor.MvcApplicationPartsAssemblyInfo.cache
