@@ -1,6 +1,6 @@
 [build]
   command = "bash build.sh"
-  publish = "bin/Release/net8.0/publish/wwwroot"
+  publish = "bin/Release/net8.0/publish"
 
 [[redirects]]
   from = "/*"
