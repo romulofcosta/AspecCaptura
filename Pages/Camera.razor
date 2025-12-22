@@ -151,9 +151,9 @@
         {
             await CameraService.StartCameraAsync("camera-feed", useFrontCamera);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            ToastService.ShowError("Não foi possível acessar a câmera.");
+            ToastService.ShowError(ex.Message);
         }
     }
 

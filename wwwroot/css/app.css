@@ -288,6 +288,55 @@ body {
     backdrop-filter: blur(10px);
 }
 
+.icon-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2;
+}
+
+/* View Toggle Styles */
+.view-toggle {
+    display: flex;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.25rem;
+}
+
+.view-toggle .icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+#toggle-view.grid-active .icon-grid { display: inline-flex; }
+#toggle-view.grid-active .icon-list { display: none; }
+#toggle-view.list-active .icon-grid { display: none; }
+#toggle-view.list-active .icon-list { display: inline-flex; }
+
+.view-toggle .icon-btn.active {
+    background: var(--surface-color);
+    color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Filter Button Styles */
+#filter-btn.icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--surface-elevated);
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+#filter-btn.icon-btn:hover {
+    background: var(--surface-color);
+    color: var(--primary-color);
+}
+
 /* Unused legacy styles removed (Theme Toggle & Entity Selector) */
 
 /* ===== MAIN CONTENT ===== */
@@ -1370,4 +1419,199 @@ body {
 .theme-toggle:focus-visible {
     outline: 2px solid var(--auth-input-focus);
     outline-offset: 2px;
+}
+
+/* ===== FOOTER NAVIGATION ===== */
+/* Menu inferior responsivo com botões de navegação e câmera */
+
+.app-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: var(--primary-dark);
+    /* ASPEC primary dark */
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom)) 0;
+    z-index: 200;
+    min-height: 60px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    gap: 0.5rem;
+    padding: 0 1rem;
+}
+
+.footer-btn {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
+    /* Muted white for inactive */
+    font-family: inherit;
+    font-size: 0.75rem;
+    gap: 0.25rem;
+    cursor: pointer;
+    flex: 1;
+    position: relative;
+    padding: 0.25rem;
+    transition: color 0.3s ease;
+}
+
+.footer-btn.active {
+    color: #FFFFFF;
+    /* Active white */
+}
+
+.footer-btn.active .footer-icon {
+    transform: translateY(-2px);
+    color: var(--accent-color);
+    /* Highlight icon */
+}
+
+.footer-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.footer-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
+
+.footer-btn .sync-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 16px;
+    height: 16px;
+    font-size: 0.6rem;
+    background: var(--warning-color);
+    color: #000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.icon-wrapper {
+    position: relative;
+    display: flex;
+}
+
+.footer-capture-btn {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    border: none;
+    color: white;
+    font-size: 1.75rem;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0, 102, 204, 0.4);
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0.5rem;
+    position: relative;
+    top: -16px;
+    flex: 0 0 auto;
+}
+
+.footer-capture-btn .footer-icon svg {
+    width: 32px;
+    height: 32px;
+}
+
+.footer-capture-btn::before {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.footer-capture-btn:hover {
+    transform: scale(1.06);
+    box-shadow: 0 8px 24px rgba(0, 102, 204, 0.5);
+}
+
+.footer-capture-btn:active {
+    transform: scale(0.95);
+}
+
+/* Ajustar conteúdo principal para não ser ocultado pelo footer */
+.main-content {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+/* Ajustar posição do Toast */
+.toast {
+    bottom: 90px;
+}
+
+/* ===== RESPONSIVE FOOTER ===== */
+@media (max-width: 768px) {
+    .app-footer {
+        padding: 0.25rem 0 calc(0.25rem + env(safe-area-inset-bottom)) 0;
+        min-height: 56px;
+    }
+
+    .footer-content {
+        padding: 0 0.5rem;
+        gap: 0.25rem;
+    }
+
+    .footer-btn {
+        font-size: 0.7rem;
+        gap: 0.2rem;
+        padding: 0.2rem;
+    }
+
+    .footer-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .footer-capture-btn {
+        width: 64px;
+        height: 64px;
+        top: -12px;
+        margin: 0 0.25rem;
+    }
+
+    .footer-capture-btn .footer-icon svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .main-content {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom));
+    }
+
+    .toast {
+        bottom: 80px;
+    }
 }

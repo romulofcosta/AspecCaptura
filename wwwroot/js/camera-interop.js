@@ -4,14 +4,29 @@ window.cameraInterop = {
         if (!video) return;
 
         const constraints = {
-            video: { facingMode: facingMode, width: { ideal: 1920 } }
+            video: { 
+                facingMode: facingMode,
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }
         };
         try {
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
             video.srcObject = stream;
         } catch (err) {
             console.error("Error accessing camera: ", err);
-            throw err;
+            // For iOS Safari, provide more specific error messages
+            let errorMessage = "Erro ao acessar a câmera.";
+            if (err.name === 'NotAllowedError') {
+                errorMessage = "Permissão de câmera negada. Permita o acesso à câmera nas configurações do navegador.";
+            } else if (err.name === 'NotFoundError') {
+                errorMessage = "Câmera não encontrada.";
+            } else if (err.name === 'NotSupportedError') {
+                errorMessage = "Câmera não suportada neste dispositivo.";
+            } else if (err.name === 'NotReadableError') {
+                errorMessage = "Câmera está sendo usada por outro aplicativo.";
+            }
+            throw new Error(errorMessage + " Detalhes: " + err.message);
         }
     },
     takePhoto: (videoElementId) => {
