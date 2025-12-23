@@ -1,9 +1,4 @@
-@inject AppState appState
-@implements IDisposable
-
-@if (!appState.IsCameraActive)
-{
-    <nav class="app-footer">
+<nav class="app-footer">
     <div class="footer-content">
         <button class="footer-btn @(ActiveTab == "home" ? "active" : "")"
         @onclick='() => OnTabChanged.InvokeAsync("home")'>
@@ -60,22 +55,10 @@
         </button>
     </div>
 </nav>
-}
-
 @code {
     [Parameter] public string ActiveTab { get; set; } = "home";
     [Parameter] public int PendingSyncCount { get; set; } = 0;
     [Parameter] public EventCallback<string> OnTabChanged { get; set; }
     [Parameter] public EventCallback OnCaptureClick { get; set; }
     [Parameter] public EventCallback OnExportClick { get; set; }
-
-    protected override void OnInitialized()
-    {
-        appState.OnChange += StateHasChanged;
-    }
-
-    public void Dispose()
-    {
-        appState.OnChange -= StateHasChanged;
-    }
 }

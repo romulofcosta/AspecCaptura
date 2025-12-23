@@ -78,7 +78,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (IsOpen && units.Count == 0)
+        if (IsOpen)
         {
             await LoadUserData();
         }
@@ -101,6 +101,12 @@
                 var unit = await DbService.GetAsync<Unit>("units", id);
                 if (unit != null) units.Add(unit);
             }
+        }
+        else
+        {
+            Username = "Usuário";
+            units.Clear();
+            selectedUnitId = 0;
         }
     }
 

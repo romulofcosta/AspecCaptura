@@ -138,6 +138,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        appState.IsCameraActive = true;
         currentUser = await AuthService.GetCurrentUserAsync();
     }
 
