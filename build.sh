@@ -12,10 +12,21 @@ chmod +x dotnet-install.sh
 # Configurar variáveis de ambiente para o dotnet
 export DOTNET_ROOT="$PWD/.dotnet"
 export PATH="$DOTNET_ROOT:$PATH"
+hash -r
 
-echo "=== Verificando versão do dotnet instalada ==="
+echo "=== Verificando binário dotnet em uso ==="
+which dotnet
 DOTNET_VERSION=$(dotnet --version || echo "não detectada")
 echo "Versão detectada: $DOTNET_VERSION (esperado: 8.0.416 ou compatível)"
+
+echo "=== SDKs instalados localmente ==="
+ls $DOTNET_ROOT/sdk || echo "Nenhum SDK encontrado em $DOTNET_ROOT/sdk"
+
+# Se não encontrar o SDK 8.0.416, aborta explicitamente
+if [ ! -d "$DOTNET_ROOT/sdk/8.0.416" ]; then
+    echo "Erro: SDK 8.0.416 não foi instalado corretamente."
+    exit 1
+fi
 
 echo "=== Executando dotnet restore ==="
 dotnet restore
@@ -27,11 +38,9 @@ echo "=== Executando dotnet publish ==="
 dotnet publish pwa-camera-poc-blazor.csproj -c Release -o bin/Release/net8.0/publish
 
 echo "=== Ajustando estrutura de arquivos para o Netlify ==="
-# Garante que os arquivos do framework e assets estejam na raiz do diretório de publicação
 if [ -d "bin/Release/net8.0/publish/wwwroot" ]; then
     echo "Movendo conteúdo de wwwroot para a raiz..."
     cp -rv bin/Release/net8.0/publish/wwwroot/* bin/Release/net8.0/publish/
-    # Opcional: remover a pasta wwwroot vazia para evitar confusão
     # rm -rf bin/Release/net8.0/publish/wwwroot
 fi
 
