@@ -2,9 +2,10 @@
 @inject IIndexedDbService DbService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
+@inject AppState appState
 
-<div id="menu-backdrop" class="menu-backdrop @(IsOpen ? "" : "hidden")" @onclick="Close"></div>
-<aside id="app-menu" class="app-menu @(IsOpen ? "" : "hidden")">
+<div id="menu-backdrop" class="menu-backdrop @(IsOpen && !appState.IsCameraActive ? "" : "hidden")" @onclick="Close"></div>
+<aside id="app-menu" class="app-menu @(IsOpen && !appState.IsCameraActive ? "" : "hidden")">
     <div class="menu-header">
         <div class="menu-user-info">
             <span class="user-avatar">👤</span>

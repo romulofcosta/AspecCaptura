@@ -1,16 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ComponentModel.DataAnnotations;
 
 namespace pwa_camera_poc_blazor.Models
 {
     public class InventoryItem
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
+
+        [Required(ErrorMessage = "Campo obrigatório")]
         public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Campo obrigatório")]
         public string Code { get; set; } = string.Empty;
+
         public string Category { get; set; } = "Geral";
+
+        [Required(ErrorMessage = "Campo obrigatório")]
         public string Location { get; set; } = string.Empty;
+
         public string Observations { get; set; } = string.Empty;
         public DateTime Timestamp { get; set; } = DateTime.Now;
         public bool Synced { get; set; } = false;

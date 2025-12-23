@@ -61,7 +61,7 @@
     private void HandleTabChanged(string tab)
     {
         activeTab = tab;
-        if (tab == "home") Navigation.NavigateTo("/");
+        if (tab == "home") Navigation.NavigateTo("/home");
         else if (tab == "stats") Navigation.NavigateTo("/stats");
         else if (tab == "sync") Navigation.NavigateTo("/sync");
     }

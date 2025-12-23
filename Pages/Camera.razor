@@ -58,21 +58,23 @@
 
                 <EditForm Model="@itemModel" OnValidSubmit="HandleSave" id="item-form">
                     <DataAnnotationsValidator />
+                    <ValidationSummary />
                     <div class="form-group">
                         <label for="item-name">Nome do Item *</label>
                         <InputText id="item-name" class="form-input" @bind-Value="itemModel.Name"
-                            placeholder="Ex: Cadeira de escritório" required />
+                            placeholder="Ex: Cadeira de escritório" />
+                        <ValidationMessage For="@(() => itemModel.Name)" />
                     </div>
 
                     <div class="form-group">
                         <label for="item-code">Código/ID *</label>
-                        <InputText id="item-code" class="form-input" @bind-Value="itemModel.Code" placeholder="Ex: CAD-001"
-                            required />
+                        <InputText id="item-code" class="form-input" @bind-Value="itemModel.Code" placeholder="Ex: CAD-001" />
+                        <ValidationMessage For="@(() => itemModel.Code)" />
                     </div>
 
                     <div class="form-group">
                         <label for="item-category">Categoria *</label>
-                        <select id="item-category" @bind="itemModel.Category" required>
+                        <select id="item-category" @bind="itemModel.Category">
                             <option value="">Selecione uma categoria</option>
                             <option value="Móveis">Móveis</option>
                             <option value="Eletrônicos">Eletrônicos</option>
@@ -81,12 +83,14 @@
                             <option value="Materiais">Materiais</option>
                             <option value="Outros">Outros</option>
                         </select>
+                        <ValidationMessage For="@(() => itemModel.Category)" />
                     </div>
 
                     <div class="form-group">
-                        <label for="item-location">Localização</label>
+                        <label for="item-location">Localização *</label>
                         <InputText id="item-location" class="form-input" @bind-Value="itemModel.Location"
                             placeholder="Ex: Sala 201, Prateleira A" />
+                        <ValidationMessage For="@(() => itemModel.Location)" />
                     </div>
 
                     <div class="form-group">
@@ -150,6 +154,7 @@
         try
         {
             await CameraService.StartCameraAsync("camera-feed", useFrontCamera);
+            appState.IsCameraActive = true;
         }
         catch (Exception ex)
         {
@@ -205,7 +210,7 @@
             await DbService.AddAsync("items", itemModel);
             appState.PendingSyncCount++; // Update global badge
             ToastService.ShowSuccess("Item salvo com sucesso!");
-            Navigation.NavigateTo("/");
+            Navigation.NavigateTo("/home");
         }
         catch (Exception ex)
         {
@@ -223,16 +228,17 @@
         capturedPhotos.Clear();
         itemModel = new InventoryItem();
         // Camera will restart via OnAfterRender/re-render logic if handled or explicit call
-        Navigation.NavigateTo("/"); // safer to go back for now or restart
+        Navigation.NavigateTo("/home"); // safer to go back for now or restart
     }
 
     private void CloseCamera()
     {
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("/home");
     }
 
     public async ValueTask DisposeAsync()
     {
         await CameraService.StopCameraAsync("camera-feed");
+        appState.IsCameraActive = false;
     }
 }

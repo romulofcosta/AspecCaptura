@@ -18,6 +18,20 @@ namespace pwa_camera_poc_blazor.Services
             }
         }
 
+        private bool _isCameraActive;
+        public bool IsCameraActive
+        {
+            get => _isCameraActive;
+            set
+            {
+                if (_isCameraActive != value)
+                {
+                    _isCameraActive = value;
+                    NotifyStateChanged();
+                }
+            }
+        }
+
         private int? _currentUnitId;
         public int? CurrentUnitId
         {

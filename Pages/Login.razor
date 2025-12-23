@@ -44,17 +44,20 @@
 
     <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" class="auth-form">
         <DataAnnotationsValidator />
+        <ValidationSummary />
 
         <div class="form-group">
-            <label for="login-username" class="form-label">Usuário</label>
+            <label for="login-username" class="form-label">E-mail</label>
             <InputText id="login-username" class="form-input" @bind-Value="loginModel.Username"
-                placeholder="Digite seu usuário" required />
+                placeholder="Digite seu e-mail" />
+            <ValidationMessage For="@(() => loginModel.Username)" />
         </div>
 
         <div class="form-group">
             <label for="login-password" class="form-label">Senha</label>
             <InputText type="password" id="login-password" class="form-input" @bind-Value="loginModel.Password"
-                placeholder="Digite sua senha" required />
+                placeholder="Digite sua senha" />
+            <ValidationMessage For="@(() => loginModel.Password)" />
         </div>
 
         <button type="submit" class="btn-primary @(isLoading ? "btn-loading" : "")" disabled="@isLoading">
@@ -94,7 +97,7 @@
                 alertMessage = "Login realizado com sucesso!";
                 alertType = "success";
                 await Task.Delay(1000);
-                Navigation.NavigateTo("/");
+                Navigation.NavigateTo("/home");
             }
             else
             {
@@ -104,7 +107,7 @@
         }
         catch (Exception ex)
         {
-            alertMessage = "Erro ao realizar login: " + ex.Message;
+            alertMessage = "Erro ao realizar login. Verifique suas credenciais e tente novamente.";
             alertType = "error";
         }
         finally
@@ -121,7 +124,11 @@
 
     public class LoginModel
     {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Formato de e-mail inválido")]
         public string Username { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
         public string Password { get; set; } = string.Empty;
     }
 }
