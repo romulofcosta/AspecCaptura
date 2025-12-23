@@ -5,26 +5,28 @@
 set -e
 
 echo "=== Iniciando instalação do .NET SDK 8.0.416 ==="
-curl -sSL https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh
-chmod +x dotnet-install.sh
-./dotnet-install.sh --version 8.0.416 --install-dir "$PWD/.dotnet"
+curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.416 --install-dir "$PWD/.dotnet"
 
 # Configurar variáveis de ambiente para o dotnet
 export DOTNET_ROOT="$PWD/.dotnet"
 export PATH="$DOTNET_ROOT:$PATH"
-hash -r
+
+# Limpar cache de comandos do shell
+hash -r 2>/dev/null || true
 
 echo "=== Verificando binário dotnet em uso ==="
 which dotnet
-DOTNET_VERSION=$(dotnet --version || echo "não detectada")
+DOTNET_VERSION=$(dotnet --version 2>&1 || echo "não detectada")
 echo "Versão detectada: $DOTNET_VERSION (esperado: 8.0.416 ou compatível)"
 
 echo "=== SDKs instalados localmente ==="
-ls $DOTNET_ROOT/sdk || echo "Nenhum SDK encontrado em $DOTNET_ROOT/sdk"
+ls -la "$DOTNET_ROOT/sdk" 2>/dev/null || echo "Nenhum SDK encontrado em $DOTNET_ROOT/sdk"
 
 # Se não encontrar o SDK 8.0.416, aborta explicitamente
 if [ ! -d "$DOTNET_ROOT/sdk/8.0.416" ]; then
     echo "Erro: SDK 8.0.416 não foi instalado corretamente."
+    echo "Conteúdo de $DOTNET_ROOT/sdk:"
+    ls -la "$DOTNET_ROOT/sdk" || echo "Diretório não existe"
     exit 1
 fi
 
