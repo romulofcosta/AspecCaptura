@@ -16,9 +16,22 @@ DOTNET_EXEC="$DOTNET_ROOT/dotnet"
 
 echo "=== Verificando binário dotnet em uso ==="
 echo "Caminho do dotnet local: $DOTNET_EXEC"
+
 if [ -f "$DOTNET_EXEC" ]; then
     echo "Binário encontrado!"
-    DOTNET_VERSION=$($DOTNET_EXEC --version 2>&1)
+    
+    # Verificar permissões e tipo do arquivo
+    echo "Permissões do binário:"
+    ls -lh "$DOTNET_EXEC"
+    
+    echo "Tipo do arquivo:"
+    file "$DOTNET_EXEC" || echo "Comando 'file' não disponível"
+    
+    # Adicionar permissão de execução
+    chmod +x "$DOTNET_EXEC"
+    
+    echo "Testando execução do dotnet:"
+    DOTNET_VERSION=$("$DOTNET_EXEC" --version 2>&1)
     echo "Versão detectada: $DOTNET_VERSION"
 else
     echo "ERRO: Binário dotnet não encontrado em $DOTNET_EXEC"
@@ -35,13 +48,13 @@ if [ ! -d "$DOTNET_ROOT/sdk/8.0.416" ]; then
 fi
 
 echo "=== Executando dotnet restore ==="
-$DOTNET_EXEC restore
+"$DOTNET_EXEC" restore
 
 echo "=== Limpando diretórios de publicação antigos ==="
 rm -rf bin/Release/net8.0/publish
 
 echo "=== Executando dotnet publish ==="
-$DOTNET_EXEC publish pwa-camera-poc-blazor.csproj -c Release -o bin/Release/net8.0/publish
+"$DOTNET_EXEC" publish pwa-camera-poc-blazor.csproj -c Release -o bin/Release/net8.0/publish
 
 echo "=== Ajustando estrutura de arquivos para o Netlify ==="
 if [ -d "bin/Release/net8.0/publish/wwwroot" ]; then
