@@ -1,0 +1,293 @@
+@page "/item/{Id}"
+@using pwa_camera_poc_blazor.Models
+@inject IIndexedDbService DbService
+@inject NavigationManager Navigation
+@inject CameraService CameraService
+@inject ToastService ToastService
+@inject IJSRuntime JSRuntime
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Detalhes do Item - ASPEC Capture</PageTitle>
+
+<div class="item-details">
+    @if (isLoading)
+    {
+        <div class="loading">
+            <p>Carregando item...</p>
+        </div>
+    }
+    else if (item == null)
+    {
+        <div class="error">
+            <h2>Item não encontrado</h2>
+            <p>O item solicitado não existe ou foi removido.</p>
+            <button class="btn btn-primary" @onclick="GoBack">← Voltar</button>
+        </div>
+    }
+    else
+    {
+        <!-- Cabeçalho com info do item -->
+        <div class="item-header">
+            <h2>@item.Name</h2>
+            <div class="item-meta">
+                <span class="item-code">Código: @item.Code</span>
+                <span class="item-category">@item.Category</span>
+                <span class="item-location">@item.Location</span>
+            </div>
+            <div class="item-details-extra">
+                <p><strong>Observações:</strong> @item.Observations</p>
+                <p><strong>Data de Cadastro:</strong> @item.Timestamp.ToString("dd/MM/yyyy HH:mm")</p>
+                <p><strong>Status:</strong> @(item.Synced ? "Sincronizado" : "Pendente")</p>
+                <p><strong>Unidade:</strong> @item.UnitId</p>
+            </div>
+        </div>
+
+        <!-- Galeria de fotos -->
+        <div class="photo-gallery">
+            <div class="gallery-header">
+                <h3>Fotos (@item.Photos.Count)</h3>
+                <button class="btn btn-primary" @onclick="AddPhotos">📷 Adicionar Fotos</button>
+            </div>
+            @if (item.Photos.Any())
+            {
+                <div class="photo-grid">
+                    @foreach (var (photo, index) in item.Photos.Select((p, i) => (p, i)))
+                    {
+                        <div class="photo-card">
+                            <img src="@photo" alt="Foto @(index + 1)" @onclick="() => ViewFullImage(photo)" />
+                            <button class="delete-btn" @onclick="() => ConfirmRemovePhoto(index)" title="Remover foto">🗑️</button>
+                            @if (index == 0)
+                            {
+                                <div class="cover-badge">Capa</div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="no-photos">
+                    <p>Nenhuma foto cadastrada</p>
+                </div>
+            }
+        </div>
+
+        <!-- Ações -->
+        <div class="actions">
+            <button class="btn btn-secondary" @onclick="EditItem">✏️ Editar Item</button>
+            <button class="btn btn-secondary" @onclick="GoBack">← Voltar</button>
+        </div>
+    }
+</div>
+
+<!-- Modal de câmera para adicionar fotos -->
+@if (showCameraModal)
+{
+    <div class="camera-modal-overlay" @onclick="CloseCameraModal">
+        <div class="camera-modal" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3>Adicionar Novas Fotos</h3>
+                <button class="icon-btn" @onclick="CloseCameraModal">✕</button>
+            </div>
+            <div class="camera-content">
+                <video id="detail-camera-feed" autoplay playsinline></video>
+                <div class="camera-controls">
+                    <button class="btn btn-primary" @onclick="CaptureNewPhoto">📸 Capturar</button>
+                    <button class="btn btn-secondary" @onclick="SwitchCamera">🔄 Alternar Câmera</button>
+                </div>
+                @if (newPhotos.Any())
+                {
+                    <div class="new-photos-preview">
+                        <h4>Novas fotos capturadas (@newPhotos.Count)</h4>
+                        <div class="preview-grid">
+                            @foreach (var photo in newPhotos)
+                            {
+                                <img src="@photo" alt="Nova foto" />
+                            }
+                        </div>
+                        <button class="btn btn-success" @onclick="SaveNewPhotos">💾 Salvar Fotos</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal de confirmação para remover foto -->
+@if (showDeleteConfirm)
+{
+    <div class="confirm-modal-overlay" @onclick="CancelRemovePhoto">
+        <div class="confirm-modal" @onclick:stopPropagation="true">
+            <h3>Confirmar Remoção</h3>
+            <p>Deseja realmente remover esta foto?</p>
+            <div class="confirm-actions">
+                <button class="btn btn-danger" @onclick="RemovePhoto">🗑️ Remover</button>
+                <button class="btn btn-secondary" @onclick="CancelRemovePhoto">Cancelar</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal de visualização em tela cheia -->
+@if (showFullImage)
+{
+    <div class="full-image-modal-overlay" @onclick="CloseFullImage">
+        <div class="full-image-modal" @onclick:stopPropagation="true">
+            <button class="close-full-image" @onclick="CloseFullImage">✕</button>
+            <img src="@fullImageSrc" alt="Imagem em tela cheia" />
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Id { get; set; } = string.Empty;
+    private InventoryItem? item;
+    private bool isLoading = true;
+    private bool showCameraModal = false;
+    private bool useFrontCamera = false;
+    private List<string> newPhotos = new();
+    private bool showDeleteConfirm = false;
+    private int photoToRemove = -1;
+    private bool showFullImage = false;
+    private string fullImageSrc = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadItem();
+    }
+
+    private async Task LoadItem()
+    {
+        isLoading = true;
+        try
+        {
+            item = await DbService.GetAsync<InventoryItem>("items", Id);
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError("Erro ao carregar item: " + ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task AddPhotos()
+    {
+        showCameraModal = true;
+        newPhotos.Clear();
+        StateHasChanged();
+        await CameraService.StartCameraAsync("detail-camera-feed", useFrontCamera);
+    }
+
+    private async Task SwitchCamera()
+    {
+        useFrontCamera = !useFrontCamera;
+        await CameraService.StopCameraAsync("detail-camera-feed");
+        await CameraService.StartCameraAsync("detail-camera-feed", useFrontCamera);
+    }
+
+    private async Task CaptureNewPhoto()
+    {
+        try
+        {
+            var photo = await CameraService.TakePhotoAsync("detail-camera-feed");
+            if (!string.IsNullOrEmpty(photo))
+            {
+                newPhotos.Add(photo);
+                ToastService.ShowSuccess("Foto capturada!");
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError("Erro ao capturar foto: " + ex.Message);
+        }
+    }
+
+    private async Task SaveNewPhotos()
+    {
+        if (item == null || !newPhotos.Any()) return;
+
+        try
+        {
+            item.Photos.AddRange(newPhotos);
+            await DbService.UpdateAsync("items", item);
+            await CloseCameraModal();
+            ToastService.ShowSuccess($"{newPhotos.Count} foto(s) adicionada(s) com sucesso!");
+            newPhotos.Clear();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError("Erro ao salvar fotos: " + ex.Message);
+        }
+    }
+
+    private void ConfirmRemovePhoto(int index)
+    {
+        photoToRemove = index;
+        showDeleteConfirm = true;
+    }
+
+    private async Task RemovePhoto()
+    {
+        if (item == null || photoToRemove < 0 || photoToRemove >= item.Photos.Count) return;
+
+        try
+        {
+            item.Photos.RemoveAt(photoToRemove);
+            await DbService.UpdateAsync("items", item);
+            showDeleteConfirm = false;
+            photoToRemove = -1;
+            ToastService.ShowSuccess("Foto removida com sucesso!");
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError("Erro ao remover foto: " + ex.Message);
+        }
+    }
+
+    private void CancelRemovePhoto()
+    {
+        showDeleteConfirm = false;
+        photoToRemove = -1;
+    }
+
+    private void ViewFullImage(string photo)
+    {
+        fullImageSrc = photo;
+        showFullImage = true;
+    }
+
+    private void CloseFullImage()
+    {
+        showFullImage = false;
+        fullImageSrc = string.Empty;
+    }
+
+    private async Task CloseCameraModal()
+    {
+        await CameraService.StopCameraAsync("detail-camera-feed");
+        showCameraModal = false;
+        newPhotos.Clear();
+        StateHasChanged();
+    }
+
+    private void EditItem()
+    {
+        // TODO: Implementar edição de metadados
+        ToastService.Show("Funcionalidade de edição em desenvolvimento", "info");
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/home");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await CameraService.StopCameraAsync("detail-camera-feed");
+    }
+}

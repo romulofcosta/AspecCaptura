@@ -1615,3 +1615,331 @@ body {
         bottom: 80px;
     }
 }
+
+/* ===== ITEM DETAILS PAGE ===== */
+
+.item-details {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.item-header {
+    background: var(--surface-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-md);
+}
+
+.item-header h2 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+}
+
+.item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.item-meta span {
+    background: var(--bg-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.item-details-extra p {
+    margin: 0.5rem 0;
+    color: var(--text-secondary);
+}
+
+.photo-gallery {
+    background: var(--surface-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-md);
+}
+
+.gallery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.gallery-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.photo-card {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-normal);
+}
+
+.photo-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.photo-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.delete-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(220, 53, 69, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 2rem;
+    height: 2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+    transition: background var(--transition-fast);
+}
+
+.delete-btn:hover {
+    background: rgba(220, 53, 69, 1);
+}
+
+.cover-badge {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    background: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.no-photos {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-tertiary);
+}
+
+.actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Modal Overlays */
+.camera-modal-overlay,
+.confirm-modal-overlay,
+.full-image-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.camera-modal,
+.confirm-modal {
+    background: var(--surface-color);
+    border-radius: 12px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.camera-content {
+    padding: 1.5rem;
+}
+
+.camera-content video {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.camera-controls {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.new-photos-preview {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.new-photos-preview h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.preview-grid img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.confirm-modal {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.confirm-modal h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+}
+
+.confirm-modal p {
+    margin: 0 0 1.5rem 0;
+    color: var(--text-secondary);
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.full-image-modal {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+.full-image-modal img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.close-full-image {
+    position: absolute;
+    top: -0.5rem;
+    right: -0.5rem;
+    background: var(--surface-color);
+    border: none;
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-md);
+    color: var(--text-primary);
+    font-size: 1.25rem;
+}
+
+.loading, .error {
+    text-align: center;
+    padding: 3rem;
+}
+
+.error h2 {
+    color: var(--danger-color);
+    margin-bottom: 1rem;
+}
+
+.error p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .item-details {
+        padding: 0.5rem;
+    }
+
+    .item-header {
+        padding: 1rem;
+    }
+
+    .photo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .photo-card img {
+        height: 150px;
+    }
+
+    .gallery-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .actions {
+        flex-direction: column;
+    }
+
+    .camera-modal-overlay,
+    .confirm-modal-overlay,
+    .full-image-modal-overlay {
+        padding: 0.5rem;
+    }
+
+    .camera-modal,
+    .confirm-modal {
+        margin: auto;
+    }
+
+    .camera-controls {
+        flex-direction: column;
+    }
+
+    .confirm-actions {
+        flex-direction: column;
+    }
+}

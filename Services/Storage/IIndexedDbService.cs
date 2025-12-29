@@ -7,7 +7,9 @@ namespace pwa_camera_poc_blazor.Services.Storage
     public interface IIndexedDbService
     {
         // Inicialização
+        Task InitializeAsync();
         Task InitAsync();
+        bool IsInitialized { get; }
 
         // Operações Genéricas
         Task<T> GetAsync<T>(string storeName, object key);

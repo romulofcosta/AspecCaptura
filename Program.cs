@@ -25,4 +25,18 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 
-await builder.Build().RunAsync();
+var host = builder.Build();
+
+try
+{
+    var dbService = host.Services.GetRequiredService<IIndexedDbService>();
+    await dbService.InitializeAsync();
+    Console.WriteLine("IndexedDB initialized successfully.");
+}
+catch (Exception ex)
+{
+    Console.Error.WriteLine($"Failed to initialize IndexedDB: {ex.Message}");
+    // Continue running the app even if DB fails
+}
+
+await host.RunAsync();

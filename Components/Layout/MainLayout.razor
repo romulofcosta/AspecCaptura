@@ -36,19 +36,42 @@
         ToastService.OnShow += ShowToast;
         appState.OnChange += StateHasChanged;
 
-        await UpdateSyncCount();
-
-        var user = await AuthService.GetCurrentUserAsync();
-        if (user != null)
+        try
         {
-            appState.CurrentUnitId = user.CurrentUnitId;
+            await UpdateSyncCount();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error updating sync count: {ex.Message}");
+            appState.PendingSyncCount = 0;
+        }
+
+        try
+        {
+            var user = await AuthService.GetCurrentUserAsync();
+            if (user != null)
+            {
+                appState.CurrentUnitId = user.CurrentUnitId;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error getting current user: {ex.Message}");
         }
     }
 
     private async Task UpdateSyncCount()
     {
-        var items = await DbService.GetAllAsync<InventoryItem>("items");
-        appState.PendingSyncCount = items.Count(i => !i.Synced);
+        try
+        {
+            var items = await DbService.GetAllAsync<InventoryItem>("items");
+            appState.PendingSyncCount = items.Count(i => !i.Synced);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error getting items for sync count: {ex.Message}");
+            appState.PendingSyncCount = 0;
+        }
     }
 
     private void ToggleMenu()

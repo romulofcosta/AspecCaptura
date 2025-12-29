@@ -78,6 +78,10 @@ window.dbInterop = {
 
     get: async function (storeName, key) {
         return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized. Call init first.'));
+                return;
+            }
             const transaction = this.db.transaction([storeName], 'readonly');
             const store = transaction.objectStore(storeName);
             const request = store.get(key);
@@ -88,6 +92,10 @@ window.dbInterop = {
 
     getAll: async function (storeName) {
         return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized. Call init first.'));
+                return;
+            }
             const transaction = this.db.transaction([storeName], 'readonly');
             const store = transaction.objectStore(storeName);
             const request = store.getAll();
@@ -98,6 +106,10 @@ window.dbInterop = {
 
     add: async function (storeName, item) {
         return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized. Call init first.'));
+                return;
+            }
             const transaction = this.db.transaction([storeName], 'readwrite');
             const store = transaction.objectStore(storeName);
             // .put allows updating or adding (upsert). .add enforces new key if key is provided.
@@ -109,11 +121,21 @@ window.dbInterop = {
     },
 
     update: async function (storeName, item) {
-        return this.add(storeName, item); // Same as put
+        return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized. Call init first.'));
+                return;
+            }
+            return this.add(storeName, item); // Same as put
+        });
     },
 
     delete: async function (storeName, key) {
         return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized. Call init first.'));
+                return;
+            }
             const transaction = this.db.transaction([storeName], 'readwrite');
             const store = transaction.objectStore(storeName);
             const request = store.delete(key);
@@ -124,6 +146,10 @@ window.dbInterop = {
 
     getFromIndex: async function (storeName, indexName, value) {
         return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized. Call init first.'));
+                return;
+            }
             const transaction = this.db.transaction([storeName], 'readonly');
             const store = transaction.objectStore(storeName);
             const index = store.index(indexName);
@@ -135,6 +161,10 @@ window.dbInterop = {
 
     getAllFromIndex: async function (storeName, indexName, value) {
         return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized. Call init first.'));
+                return;
+            }
             const transaction = this.db.transaction([storeName], 'readonly');
             const store = transaction.objectStore(storeName);
             const index = store.index(indexName);
@@ -146,6 +176,10 @@ window.dbInterop = {
 
     getItemsByUnit: async function (unitId) {
         return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized. Call init first.'));
+                return;
+            }
             const transaction = this.db.transaction(['items'], 'readonly');
             const store = transaction.objectStore('items');
             const index = store.index('unitId');
@@ -154,5 +188,9 @@ window.dbInterop = {
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
         });
+    },
+
+    isInitialized: function () {
+        return this.db !== null;
     }
 };

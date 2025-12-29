@@ -106,7 +106,7 @@
         <div id="gallery-grid" class="gallery-grid @(viewMode == "list" ? "list-view" : "")">
             @foreach (var item in pagedItems)
             {
-                <ItemCard Item="item" OnView="() => OpenModal(item)" />
+                <ItemCard Item="item" OnView="() => NavigateToItem(item.Id)" />
             }
         </div>
 
@@ -124,7 +124,7 @@
     }
 </div>
 
-<ItemModal IsOpen="isModalOpen" Item="selectedItem" OnClose="CloseModal" OnDelete="HandleDelete" OnEdit="HandleEdit" />
+
 
 @code {
     private List<InventoryItem> items = new();
@@ -138,10 +138,6 @@
     // Pagination
     private int currentPage = 1;
     private int pageSize = 12;
-
-    // Modal
-    private bool isModalOpen = false;
-    private InventoryItem? selectedItem;
 
     private readonly string[] categories = { "Todas", "Móveis", "Eletrônicos", "Equipamentos", "Ferramentas", "Materiais",
 "Outros" };
@@ -241,30 +237,9 @@
     private void PrevPage() { if (currentPage > 1) currentPage--; }
     private void NextPage() { if (currentPage < totalPages) currentPage++; }
 
-    private void OpenModal(InventoryItem item)
+    private void NavigateToItem(string itemId)
     {
-        selectedItem = item;
-        isModalOpen = true;
-    }
-
-    private void CloseModal()
-    {
-        isModalOpen = false;
-        selectedItem = null;
-    }
-
-    private async Task HandleDelete(InventoryItem item)
-    {
-        await DbService.DeleteAsync("items", item.Id);
-        items.Remove(item);
-        CloseModal();
-    }
-
-    private void HandleEdit(InventoryItem item)
-    {
-        // For now, redirect to a camera/form page in edit mode?
-        // Navigation.NavigateTo($"/edit/{item.Id}");
-        CloseModal();
+        Navigation.NavigateTo($"/item/{itemId}");
     }
 
     public void Dispose()
