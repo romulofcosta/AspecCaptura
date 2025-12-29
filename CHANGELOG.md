@@ -28,10 +28,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/spec/v2.0.
   - Commit: 13b62c2
   - Impacto: Melhoria na experiência de login.
 
-### Technical
-- Instalação do pacote NuGet Microsoft.Fast.Components.FluentUI.
-- Configuração dos serviços Fluent UI no Program.cs.
-- Adição de imports e links CSS no projeto.
-- Data: 29/12/2025
-- Commit: 13b62c2
-- Impacto: Dependência adicionada, setup inicial para UI moderna.
+### Fixed
+- Erros de compilação após integração do Fluent UI.
+  - Adicionado parâmetros de tipo genérico `TOption="string"` aos componentes `FluentSelect` e `FluentOption`.
+  - Qualificado referências ao `ToastService` para evitar ambiguidade com o `ToastService` do Fluent UI.
+  - Corrigido binding do `FluentSelect` de `@bind-Value:after` para `@onchange`.
+  - Alterado `Appearance.Secondary` para `Appearance.Outline` nos botões de paginação.
+  - Data: 29/12/2025
+  - Commit: (próximo commit)
+  - Impacto: Build funcionando corretamente, aplicação executável.
