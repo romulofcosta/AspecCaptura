@@ -19,6 +19,7 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 ## Stack Tecnológica
 
 - **Frontend**: Blazor WebAssembly (.NET 8)
+- **UI Framework**: Fluent UI Blazor (Microsoft) - para componentes modernos e acessíveis
 - **Linguagens**: C#, HTML, CSS, JavaScript
 - **Armazenamento**: IndexedDB (para inventário), localStorage (para autenticação)
 - **PWA**: Service Worker, Manifest JSON
@@ -54,6 +55,14 @@ pwa-camera-poc-blazor/
 
 - .NET 8 SDK
 - Navegador moderno com suporte a PWA (Chrome, Edge, etc.)
+
+### Dependências
+
+O projeto utiliza as seguintes bibliotecas principais:
+
+- **Microsoft.Fast.Components.FluentUI**: Biblioteca de componentes UI da Microsoft para Blazor, fornecendo componentes modernos, acessíveis e consistentes com o design Fluent.
+  - Instalação: Incluído via NuGet (`Microsoft.Fast.Components.FluentUI`)
+  - Motivo: Melhorar a interface do usuário com componentes padronizados, acessíveis e responsivos.
 
 ### Passos
 

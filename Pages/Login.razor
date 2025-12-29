@@ -6,7 +6,7 @@
 
 <PageTitle>Login - ASPEC Inventory</PageTitle>
 
-<button class="theme-toggle" @onclick="ToggleTheme" aria-label="Alternar tema">
+<FluentButton Class="theme-toggle" @onclick="ToggleTheme" aria-label="Alternar tema">
     <span>
         @if (isDarkMode)
         {
@@ -23,7 +23,7 @@
             </svg>
         }
     </span>
-</button>
+</FluentButton>
 
 <div class="auth-card">
     <div class="auth-header">
@@ -47,22 +47,22 @@
         <ValidationSummary />
 
         <div class="form-group">
-            <label for="login-username" class="form-label">E-mail</label>
-            <InputText id="login-username" class="form-input" @bind-Value="loginModel.Username"
-                placeholder="Digite seu e-mail" />
+            <FluentLabel For="login-username">E-mail</FluentLabel>
+            <FluentTextField Id="login-username" @bind-Value="loginModel.Username"
+                Placeholder="Digite seu e-mail" />
             <ValidationMessage For="@(() => loginModel.Username)" />
         </div>
 
         <div class="form-group">
-            <label for="login-password" class="form-label">Senha</label>
-            <InputText type="password" id="login-password" class="form-input" @bind-Value="loginModel.Password"
-                placeholder="Digite sua senha" />
+            <FluentLabel For="login-password">Senha</FluentLabel>
+            <FluentTextField Type="TextFieldType.Password" Id="login-password" @bind-Value="loginModel.Password"
+                Placeholder="Digite sua senha" />
             <ValidationMessage For="@(() => loginModel.Password)" />
         </div>
 
-        <button type="submit" class="btn-primary @(isLoading ? "btn-loading" : "")" disabled="@isLoading">
-            @(isLoading ? "" : "Entrar")
-        </button>
+        <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Disabled="@isLoading">
+            @(isLoading ? "Entrando..." : "Entrar")
+        </FluentButton>
     </EditForm>
 
     <div class="auth-toggle">

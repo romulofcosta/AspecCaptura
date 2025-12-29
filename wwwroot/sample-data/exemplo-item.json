@@ -1,0 +1,13 @@
+{
+  "Id": "exemplo-001",
+  "Name": "Mesa de Escritório",
+  "Code": "MES-001",
+  "Category": "mobiliário",
+  "Location": "Prédio A, Sala 101",
+  "Observations": "Mesa de madeira para escritório, em bom estado",
+  "Status": "ativo",
+  "Timestamp": "2025-12-29T00:00:00Z",
+  "Synced": false,
+  "UnitId": null,
+  "Photos": []
+}

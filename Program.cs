@@ -7,6 +7,7 @@ using pwa_camera_poc_blazor.Services;
 using pwa_camera_poc_blazor.Services.Auth;
 using pwa_camera_poc_blazor.Services.Camera;
 using pwa_camera_poc_blazor.Services.Storage;
+using Microsoft.Fast.Components.FluentUI;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -20,6 +21,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<CameraService>();
 builder.Services.AddScoped<ToastService>();
 builder.Services.AddScoped<AppState>();
+
+builder.Services.AddFluentUIComponents();
 
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();

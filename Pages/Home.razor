@@ -4,6 +4,7 @@
 @inject IIndexedDbService DbService
 @inject NavigationManager Navigation
 @inject AppState appState
+@inject HttpClient HttpClient
 @implements IDisposable
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
@@ -17,28 +18,28 @@
                     <circle cx="11" cy="11" r="7" />
                     <path d="M21 21l-4.3-4.3" />
                 </svg></span>
-            <input type="text" id="search-input" placeholder="Buscar por nome, código ou categoria..."
-                @bind="searchQuery" @bind:event="oninput">
+            <FluentSearch Placeholder="Buscar por nome, código ou categoria..." @bind-Value="searchQuery" />
             @if (!string.IsNullOrEmpty(searchQuery))
             {
-                <button id="clear-search-btn" class="clear-btn" @onclick="ClearSearch" aria-label="Limpar busca"><svg
-                        viewBox="0 0 24 24" aria-hidden="true">
+                <FluentButton Appearance="Appearance.Stealth" @onclick="ClearSearch" aria-label="Limpar busca">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M18 6L6 18" />
                         <path d="M6 6l12 12" />
-                    </svg></button>
+                    </svg>
+                </FluentButton>
             }
         </div>
 
         <div id="search-controls" class="search-controls">
-            <button id="filter-btn" class="icon-btn @(showFilters ? "active" : "")" @onclick="ToggleFilters"
+            <FluentButton Appearance="@(showFilters ? Appearance.Accent : Appearance.Stealth)" @onclick="ToggleFilters"
                 aria-label="Filtros" title="Filtros">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
-            </button>
+            </FluentButton>
             <div class="view-toggle">
-                <button id="toggle-view" class="icon-btn @(viewMode == "grid" ? "grid-active" : "list-active")"
-                @onclick="ToggleViewMode" aria-label="Alternar Visualização" title="Alternar Visualização">
+                <FluentButton Appearance="@(viewMode == "grid" ? Appearance.Accent : Appearance.Stealth)"
+                    @onclick="ToggleViewMode" aria-label="Alternar Visualização" title="Alternar Visualização">
                     @if (viewMode == "grid")
                     {
                         <span class="icon-grid">
@@ -58,7 +59,7 @@
                             </svg>
                         </span>
                     }
-                </button>
+                </FluentButton>
             </div>
         </div>
     </div>
@@ -66,24 +67,24 @@
     <!-- Filter Panel -->
     <div id="filter-panel" class="filter-panel @(showFilters ? "" : "hidden")">
         <div class="filter-group">
-            <label>Categoria:</label>
+            <FluentLabel>Categoria:</FluentLabel>
             <div class="filter-chips">
                 @foreach (var category in categories)
                 {
-                    <button class="chip @(selectedCategory == category ? "active" : "")"
-                    @onclick="() => SelectCategory(category)">@category</button>
+                    <FluentButton Appearance="@(selectedCategory == category ? Appearance.Accent : Appearance.Stealth)"
+                        @onclick="() => SelectCategory(category)">@category</FluentButton>
                 }
             </div>
         </div>
         <div class="filter-group">
-            <label>Ordenar por:</label>
-            <select id="sort-select" @onchange="OnSortChanged">
-                <option value="newest">Mais recentes</option>
-                <option value="oldest">Mais antigos</option>
-                <option value="name-asc">Nome (A-Z)</option>
-                <option value="name-desc">Nome (Z-A)</option>
-                <option value="code-asc">Código (A-Z)</option>
-            </select>
+            <FluentLabel>Ordenar por:</FluentLabel>
+            <FluentSelect @bind-Value="sortOrder" @bind-Value:after="OnSortChanged">
+                <FluentOption Value="newest">Mais recentes</FluentOption>
+                <FluentOption Value="oldest">Mais antigos</FluentOption>
+                <FluentOption Value="name-asc">Nome (A-Z)</FluentOption>
+                <FluentOption Value="name-desc">Nome (Z-A)</FluentOption>
+                <FluentOption Value="code-asc">Código (A-Z)</FluentOption>
+            </FluentSelect>
         </div>
     </div>
 
@@ -114,11 +115,9 @@
         @if (totalPages > 1)
         {
             <div id="pagination" class="pagination">
-                <button id="prev-page-btn" class="btn btn-secondary" disabled="@(currentPage == 1)" @onclick="PrevPage">←
-                    Anterior</button>
+                <FluentButton Appearance="Appearance.Secondary" Disabled="@(currentPage == 1)" @onclick="PrevPage">← Anterior</FluentButton>
                 <span id="page-info" class="page-info">Página @currentPage de @totalPages</span>
-                <button id="next-page-btn" class="btn btn-secondary" disabled="@(currentPage == totalPages)"
-                @onclick="NextPage">Próxima →</button>
+                <FluentButton Appearance="Appearance.Secondary" Disabled="@(currentPage == totalPages)" @onclick="NextPage">Próxima →</FluentButton>
             </div>
         }
     }
@@ -166,6 +165,13 @@
             if (user?.CurrentUnitId != null)
             {
                 items = await DbService.GetItemsByUnitAsync(user.CurrentUnitId.Value);
+
+                // If no items, load example item
+                if (!items.Any())
+                {
+                    await LoadExampleItem(user.CurrentUnitId.Value);
+                    items = await DbService.GetItemsByUnitAsync(user.CurrentUnitId.Value);
+                }
             }
             else
             {
@@ -179,6 +185,24 @@
         finally
         {
             isLoading = false;
+        }
+    }
+
+    private async Task LoadExampleItem(int unitId)
+    {
+        try
+        {
+            var json = await HttpClient.GetStringAsync("sample-data/exemplo-item.json");
+            var exampleItem = System.Text.Json.JsonSerializer.Deserialize<InventoryItem>(json);
+            if (exampleItem != null)
+            {
+                exampleItem.UnitId = unitId;
+                await DbService.AddAsync("items", exampleItem);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error loading example item: " + ex.Message);
         }
     }
 

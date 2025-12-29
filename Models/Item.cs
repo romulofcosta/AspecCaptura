@@ -21,6 +21,7 @@ namespace pwa_camera_poc_blazor.Models
         public string Location { get; set; } = string.Empty;
 
         public string Observations { get; set; } = string.Empty;
+        public string Status { get; set; } = "ativo";
         public DateTime Timestamp { get; set; } = DateTime.Now;
         public bool Synced { get; set; } = false;
         public int? UnitId { get; set; }
