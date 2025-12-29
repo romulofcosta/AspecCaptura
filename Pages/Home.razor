@@ -78,12 +78,12 @@
         </div>
         <div class="filter-group">
             <FluentLabel>Ordenar por:</FluentLabel>
-            <FluentSelect @bind-Value="sortOrder" @bind-Value:after="OnSortChanged">
-                <FluentOption Value="newest">Mais recentes</FluentOption>
-                <FluentOption Value="oldest">Mais antigos</FluentOption>
-                <FluentOption Value="name-asc">Nome (A-Z)</FluentOption>
-                <FluentOption Value="name-desc">Nome (Z-A)</FluentOption>
-                <FluentOption Value="code-asc">Código (A-Z)</FluentOption>
+            <FluentSelect TOption="string" @bind-Value="sortOrder" @onchange="OnSortChanged">
+                <FluentOption TOption="string" Value="newest">Mais recentes</FluentOption>
+                <FluentOption TOption="string" Value="oldest">Mais antigos</FluentOption>
+                <FluentOption TOption="string" Value="name-asc">Nome (A-Z)</FluentOption>
+                <FluentOption TOption="string" Value="name-desc">Nome (Z-A)</FluentOption>
+                <FluentOption TOption="string" Value="code-asc">Código (A-Z)</FluentOption>
             </FluentSelect>
         </div>
     </div>
@@ -115,9 +115,9 @@
         @if (totalPages > 1)
         {
             <div id="pagination" class="pagination">
-                <FluentButton Appearance="Appearance.Secondary" Disabled="@(currentPage == 1)" @onclick="PrevPage">← Anterior</FluentButton>
+                <FluentButton Appearance="Appearance.Outline" Disabled="@(currentPage == 1)" @onclick="PrevPage">← Anterior</FluentButton>
                 <span id="page-info" class="page-info">Página @currentPage de @totalPages</span>
-                <FluentButton Appearance="Appearance.Secondary" Disabled="@(currentPage == totalPages)" @onclick="NextPage">Próxima →</FluentButton>
+                <FluentButton Appearance="Appearance.Outline" Disabled="@(currentPage == totalPages)" @onclick="NextPage">Próxima →</FluentButton>
             </div>
         }
     }
