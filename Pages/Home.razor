@@ -10,118 +10,100 @@
 
 <PageTitle>Inventário - ASPEC Capture</PageTitle>
 
-<div id="inventory-section" class="inventory-section">
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 pb-16">
     <!-- Search and Filter Bar -->
-    <div class="search-bar">
-        <div class="search-input-wrapper">
-            <span class="search-icon"><svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="11" cy="11" r="7" />
-                    <path d="M21 21l-4.3-4.3" />
-                </svg></span>
-            <FluentSearch Placeholder="Buscar por nome, código ou categoria..." @bind-Value="searchQuery" />
-            @if (!string.IsNullOrEmpty(searchQuery))
-            {
-                <FluentButton Appearance="Appearance.Stealth" @onclick="ClearSearch" aria-label="Limpar busca">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M18 6L6 18" />
-                        <path d="M6 6l12 12" />
-                    </svg>
-                </FluentButton>
-            }
-        </div>
+    <MudPaper Elevation="0" Class="d-flex gap-2 align-center pa-2 mb-4 mud-background-gray rounded-lg">
+        <MudTextField @bind-Value="searchQuery" Label="Buscar" Placeholder="Buscar por nome, código ou categoria..."
+            Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined"
+            Class="flex-grow-1 label-fix" Clearable="true" OnClearButtonClick="ClearSearch" Margin="Margin.Dense"
+            UserAttributes="@(new Dictionary<string, object> { { "id", "search-input" } })" />
 
-        <div id="search-controls" class="search-controls">
-            <FluentButton Appearance="@(showFilters ? Appearance.Accent : Appearance.Stealth)" @onclick="ToggleFilters"
-                aria-label="Filtros" title="Filtros">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                </svg>
-            </FluentButton>
-            <div class="view-toggle">
-                <FluentButton Appearance="@(viewMode == "grid" ? Appearance.Accent : Appearance.Stealth)"
-                    @onclick="ToggleViewMode" aria-label="Alternar Visualização" title="Alternar Visualização">
-                    @if (viewMode == "grid")
-                    {
-                        <span class="icon-grid">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <rect x="3" y="3" width="8" height="8" rx="1" />
-                                <rect x="13" y="3" width="8" height="8" rx="1" />
-                                <rect x="3" y="13" width="8" height="8" rx="1" />
-                                <rect x="13" y="13" width="8" height="8" rx="1" />
-                            </svg>
-                        </span>
-                    }
-                    else
-                    {
-                        <span class="icon-list">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </span>
-                    }
-                </FluentButton>
-            </div>
+        <div class="d-flex gap-2">
+            <MudIconButton Icon="@Icons.Material.Filled.FilterList"
+                Color="@(showFilters ? Color.Primary : Color.Default)" OnClick="ToggleFilters" AriaLabel="Filtros" />
+
+            <MudIconButton
+                Icon="@(viewMode == "grid" ? Icons.Material.Filled.GridView : Icons.Material.Filled.ViewList)"
+                Color="@(viewMode == "grid" ? Color.Primary : Color.Default)" OnClick="ToggleViewMode"
+                AriaLabel="Alternar Visualização" />
         </div>
-    </div>
+    </MudPaper>
 
     <!-- Filter Panel -->
-    <div id="filter-panel" class="filter-panel @(showFilters ? "" : "hidden")">
-        <div class="filter-group">
-            <FluentLabel>Categoria:</FluentLabel>
-            <div class="filter-chips">
-                @foreach (var category in categories)
-                {
-                    <FluentButton Appearance="@(selectedCategory == category ? Appearance.Accent : Appearance.Stealth)"
-                        @onclick="() => SelectCategory(category)">@category</FluentButton>
-                }
-            </div>
-        </div>
-        <div class="filter-group">
-            <FluentLabel>Ordenar por:</FluentLabel>
-            <FluentSelect TOption="string" @bind-Value="sortOrder" @onchange="OnSortChanged">
-                <FluentOption TOption="string" Value="newest">Mais recentes</FluentOption>
-                <FluentOption TOption="string" Value="oldest">Mais antigos</FluentOption>
-                <FluentOption TOption="string" Value="name-asc">Nome (A-Z)</FluentOption>
-                <FluentOption TOption="string" Value="name-desc">Nome (Z-A)</FluentOption>
-                <FluentOption TOption="string" Value="code-asc">Código (A-Z)</FluentOption>
-            </FluentSelect>
-        </div>
-    </div>
+    @if (showFilters)
+    {
+        <MudPaper Class="pa-4 mb-4" Elevation="2">
+            <MudGrid>
+                <MudItem xs="12" md="8">
+                    <MudText Typo="Typo.subtitle2" Class="mb-2">Categoria:</MudText>
+                    <div class="d-flex gap-2 flex-wrap">
+                        @foreach (var category in categories)
+                        {
+                            <MudChip T="string" Color="@(selectedCategory == category ? Color.Primary : Color.Default)"
+                                OnClick="() => SelectCategory(category)"
+                                Variant="@(selectedCategory == category ? Variant.Filled : Variant.Outlined)">
+                                @category
+                            </MudChip>
+                        }
+                    </div>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudSelect T="string" @bind-Value="SortOrderProperty" Label="Ordenar por" Variant="Variant.Outlined"
+                        AnchorOrigin="Origin.BottomCenter" Margin="Margin.Dense"
+                        UserAttributes="@(new Dictionary<string, object> { { "id", "sort-select" } })">
+                        <MudSelectItem Value="@("newest")">Mais recentes</MudSelectItem>
+                        <MudSelectItem Value="@("oldest")">Mais antigos</MudSelectItem>
+                        <MudSelectItem Value="@("name-asc")">Nome (A-Z)</MudSelectItem>
+                        <MudSelectItem Value="@("name-desc")">Nome (Z-A)</MudSelectItem>
+                        <MudSelectItem Value="@("code-asc")">Código (A-Z)</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    }
 
     @if (isLoading)
     {
-        <div class="loading-state">Carregando itens...</div>
+        <div class="d-flex justify-center my-16">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
     }
     else if (!filteredItems.Any())
     {
         <!-- Empty State -->
-        <div id="empty-state" class="empty-state">
-            <div class="empty-icon">📸</div>
-            <h3>Nenhum item no inventário</h3>
-            <p>Comece capturando fotos dos itens que deseja inventariar</p>
+        <div class="d-flex flex-column align-center my-16">
+            <MudIcon Icon="@Icons.Material.Filled.CameraAlt" Size="Size.Large" Color="Color.Default"
+                Style="font-size: 6rem; opacity: 0.3;" />
+            <MudText Typo="Typo.h5" Class="mt-4">Nenhum item encontrado</MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Tente mudar os filtros ou capture novos itens.</MudText>
         </div>
     }
     else
     {
         <!-- Gallery Grid/List -->
-        <div id="gallery-grid" class="gallery-grid @(viewMode == "list" ? "list-view" : "")">
+        <MudGrid Spacing="3">
             @foreach (var item in pagedItems)
             {
-                <ItemCard Item="item" OnView="() => NavigateToItem(item.Id)" />
+                <MudItem xs="12" sm="@(viewMode == "list" ? 12 : 6)" md="@(viewMode == "list" ? 12 : 4)"
+                    lg="@(viewMode == "list" ? 12 : 3)">
+                    <ItemCard Item="item" OnView="NavigateToItemCallback" IsListView="@(viewMode == "list")" />
+                </MudItem>
             }
-        </div>
+        </MudGrid>
 
         <!-- Pagination -->
         @if (totalPages > 1)
         {
-            <div id="pagination" class="pagination">
-                <FluentButton Appearance="Appearance.Outline" Disabled="@(currentPage == 1)" @onclick="PrevPage">← Anterior</FluentButton>
-                <span id="page-info" class="page-info">Página @currentPage de @totalPages</span>
-                <FluentButton Appearance="Appearance.Outline" Disabled="@(currentPage == totalPages)" @onclick="NextPage">Próxima →</FluentButton>
+            <div class="d-flex justify-center align-center gap-4 my-8">
+                <MudButton Variant="Variant.Outlined" Disabled="@(currentPage == 1)" OnClick="PrevPage"
+                    StartIcon="@Icons.Material.Filled.ChevronLeft">Anterior</MudButton>
+                <MudText>Página @currentPage de @totalPages</MudText>
+                <MudButton Variant="Variant.Outlined" Disabled="@(currentPage == totalPages)" OnClick="NextPage"
+                    EndIcon="@Icons.Material.Filled.ChevronRight">Próxima</MudButton>
             </div>
         }
     }
-</div>
+</MudContainer>
 
 
 
@@ -140,6 +122,20 @@
 
     private readonly string[] categories = { "Todas", "Móveis", "Eletrônicos", "Equipamentos", "Ferramentas", "Materiais",
 "Outros" };
+
+    // Property binding for Sort Order to handle page reset
+    private string SortOrderProperty
+    {
+        get => sortOrder;
+        set
+        {
+            if (sortOrder != value)
+            {
+                sortOrder = value;
+                currentPage = 1;
+            }
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -216,12 +212,6 @@
         currentPage = 1;
     }
 
-    private void OnSortChanged(ChangeEventArgs e)
-    {
-        sortOrder = e.Value?.ToString() ?? "newest";
-        currentPage = 1;
-    }
-
     private IEnumerable<InventoryItem> filteredItems
     {
         get
@@ -261,9 +251,9 @@
     private void PrevPage() { if (currentPage > 1) currentPage--; }
     private void NextPage() { if (currentPage < totalPages) currentPage++; }
 
-    private void NavigateToItem(string itemId)
+    private void NavigateToItemCallback(InventoryItem item)
     {
-        Navigation.NavigateTo($"/item/{itemId}");
+        Navigation.NavigateTo($"/item/{item.Id}");
     }
 
     public void Dispose()

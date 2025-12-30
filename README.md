@@ -14,12 +14,22 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 - **Armazenamento Offline**: Uso de IndexedDB para dados de inventário e localStorage para autenticação.
 - **PWA Features**: Instalável, funciona offline, service worker para cache.
 - **Temas**: Suporte a modo claro/escuro.
-- **Responsividade**: Design adaptável para dispositivos móveis e desktop.
+- **Responsividade**: Design adaptável para dispositivos móveis e desktop com layout Flexbox/Grid consistente.
+- **UI Moderna**: Componentes MudBlazor para interface profissional, acessível e consistente baseada em Material Design.
 
 ## Stack Tecnológica
 
 - **Frontend**: Blazor WebAssembly (.NET 8)
-- **UI Framework**: Fluent UI Blazor (Microsoft) - para componentes modernos e acessíveis
+- **UI Framework**: 
+  - **MudBlazor 7.20.0** (MIT License) - Material Design components library
+    - Componentes modernos e responsivos
+    - Grids, Cards, Modals, Dialogs, Snackbars
+    - Temas customizáveis
+    - Mobile-first design
+- **Design System**: Material Design (via MudBlazor)
+- **Tipografia**: Roboto (Google Fonts) para Material Design
+- **Ícones**: Material Icons (5 variantes: Filled, Outlined, Two Tone, Round, Sharp)
+- **Layout System**: Flexbox e CSS Grid com variáveis CSS para consistência e responsividade
 - **Linguagens**: C#, HTML, CSS, JavaScript
 - **Armazenamento**: IndexedDB (para inventário), localStorage (para autenticação)
 - **PWA**: Service Worker, Manifest JSON
@@ -60,9 +70,29 @@ pwa-camera-poc-blazor/
 
 O projeto utiliza as seguintes bibliotecas principais:
 
-- **Microsoft.Fast.Components.FluentUI**: Biblioteca de componentes UI da Microsoft para Blazor, fornecendo componentes modernos, acessíveis e consistentes com o design Fluent.
-  - Instalação: Incluído via NuGet (`Microsoft.Fast.Components.FluentUI`)
-  - Motivo: Melhorar a interface do usuário com componentes padronizados, acessíveis e responsivos.
+#### UI Component Libraries
+
+- **MudBlazor 7.20.0** (Gratuita, MIT License)
+  - **Propósito**: Biblioteca de componentes Material Design para Blazor
+  - **Instalação**: `dotnet add package MudBlazor --version 7.20.0`
+  - **Recursos**:
+    - +60 componentes prontos para uso
+    - Sistema de temas customizável
+    - Responsividade mobile-first
+    - Grids, Cards, Dialogs, Snackbars, DataTables
+    - Documentação completa: https://mudblazor.com
+  - **Motivo**: Proporcionar UI moderna, profissional e responsiva seguindo Material Design guidelines
+
+#### Fontes e Ícones (CDN - Gratuitas)
+
+- **Google Fonts - Roboto**: Tipografia Material Design
+  - Pesos: 300, 400, 500, 700
+  - Licença: Apache 2.0
+  
+- **Material Icons**: Conjunto completo de ícones do Google
+  - 5 variantes: Filled, Outlined, Two Tone, Round, Sharp
+  - Licença: Apache 2.0
+  - +2000 ícones disponíveis
 
 ### Passos
 
@@ -234,3 +264,20 @@ Este projeto é para fins educacionais e de demonstração. Não possui licença
 - Para compatibilidade, a autenticação usa localStorage em vez de IndexedDB.
 - A câmera requer permissões do navegador.
 - Em produção, considere usar um backend para sincronização de dados.
+
+## Melhorias Recentes
+
+### Integração MudBlazor
+- **Componentes Modernos**: Substituição de elementos HTML nativos por componentes MudBlazor (MudTextField, MudButton, MudSelect, MudCard) para interface mais profissional e alinhada ao Material Design.
+- **Consistência Visual**: Padronização de design com sistema de temas do MudBlazor.
+- **Acessibilidade**: Componentes MudBlazor seguem padrões de acessibilidade.
+
+### Sistema de Layout e Responsividade
+- **Flexbox/Grid Consistente**: Implementação uniforme de Flexbox e CSS Grid em todo o aplicativo para alinhamento perfeito.
+- **Design Responsivo**: Media queries otimizadas para tablet (≤768px) e mobile (≤480px), garantindo usabilidade em todos os dispositivos.
+- **Container Centralizado**: Adição de container de conteúdo no MainLayout para melhor organização visual.
+- **Estados Visuais**: Estilos para estados vazios e paginação melhoram a experiência do usuário.
+
+### Correções Técnicas
+- **Build Estável**: Resolução de erros de compilação, incluindo qualificações de namespace e correções de sintaxe.
+- **Performance**: Layout otimizado reduz reflows e melhora performance em dispositivos móveis.

@@ -7,7 +7,8 @@ using pwa_camera_poc_blazor.Services;
 using pwa_camera_poc_blazor.Services.Auth;
 using pwa_camera_poc_blazor.Services.Camera;
 using pwa_camera_poc_blazor.Services.Storage;
-using Microsoft.Fast.Components.FluentUI;
+using MudBlazor.Services;
+using MudBlazor;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -22,7 +23,16 @@ builder.Services.AddScoped<CameraService>();
 builder.Services.AddScoped<pwa_camera_poc_blazor.Services.ToastService>();
 builder.Services.AddScoped<AppState>();
 
-builder.Services.AddFluentUIComponents();
+// UI Component Library
+// MudBlazor: Material Design component library (free & open-source)
+// Provides modern, responsive components with excellent mobile support
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomRight;
+    config.SnackbarConfiguration.PreventDuplicates = false;
+    config.SnackbarConfiguration.ShowCloseIcon = true;
+    config.SnackbarConfiguration.VisibleStateDuration = 3000;
+});
 
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();

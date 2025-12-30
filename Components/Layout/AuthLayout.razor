@@ -1,10 +1,80 @@
 @inherits LayoutComponentBase
+@inject IJSRuntime JSRuntime
+@inject AppState appState
+@implements IDisposable
 
-<div class="auth-background"></div>
+<MudThemeProvider Theme="currentTheme" IsDarkMode="@appState.IsDarkMode" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
 
-<div class="auth-container">
-    @Body
-</div>
+<MudLayout>
+    <div style="position: fixed; top: 16px; right: 24px; z-index: 1000;">
+        <MudIconButton Icon="@(appState.IsDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+            Color="Color.Default" OnClick="ToggleTheme" Class="shadow-sm"
+            Style="background-color: var(--mud-palette-surface); border: 1px solid rgba(0,0,0,0.1);" />
+    </div>
+    <MudMainContent Class="d-flex justify-center align-center mud-width-full auth-background"
+        Style="min-height: 100vh;">
+        @Body
+    </MudMainContent>
+</MudLayout>
 
 @code {
+    protected override async Task OnInitializedAsync()
+    {
+        appState.OnChange += StateHasChanged;
+
+        try
+        {
+            var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
+            appState.IsDarkMode = theme == "dark";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading theme in AuthLayout: {ex.Message}");
+        }
+    }
+
+    public void Dispose()
+    {
+        appState.OnChange -= StateHasChanged;
+    }
+
+    private async Task ToggleTheme()
+    {
+        appState.IsDarkMode = !appState.IsDarkMode;
+        await JSRuntime.InvokeVoidAsync("appInterop.setTheme", appState.IsDarkMode ? "dark" : "light");
+    }
+
+    private MudTheme currentTheme = new MudTheme()
+        {
+            LayoutProperties = new LayoutProperties()
+            {
+                DefaultBorderRadius = "12px"
+            },
+            Typography = new Typography()
+            {
+                Default = new DefaultTypography()
+                {
+                    FontFamily = new[] { "Outfit", "Roboto", "Helvetica", "Arial", "sans-serif" }
+                }
+            },
+            PaletteLight = new PaletteLight()
+            {
+                Primary = "#0066CC",
+                AppbarBackground = "#003366",
+                Background = "#F5F7FA",
+                Surface = "#FFFFFF",
+                ActionDefault = "#0066CC"
+            },
+            PaletteDark = new PaletteDark()
+            {
+                Primary = "#4A90E2",
+                AppbarBackground = "#1A2238",
+                Background = "#121212",
+                Surface = "#1E1E1E",
+                ActionDefault = "#4A90E2"
+            }
+        };
 }

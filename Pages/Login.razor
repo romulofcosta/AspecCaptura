@@ -3,85 +3,78 @@
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
+@inject AppState appState
 
 <PageTitle>Login - ASPEC Inventory</PageTitle>
 
-<FluentButton Class="theme-toggle" @onclick="ToggleTheme" aria-label="Alternar tema">
-    <span>
-        @if (isDarkMode)
-        {
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            </svg>
-        }
-        else
-        {
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="4" />
-                <path
-                    d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-            </svg>
-        }
-    </span>
-</FluentButton>
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex justify-center align-center auth-container"
+    Style="min-height: 100vh;">
+    <MudCard Elevation="0" Class="pa-10 premium-card" Style="width: 100%; max-width: 440px;">
+        <MudCardHeader Class="d-flex flex-column align-center pb-0">
+            <CardHeaderContent>
+                <div class="d-flex justify-center mb-2">
+                    <MudImage Src="images/aspec_logo.png" Alt="ASPEC Logo"
+                        Style="width: 120px; height: 120px; object-fit: contain; border-radius: 16px; transition: transform 0.3s ease-in-out;"
+                        Class="logo-hover shadow-sm" />
+                </div>
+                <div class="d-flex justify-center mb-4">
+                    <h1 class="app-title-login">Aspec Capture</h1>
+                </div>
+                <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true"><b>Bem-vindo</b></MudText>
+                <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">Faça login para continuar
+                </MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
 
-<div class="auth-card">
-    <div class="auth-header">
-        <div class="auth-logo">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="4" y="6" width="16" height="14" rx="3" />
-                <path d="M4 10h16" />
-            </svg>
-        </div>
-        <h1 class="auth-title">Bem-vindo</h1>
-        <p class="auth-subtitle">Faça login para continuar</p>
-    </div>
+        <MudCardContent>
+            @if (!string.IsNullOrEmpty(alertMessage))
+            {
+                <MudAlert Severity="@(alertType == "success" ? Severity.Success : Severity.Error)" Class="mb-4">
+                    @alertMessage
+                </MudAlert>
+            }
 
-    @if (!string.IsNullOrEmpty(alertMessage))
-    {
-        <div class="auth-alert @alertType show">@alertMessage</div>
-    }
+            <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+                <DataAnnotationsValidator />
 
-    <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" class="auth-form">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+                <MudTextField @bind-Value="loginModel.Username" Label="E-mail" Placeholder="Digite seu e-mail"
+                    Variant="Variant.Outlined" InputType="InputType.Email" Adornment="Adornment.Start"
+                    AdornmentIcon="@Icons.Material.Filled.Email" For="@(() => loginModel.Username)"
+                    Class="mb-6 label-fix" />
 
-        <div class="form-group">
-            <FluentLabel For="login-username">E-mail</FluentLabel>
-            <FluentTextField Id="login-username" @bind-Value="loginModel.Username"
-                Placeholder="Digite seu e-mail" />
-            <ValidationMessage For="@(() => loginModel.Username)" />
-        </div>
+                <MudTextField @bind-Value="loginModel.Password" Label="Senha" Placeholder="Digite sua senha"
+                    Variant="Variant.Outlined" InputType="InputType.Password" Adornment="Adornment.Start"
+                    AdornmentIcon="@Icons.Material.Filled.Lock" For="@(() => loginModel.Password)"
+                    Class="mb-6 label-fix" />
 
-        <div class="form-group">
-            <FluentLabel For="login-password">Senha</FluentLabel>
-            <FluentTextField Type="TextFieldType.Password" Id="login-password" @bind-Value="loginModel.Password"
-                Placeholder="Digite sua senha" />
-            <ValidationMessage For="@(() => loginModel.Password)" />
-        </div>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                    FullWidth="true" Disabled="@isLoading" Size="Size.Large" Class="mt-2 py-4 shadow-md">
+                    @(isLoading ? "Entrando..." : "Entrar")
+                </MudButton>
+            </EditForm>
+        </MudCardContent>
 
-        <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Disabled="@isLoading">
-            @(isLoading ? "Entrando..." : "Entrar")
-        </FluentButton>
-    </EditForm>
-
-    <div class="auth-toggle">
-        <span>Não tem conta?</span>
-        <a href="/register" class="auth-toggle-link">Cadastre-se</a>
-    </div>
-</div>
+        <MudCardActions Class="d-flex justify-center pb-4">
+            <MudText Typo="Typo.body2" Class="mr-2">Não tem conta?</MudText>
+            <MudLink Href="/register" Underline="Underline.Hover">Cadastre-se</MudLink>
+        </MudCardActions>
+    </MudCard>
+</MudContainer>
 
 @code {
     private LoginModel loginModel = new();
     private string? alertMessage;
     private string? alertType;
     private bool isLoading = false;
-    private bool isDarkMode = false;
 
     protected override async Task OnInitializedAsync()
     {
-        var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
-        isDarkMode = theme == "dark";
+        try
+        {
+            var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
+            appState.IsDarkMode = theme == "dark";
+        }
+        catch { }
     }
 
     private async Task HandleLogin()
@@ -105,7 +98,7 @@
                 alertType = "error";
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             alertMessage = "Erro ao realizar login. Verifique suas credenciais e tente novamente.";
             alertType = "error";
@@ -114,12 +107,6 @@
         {
             isLoading = false;
         }
-    }
-
-    private async Task ToggleTheme()
-    {
-        isDarkMode = !isDarkMode;
-        await JSRuntime.InvokeVoidAsync("appInterop.setTheme", isDarkMode ? "dark" : "light");
     }
 
     public class LoginModel
