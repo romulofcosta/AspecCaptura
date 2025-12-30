@@ -3,6 +3,7 @@
 @inject NavigationManager Navigation
 @inject AppState appState
 
+<<<<<<< HEAD
 <MudDrawerHeader Class="d-flex flex-column align-center pa-6"
     Style="background-color: var(--mud-palette-background-grey);">
     <div class="cursor-pointer d-flex flex-column align-center profile-section"
@@ -13,6 +14,22 @@
             @UserInitials
         </MudAvatar>
         <MudText Typo="Typo.subtitle1" Class="font-weight-bold text-truncate" Style="max-width: 100%">@DisplayName</MudText>
+=======
+<MudDrawerHeader Class="d-flex flex-column align-center pa-8"
+    Style="background-color: var(--mud-palette-background-grey);">
+    <div class="cursor-pointer d-flex flex-column align-center profile-section"
+        style="width: 100%; max-width: 220px; overflow: hidden;"
+        @onclick="NavigateToProfile">
+        <MudAvatar Color="Color.Primary" Style="height:80px; width:80px; font-size:2rem;"
+            Class="mb-3 shadow-md border-white border-2">
+            @UserInitials
+        </MudAvatar>
+        <MudText Typo="Typo.h6" Class="font-weight-bold text-truncate" Style="max-width: 100%">@DisplayName</MudText>
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-n1 text-truncate"
+            Style="max-width: 100%">@EmailDisplay</MudText>
+        <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Class="mt-1" 
+                   StartIcon="@Icons.Material.Filled.Edit">Editar Perfil</MudButton>
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
     </div>
 </MudDrawerHeader>
 
@@ -44,7 +61,10 @@
 @code {
     [Parameter] public EventCallback<int> OnUnitSelected { get; set; }
     [Parameter] public EventCallback OnThemeToggle { get; set; }
+<<<<<<< HEAD
     [Parameter] public EventCallback OnMenuItemClick { get; set; }
+=======
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
 
     private string UserInitials = "U";
     private string DisplayName = "Usuário";
@@ -68,11 +88,14 @@
         {
             await SeedBasicData();
         }
+<<<<<<< HEAD
         else 
         {
             // Even if states exist, ensure basic units are present (for existing users after updates)
             await EnsureUnitsExist();
         }
+=======
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
 
         currentUser = await AuthService.GetCurrentUserAsync();
         if (currentUser != null)
@@ -101,6 +124,7 @@
             }
 
             // Fallback for ID only display problem if units are still missing
+<<<<<<< HEAD
             if (selectedUnitId > 0 && !units.Any(u => u.Id == selectedUnitId))
             {
                 var unit = await DbService.GetAsync<Unit>("units", selectedUnitId);
@@ -112,6 +136,11 @@
                 {
                     units.Add(new Unit { Id = selectedUnitId, Name = $"Unidade {selectedUnitId}" });
                 }
+=======
+            if (!units.Any() && selectedUnitId > 0)
+            {
+                units.Add(new Unit { Id = selectedUnitId, Name = $"Unidade {selectedUnitId}" });
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
             }
         }
         else
@@ -126,6 +155,7 @@
     private async Task SeedBasicData()
     {
         try {
+<<<<<<< HEAD
             await EnsureUnitsExist();
         } catch { }
     }
@@ -155,6 +185,17 @@
 
     private async Task OnUnitChanged(int id)
     {
+=======
+            await DbService.AddAsync("states", new State { Id = "CE", Name = "Ceará" });
+            await DbService.AddAsync("cities", new City { Id = 5, StateId = "CE", Name = "Horizonte" });
+            await DbService.AddAsync("units", new Unit { Id = 1, CityId = 5, Name = "Prefeitura Municipal de Horizonte" });
+            await DbService.AddAsync("units", new Unit { Id = 2, CityId = 5, Name = "Fundo Municipal de Saúde" });
+        } catch { }
+    }
+
+    private async Task OnUnitChanged(int id)
+    {
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
         selectedUnitId = id;
         if (currentUser != null)
         {
@@ -166,7 +207,10 @@
 
     private async Task ToggleTheme()
     {
+<<<<<<< HEAD
         await OnMenuItemClick.InvokeAsync();
+=======
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
         await OnThemeToggle.InvokeAsync();
     }
 
@@ -177,9 +221,14 @@
         Navigation.NavigateTo("/login");
     }
 
+<<<<<<< HEAD
     private async Task NavigateToProfile()
     {
         await OnMenuItemClick.InvokeAsync();
+=======
+    private void NavigateToProfile()
+    {
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
         Navigation.NavigateTo("/profile");
     }
 }

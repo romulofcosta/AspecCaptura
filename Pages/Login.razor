@@ -7,6 +7,7 @@
 
 <PageTitle>Login - ASPEC Inventory</PageTitle>
 
+<<<<<<< HEAD
 <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-center justify-start pa-0">
     <MudPaper id="login-card" Elevation="4" Class="pa-8 pa-sm-10 rounded-lg premium-card w-100 mb-8"
         Style="max-width: 440px;">
@@ -65,6 +66,60 @@
             <MudLink Href="/register" Underline="Underline.Hover">Cadastre-se</MudLink>
         </div>
     </MudPaper>
+=======
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex justify-center align-center auth-container"
+    Style="min-height: 100vh;">
+    <MudCard Elevation="0" Class="pa-10 premium-card" Style="width: 100%; max-width: 440px;">
+        <MudCardHeader Class="d-flex flex-column align-center pb-0">
+            <CardHeaderContent>
+                <div class="d-flex justify-center mb-2">
+                    <MudImage Src="images/aspec_logo.png" Alt="ASPEC Logo"
+                        Style="width: 120px; height: 120px; object-fit: contain; border-radius: 16px; transition: transform 0.3s ease-in-out;"
+                        Class="logo-hover shadow-sm" />
+                </div>
+                <div class="d-flex justify-center mb-4">
+                    <h1 class="app-title-login">Aspec Capture</h1>
+                </div>
+                <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true"><b>Bem-vindo</b></MudText>
+                <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">Faça login para continuar
+                </MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+
+        <MudCardContent>
+            @if (!string.IsNullOrEmpty(alertMessage))
+            {
+                <MudAlert Severity="@(alertType == "success" ? Severity.Success : Severity.Error)" Class="mb-4">
+                    @alertMessage
+                </MudAlert>
+            }
+
+            <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+                <DataAnnotationsValidator />
+
+                <MudTextField @bind-Value="loginModel.Username" Label="E-mail" Placeholder="Digite seu e-mail"
+                    Variant="Variant.Outlined" InputType="InputType.Email" Adornment="Adornment.Start"
+                    AdornmentIcon="@Icons.Material.Filled.Email" For="@(() => loginModel.Username)"
+                    Class="mb-6 label-fix" />
+
+                <MudTextField @bind-Value="loginModel.Password" Label="Senha" Placeholder="Digite sua senha"
+                    Variant="Variant.Outlined" InputType="InputType.Password" Adornment="Adornment.Start"
+                    AdornmentIcon="@Icons.Material.Filled.Lock" For="@(() => loginModel.Password)"
+                    Class="mb-6 label-fix" />
+
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                    FullWidth="true" Disabled="@isLoading" Size="Size.Large" Class="mt-2 py-4 shadow-md">
+                    @(isLoading ? "Entrando..." : "Entrar")
+                </MudButton>
+            </EditForm>
+        </MudCardContent>
+
+        <MudCardActions Class="d-flex justify-center pb-4">
+            <MudText Typo="Typo.body2" Class="mr-2">Não tem conta?</MudText>
+            <MudLink Href="/register" Underline="Underline.Hover">Cadastre-se</MudLink>
+        </MudCardActions>
+    </MudCard>
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
 </MudContainer>
 
 @code {
@@ -72,6 +127,7 @@
     private string? alertMessage;
     private string? alertType;
     private bool isLoading = false;
+<<<<<<< HEAD
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -85,6 +141,8 @@
             catch { }
         }
     }
+=======
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
 
     protected override async Task OnInitializedAsync()
     {

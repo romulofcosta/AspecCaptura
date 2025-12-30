@@ -7,6 +7,7 @@ body {
     overflow: hidden;
     /* MudLayout handles scrolling */
     font-family: 'Roboto', sans-serif;
+<<<<<<< HEAD
     scroll-behavior: smooth;
 }
 
@@ -23,6 +24,8 @@ body {
 
 .smooth-scroll {
     scroll-behavior: smooth;
+=======
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
 }
 
 #camera-feed {
@@ -104,6 +107,7 @@ body {
     pointer-events: none;
 }
 
+<<<<<<< HEAD
 /* Global fix for outlined label focus/active state */
 .mud-input-label-outlined.mud-input-label-active {
     background-color: var(--mud-palette-surface) !important;
@@ -124,6 +128,24 @@ body {
 /* Specific fix for premium cards to ensure contrast */
 .premium-card .mud-input-label-outlined.mud-input-label-active {
     background-color: var(--mud-palette-surface) !important;
+=======
+.mud-input-label-outlined.mud-input-label-active {
+    background-color: white !important;
+}
+
+[data-theme='dark'] .mud-input-label-outlined.mud-input-label-active {
+    background-color: #121212 !important;
+    /* Matches auth-background dark start */
+}
+
+/* Specific fix for premium cards */
+.premium-card .mud-input-label-outlined.mud-input-label-active {
+    background-color: #ffffff !important;
+}
+
+[data-theme='dark'] .premium-card .mud-input-label-outlined.mud-input-label-active {
+    background-color: #1e1e1e !important;
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
 }
 
 .label-fix .mud-input-label-outlined {
@@ -148,6 +170,7 @@ body {
 .mud-input-focus .mud-input-outlined-border {
     border-width: 2px !important;
     box-shadow: 0 0 10px rgba(0, 102, 204, 0.1) !important;
+<<<<<<< HEAD
 }
 
 .mud-button-filled {
@@ -187,11 +210,36 @@ body {
 .profile-section {
     transition: all 0.3s ease;
     border-radius: 12px;
+=======
+}
+
+.mud-button-filled {
+    border-radius: 16px !important;
+    text-transform: none !important;
+    font-weight: 600 !important;
+    padding: 12px 24px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.mud-button-filled:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 102, 204, 0.2) !important;
+}
+
+.premium-card .mud-card-header {
+    padding-top: 32px !important;
+}
+
+.profile-section {
+    transition: all 0.3s ease;
+    border-radius: 16px;
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
     padding: 12px;
     width: 100%;
 }
 
 .profile-section:hover {
+<<<<<<< HEAD
     background-color: rgba(var(--mud-palette-primary-rgb), 0.05);
     transform: translateY(-2px);
 }
@@ -227,6 +275,20 @@ body {
     border-width: 2px !important;
 }
 
+=======
+    background-color: rgba(0, 102, 204, 0.05);
+    transform: scale(1.02);
+}
+
+.border-white {
+    border: 3px solid white !important;
+}
+
+.border-2 {
+    border-width: 2px !important;
+}
+
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
 /* Ensure accessible button height and focus */
 .mud-button {
     min-height: 48px;

@@ -23,12 +23,23 @@
         <MudSpacer />
     </MudAppBar>
 
+<<<<<<< HEAD
     <MudDrawer @bind-Open="isMenuOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Variant="DrawerVariant.Responsive">
         <NavMenu OnThemeToggle="ToggleTheme" OnUnitSelected="HandleUnitSelected" OnMenuItemClick="@(() => isMenuOpen = false)" />
     </MudDrawer>
 
     <MudMainContent Class="mud-width-full" Style="min-height: 100vh; display: flex; flex-direction: column;">
         @Body
+=======
+    <MudDrawer @bind-Open="isMenuOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+        <NavMenu OnThemeToggle="ToggleTheme" OnUnitSelected="HandleUnitSelected" />
+    </MudDrawer>
+
+    <MudMainContent Class="mud-width-full" Style="padding-bottom: 80px; min-height: 100vh;">
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+            @Body
+        </MudContainer>
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
     </MudMainContent>
 
     @if (!appState.IsCameraActive)
@@ -48,14 +59,20 @@
     {
         LayoutProperties = new LayoutProperties()
         {
+<<<<<<< HEAD
             DefaultBorderRadius = "8px",
             DrawerWidthLeft = "280px",
             DrawerWidthRight = "300px"
+=======
+            DefaultBorderRadius = "12px",
+            DrawerWidthLeft = "260px"
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
         },
         Typography = new Typography()
         {
             Default = new DefaultTypography()
             {
+<<<<<<< HEAD
                 FontFamily = new[] { "Outfit", "Inter", "Roboto", "Helvetica", "Arial", "sans-serif" },
                 FontSize = "0.875rem",
                 FontWeight = "400",
@@ -101,13 +118,46 @@
             TextSecondary = "#adb5bd",
             ActionDefault = "#dee2e6",
             Divider = "rgba(255, 255, 255, 0.12)"
+=======
+                FontFamily = new[] { "Outfit", "Roboto", "Helvetica", "Arial", "sans-serif" }
+            }
+        },
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#0066CC", // ASPEC Corporate Blue
+            Secondary = "#004C99",
+            AppbarBackground = "#003366", // Darker Blue for Header
+            Background = "#F5F7FA", // Very light blue-gray
+            Surface = "#FFFFFF",
+            DrawerBackground = "#FFFFFF",
+            TextPrimary = "#2C3E50",
+            TextSecondary = "#7F8C8D",
+            ActionDefault = "#0066CC"
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Primary = "#4A90E2", // Lighter Blue for Dark Mode
+            Secondary = "#64B5F6",
+            AppbarBackground = "#1A2238", // Dark Blue-Black
+            Background = "#121212",
+            Surface = "#1E1E1E",
+            DrawerBackground = "#1E1E1E",
+            TextPrimary = "#E0E0E0",
+            TextSecondary = "#B0BEC5",
+            ActionDefault = "#4A90E2"
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
         }
     };
 
     protected override async Task OnInitializedAsync()
     {
+<<<<<<< HEAD
         ToastService.OnShow += HandleToastShow;
         appState.OnChange += HandleAppStateChange;
+=======
+        ToastService.OnShow += ShowToast;
+        appState.OnChange += StateHasChanged;
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
         Navigation.LocationChanged += HandleLocationChanged;
 
         UpdateActiveTab();
@@ -148,6 +198,7 @@
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
     {
+<<<<<<< HEAD
         InvokeAsync(() =>
         {
             UpdateActiveTab();
@@ -163,6 +214,10 @@
     private void HandleToastShow(string message, string type)
     {
         InvokeAsync(() => ShowToast(message, type));
+=======
+        UpdateActiveTab();
+        StateHasChanged();
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
     }
 
     private void UpdateActiveTab()
@@ -209,6 +264,7 @@
 
     private void ShowToast(string message, string type)
     {
+<<<<<<< HEAD
         try
         {
             Severity severity = type switch
@@ -222,6 +278,17 @@
             Snackbar.Add(message, severity);
         }
         catch { }
+=======
+        Severity severity = type switch
+        {
+            "success" => Severity.Success,
+            "error" => Severity.Error,
+            "warning" => Severity.Warning,
+            "info" => Severity.Info,
+            _ => Severity.Normal
+        };
+        Snackbar.Add(message, severity);
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
     }
 
     private void HandleTabChanged(string tab)
@@ -284,8 +351,13 @@
 
     public void Dispose()
     {
+<<<<<<< HEAD
         ToastService.OnShow -= HandleToastShow;
         appState.OnChange -= HandleAppStateChange;
+=======
+        ToastService.OnShow -= ShowToast;
+        appState.OnChange -= StateHasChanged;
+>>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
         Navigation.LocationChanged -= HandleLocationChanged;
     }
 }
