@@ -1,6 +1,6 @@
 @using pwa_camera_poc_blazor.Models
 
-<MudCard Elevation="3" Hover="true" @onclick="() => OnView.InvokeAsync(Item)"
+<MudCard Elevation="3" @onclick="() => OnView.InvokeAsync(Item)"
     Style="@(IsListView ? "cursor: pointer; display: flex; flex-direction: row; height: 120px; width: 100%; overflow: hidden;" : "cursor: pointer; height: 100%; display: flex; flex-direction: column; overflow: hidden;")">
 
     <div
