@@ -8,14 +8,15 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 
 ## Funcionalidades
 
-- **Autenticação Local**: Login e registro de usuários com armazenamento em localStorage (para compatibilidade).
-- **Captura de Imagens**: Integração com câmera do dispositivo para fotografar itens.
-- **Gerenciamento de Inventário**: Adição, edição e visualização de itens de inventário.
-- **Armazenamento Offline**: Uso de IndexedDB para dados de inventário e localStorage para autenticação.
-- **PWA Features**: Instalável, funciona offline, service worker para cache.
-- **Temas**: Suporte a modo claro/escuro.
-- **Responsividade**: Design adaptável para dispositivos móveis e desktop com layout Flexbox/Grid consistente.
-- **UI Moderna**: Componentes MudBlazor para interface profissional, acessível e consistente baseada em Material Design.
+- **Autenticação Local**: Login e registro de usuários com armazenamento em localStorage e suporte a múltiplos perfis.
+- **Captura de Imagens**: Integração com câmera do dispositivo para fotografar itens com preview e metadados.
+- **Gerenciamento de Inventário**: Adição, edição e visualização de itens com suporte a categorias e unidades gestoras.
+- **Armazenamento Offline**: Uso de IndexedDB para dados de inventário e localStorage para persistência de sessão.
+- **PWA Real**: Instalável, offline-first, com logotipos oficiais da ASPEC e suporte a ícones **Maskable**.
+- **Temas Dinâmicos**: Suporte a modo claro/escuro com detecção automática de sistema e salvamento de preferência.
+- **Responsividade Mobile-First**: Interface otimizada para tablets e smartphones, com alvos de toque aumentados e navegação por menu flutuante.
+- **UI de Alta Fidelidade**: Baseada em MudBlazor, oferecendo uma experiência Material Design refinada e profissional.
+- **Gestão de Unidades**: Sistema de filtragem e seleção de unidades gestoras (Prefeituras, Fundos, Câmaras) com nomes reais e seeding automático.
 
 ## Stack Tecnológica
 

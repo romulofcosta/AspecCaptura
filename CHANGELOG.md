@@ -7,6 +7,40 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Não Lançado]
 
+### Adicionado - 2025-12-30
+
+#### 🎨 Refinamento de UI/UX e Identidade Visual
+- **Identidade Visual ASPEC**: 
+  - Logotipo oficial (`aspec_logo.png`) implementado como Favicon e ícone PWA.
+  - Configuração de ícones **Maskable** para suporte a ícones adaptativos no Android.
+  - Cores corporativas sincronizadas em toda a aplicação (Azul ASPEC #003366).
+- **Melhorias de Usabilidade**:
+  - Aumento da altura dos campos de entrada (`MudTextField`) em Login, Cadastro e Perfil para melhores alvos de toque em dispositivos móveis.
+  - Navegação fluida: O menu lateral agora fecha automaticamente ao navegar para o perfil via clique no avatar.
+  - Exibição de nomes de unidades reais em vez de IDs (ex: "Prefeitura de São Luís" em vez de "6").
+- **Melhorias no Tema Escuro**:
+  - Ajuste de contraste para textos primários e secundários.
+  - Correção visual nos campos "Outlined" para que o fundo do label (notch) acompanhe a cor da superfície do tema.
+  - Sincronização de ícones de alternância de tema entre o menu lateral e a tela de login.
+
+#### 🔧 Melhorias Técnicas e Estabilidade
+- **AuthService**:
+  - Implementado `UpdateUserAsync` para atualização segura de perfis de usuários.
+  - Adicionada deduplicação automática de IDs de unidades (`Distinct()`).
+- **Resiliência de Dados**:
+  - Implementação de seeding idempotente para Estados, Cidades e Unidades, prevenindo duplicação de dados ao recarregar a aplicação.
+  - Sincronização robusta de estado entre layouts e páginas via `AppState`.
+- **Performance e Layout**:
+  - Implementado detector automático de overflow em páginas críticas (`Stats`, `Home`, `Sync`, `Profile`).
+  - Tratamento de erros e segurança em chamadas de Interop JavaScript.
+  - Resolução de todos os conflitos de merge pendentes no repositório.
+
+### Corrigido - 2025-12-30
+- **Build**: Resolvido aviso `MUD0002` (atributo `Hover` ilegal em `MudCard`).
+- **Lógica de Unidades**: Corrigido problema onde IDs apareciam na lista de unidades antes do carregamento completo dos nomes.
+
+### Adicionado - 2025-12-29
+
 ### Adicionado - 2025-12-29
 
 #### 🎨 Melhorias de UI/UX e Responsividade
