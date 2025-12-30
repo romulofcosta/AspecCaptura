@@ -10,7 +10,6 @@
 
 @* Theme toggle removed in favor of global layout/system preference *@
 
-<<<<<<< HEAD
 <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-center justify-start pa-4" Style="min-height: 100vh;">
     <MudPaper id="register-card" Elevation="4" Class="d-flex flex-column rounded-lg premium-card w-100" Style="max-width: 500px; height: auto; max-height: 85vh; overflow: hidden;">
         
@@ -29,24 +28,6 @@
 
         <!-- Content/Form (Scrollable) -->
         <div class="flex-grow-1 pa-6 pa-sm-8 overflow-y-auto" style="scroll-behavior: smooth;">
-=======
-<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex justify-center align-center" Style="min-height: 100vh;">
-    <MudCard Elevation="0" Class="pa-8 premium-card" Style="width: 100%; max-width: 500px;">
-        <MudCardHeader Class="d-flex justify-center flex-column align-center pb-0">
-            <CardHeaderContent>
-                <div class="d-flex justify-center mb-6">
-                    <MudImage Src="images/aspec_logo.png" Alt="ASPEC Logo"
-                        Style="width: 100px; height: 100px; object-fit: contain; border-radius: 12px;"
-                        Class="shadow-sm" />
-                </div>
-                <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true"><b>Criar Conta</b></MudText>
-                <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">Cadastre-se para começar
-                </MudText>
-            </CardHeaderContent>
-        </MudCardHeader>
-
-        <MudCardContent>
->>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
             @if (!string.IsNullOrEmpty(alertMessage))
             {
                 <MudAlert Severity="@(alertType == "success" ? Severity.Success : Severity.Error)" Class="mb-4">
@@ -57,7 +38,6 @@
             <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
                 <DataAnnotationsValidator />
 
-<<<<<<< HEAD
                 <MudGrid Spacing="1">
                     <MudItem xs="12" sm="6" Class="pb-2">
                         <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Nome</MudText>
@@ -81,7 +61,7 @@
                         <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Senha</MudText>
                         <MudTextField @bind-Value="registerModel.Password" Placeholder="Mínimo 6 caracteres" Variant="Variant.Outlined"
                             InputType="InputType.Password" Adornment="Adornment.Start"
-                            AdornmentIcon="@Icons.Material.Filled.Lock" For="@(() => registerModel.Password)" Margin="Margin.Dense" FullWidth="true" />
+                            AdornmentIcon="@Icons.Material.Filled.Lock" For="@(() => registerModel.Password)" FullWidth="true" />
                     </MudItem>
 
                     <MudItem xs="12" Class="mt-2">
@@ -91,33 +71,6 @@
                     <MudItem xs="12" sm="6">
                         <MudSelect T="string" Label="Estado" Value="selectedStateId" ValueChanged="OnStateChanged"
                             Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
-=======
-                <MudGrid Spacing="2">
-                    <MudItem xs="6">
-                        <MudTextField @bind-Value="registerModel.FirstName" Label="Nome" Placeholder="Ex: João" Variant="Variant.Outlined"
-                            For="@(() => registerModel.FirstName)" Class="mb-4 label-fix" />
-                    </MudItem>
-                    <MudItem xs="6">
-                        <MudTextField @bind-Value="registerModel.LastName" Label="Sobrenome" Placeholder="Ex: Silva" Variant="Variant.Outlined"
-                            For="@(() => registerModel.LastName)" Class="mb-4 label-fix" />
-                    </MudItem>
-                </MudGrid>
-
-                <MudTextField @bind-Value="registerModel.Username" Label="E-mail" Placeholder="exemplo@aspec.com.br" Variant="Variant.Outlined"
-                    Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email"
-                    For="@(() => registerModel.Username)" Class="mb-4 label-fix" />
-
-                <MudTextField @bind-Value="registerModel.Password" Label="Senha" Placeholder="Mínimo 6 caracteres" Variant="Variant.Outlined"
-                    InputType="InputType.Password" Adornment="Adornment.Start"
-                    AdornmentIcon="@Icons.Material.Filled.Lock" For="@(() => registerModel.Password)" Class="mb-4 label-fix" />
-
-                <MudText Typo="Typo.subtitle2" Class="mb-2 mt-4 font-weight-bold">Unidades Gestoras</MudText>
-
-                <MudGrid Spacing="2" Class="mb-2">
-                    <MudItem xs="6">
-                        <MudSelect T="string" Label="Estado" Value="selectedStateId" ValueChanged="OnStateChanged"
-                            Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="label-fix">
->>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
                             <MudSelectItem Value="@("")">Todos</MudSelectItem>
                             @foreach (var state in states)
                             {
@@ -125,17 +78,10 @@
                             }
                         </MudSelect>
                     </MudItem>
-<<<<<<< HEAD
                     <MudItem xs="12" sm="6">
                         <MudSelect T="int?" Label="Cidade" Value="selectedCityId" ValueChanged="OnCityChanged"
                             Disabled="@(string.IsNullOrEmpty(selectedStateId))" Variant="Variant.Outlined"
                             AnchorOrigin="Origin.BottomCenter">
-=======
-                    <MudItem xs="6">
-                        <MudSelect T="int?" Label="Cidade" Value="selectedCityId" ValueChanged="OnCityChanged"
-                            Disabled="@(string.IsNullOrEmpty(selectedStateId))" Variant="Variant.Outlined"
-                            AnchorOrigin="Origin.BottomCenter" Class="label-fix">
->>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
                             <MudSelectItem T="int?" Value="@null">Todas</MudSelectItem>
                             @foreach (var city in filteredCities)
                             {
@@ -143,7 +89,6 @@
                             }
                         </MudSelect>
                     </MudItem>
-<<<<<<< HEAD
 
                     <MudItem xs="12">
                         <MudTextField @bind-Value="searchQuery" Placeholder="Buscar unidade" Variant="Variant.Outlined"
@@ -156,7 +101,8 @@
                             <div class="d-flex flex-wrap gap-2 mb-2">
                                 @foreach (var unit in selectedUnits)
                                 {
-                                    <MudChip T="string" Color="Color.Primary" OnClose="() => RemoveUnit(unit.Key)" Size="Size.Small">
+                                    <MudChip T="string" Color="Color.Primary" OnClose="() => RemoveUnit(unit.Key)" Size="Size.Small"
+                                        Variant="Variant.Filled">
                                         @unit.Value
                                     </MudChip>
                                 }
@@ -213,67 +159,6 @@
 </MudContainer>
 
 
-=======
-                </MudGrid>
-
-                <MudTextField @bind-Value="searchQuery" Label="Buscar unidade" Variant="Variant.Outlined"
-                    Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" Class="mb-2 label-fix" />
-
-                @if (selectedUnits.Any())
-                {
-                    <div class="d-flex flex-wrap gap-2 mb-2">
-                        @foreach (var unit in selectedUnits)
-                        {
-                            <MudChip T="string" Color="Color.Primary" OnClose="() => RemoveUnit(unit.Key)">
-                                @unit.Value
-                            </MudChip>
-                        }
-                    </div>
-                }
-
-                <div class="units-container mud-paper-outlined pa-2" style="max-height: 200px; overflow-y: auto;">
-                    @if (filteredAvailableUnits.Any())
-                    {
-                        <MudList T="Unit" Dense="true">
-                            @foreach (var unit in filteredAvailableUnits)
-                            {
-                                <MudListItem>
-                                    <div class="d-flex justify-space-between align-center width-100">
-                                        <MudText Typo="Typo.body2">@unit.Name</MudText>
-                                        <MudIconButton
-                                            Icon="@(selectedUnits.ContainsKey(unit.Id) ? Icons.Material.Filled.Check : Icons.Material.Filled.Add)"
-                                            Color="@(selectedUnits.ContainsKey(unit.Id) ? Color.Success : Color.Default)"
-                                            OnClick="() => AddUnit(unit)" Disabled="@selectedUnits.ContainsKey(unit.Id)"
-                                            Size="Size.Small" />
-                                    </div>
-                                </MudListItem>
-                            }
-                        </MudList>
-                    }
-                    else
-                    {
-                        <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block pa-4 text-secondary">
-                            @(availableUnits.Any() ? "Nenhuma unidade encontrada na busca." : "Selecione estado e cidade.")
-                        </MudText>
-                    }
-                </div>
-
-                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
-                    FullWidth="true" Disabled="@isLoading" Class="mt-6">
-                    @(isLoading ? "Cadastrando..." : "Cadastrar")
-                </MudButton>
-
-            </EditForm>
-        </MudCardContent>
-
-        <MudCardActions Class="d-flex justify-center pb-4">
-            <MudLink Href="/login" Underline="Underline.Hover">Já tem conta? Faça login</MudLink>
-        </MudCardActions>
-    </MudCard>
-</MudContainer>
-
-
->>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
 
 @code {
     private RegisterModel registerModel = new();
@@ -334,7 +219,6 @@
     {
         try
         {
-<<<<<<< HEAD
             // States
             if (await DbService.GetAsync<State>("states", "CE") == null)
                 await DbService.AddAsync("states", new State { Id = "CE", Name = "Ceará" });
@@ -374,41 +258,6 @@
                 if (await DbService.GetAsync<Unit>("units", u.Id) == null)
                     await DbService.AddAsync("units", u);
             }
-=======
-            // Seeding states
-            var newStates = new List<State>
-{
-new State { Id = "CE", Name = "Ceará" },
-new State { Id = "RN", Name = "Rio Grande do Norte" },
-new State { Id = "PA", Name = "Pará" },
-new State { Id = "MA", Name = "Maranhão" }
-};
-            foreach (var s in newStates) await DbService.AddAsync("states", s);
-
-            // Seeding cities
-            var cities = new List<City>
-{
-new City { Id = 1, StateId = "CE", Name = "Fortaleza" },
-new City { Id = 2, StateId = "RN", Name = "Natal" },
-new City { Id = 3, StateId = "PA", Name = "Belém" },
-new City { Id = 4, StateId = "MA", Name = "São Luís" },
-new City { Id = 5, StateId = "CE", Name = "Horizonte" }
-};
-            foreach (var c in cities) await DbService.AddAsync("cities", c);
-
-            // Seeding units
-            var units = new List<Unit>
-{
-new Unit { Id = 1, CityId = 5, Name = "Prefeitura Municipal de Horizonte" },
-new Unit { Id = 2, CityId = 5, Name = "Fundo Municipal de Saúde" },
-new Unit { Id = 3, CityId = 5, Name = "Câmara Municipal de Horizonte" },
-new Unit { Id = 4, CityId = 1, Name = "Prefeitura de Fortaleza" },
-new Unit { Id = 5, CityId = 3, Name = "Prefeitura de Belém" },
-new Unit { Id = 6, CityId = 4, Name = "Prefeitura de São Luís" },
-new Unit { Id = 7, CityId = 2, Name = "Prefeitura de Natal" }
-};
-            foreach (var u in units) await DbService.AddAsync("units", u);
->>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
 
             StateHasChanged();
         }

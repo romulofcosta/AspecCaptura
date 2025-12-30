@@ -4,27 +4,16 @@
 @inject IIndexedDbService DbService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
-<<<<<<< HEAD
 @inject IJSRuntime JSRuntime
-=======
->>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Perfil - ASPEC Capture</PageTitle>
 
-<<<<<<< HEAD
 <MudContainer id="profile-container" MaxWidth="MaxWidth.Small" Class="mt-4 pb-16">
-    <MudPaper Elevation="4" Class="pa-8 rounded-lg">
+    <MudPaper Elevation="4" Class="pa-8 rounded-lg premium-card">
         <div class="d-flex flex-column align-center mb-6">
             <MudAvatar Color="Color.Primary" Size="Size.Large"
                 Class="mb-4 shadow-md border-white border-2 profile-avatar-lg">
-=======
-<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
-    <MudPaper Elevation="4" Class="pa-8 premium-card">
-        <div class="d-flex flex-column align-center mb-6">
-            <MudAvatar Color="Color.Primary" Style="height:120px; width:120px; font-size:3rem;"
-                Class="mb-4 shadow-md border-white border-2">
->>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
                 @UserInitials
             </MudAvatar>
             <MudText Typo="Typo.h5" Class="font-weight-bold">@FullName</MudText>
@@ -37,7 +26,6 @@
             <DataAnnotationsValidator />
 
             <MudGrid Spacing="2">
-<<<<<<< HEAD
                 <MudItem xs="12">
                     <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Nome</MudText>
                     <MudTextField @bind-Value="profileModel.FirstName" Placeholder="Seu nome" Variant="Variant.Outlined"
@@ -61,25 +49,6 @@
                     </MudButton>
                 </MudItem>
             </MudGrid>
-=======
-                <MudItem xs="12" sm="6">
-                    <MudTextField @bind-Value="profileModel.FirstName" Label="Nome" Variant="Variant.Outlined"
-                        For="@(() => profileModel.FirstName)" Class="label-fix" />
-                </MudItem>
-                <MudItem xs="12" sm="6">
-                    <MudTextField @bind-Value="profileModel.LastName" Label="Sobrenome" Variant="Variant.Outlined"
-                        For="@(() => profileModel.LastName)" Class="label-fix" />
-                </MudItem>
-            </MudGrid>
-
-            <MudTextField @bind-Value="profileModel.Username" Label="E-mail" Variant="Variant.Outlined" Disabled="true"
-                Class="mt-4 label-fix" />
-
-            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
-                Class="mt-8 py-3" Size="Size.Large">
-                Salvar Alterações
-            </MudButton>
->>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
         </EditForm>
 
         <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true" Class="mt-4"
@@ -96,7 +65,6 @@
     private string FullName = "";
     private string Email = "";
 
-<<<<<<< HEAD
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -110,8 +78,6 @@
         }
     }
 
-=======
->>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
     protected override async Task OnInitializedAsync()
     {
         currentUser = await AuthService.GetCurrentUserAsync();
@@ -123,9 +89,9 @@
 
             Email = currentUser.Username;
             FullName = $"{currentUser.FirstName} {currentUser.LastName}";
-            if (!string.IsNullOrEmpty(currentUser.FirstName) && !string.IsNullOrEmpty(currentUser.LastName))
+            if (!string.IsNullOrEmpty(currentUser.FirstName))
             {
-                UserInitials = $"{currentUser.FirstName[0]}{currentUser.LastName[0]}".ToUpper();
+                UserInitials = $"{currentUser.FirstName[0]}{(string.IsNullOrEmpty(currentUser.LastName) ? "" : currentUser.LastName[0].ToString())}".ToUpper();
             }
         }
     }
@@ -137,19 +103,10 @@
             currentUser.FirstName = profileModel.FirstName;
             currentUser.LastName = profileModel.LastName;
 
-            await DbService.UpdateAsync("users", currentUser);
-<<<<<<< HEAD
             await AuthService.UpdateUserAsync(currentUser);
 
             FullName = $"{currentUser.FirstName} {currentUser.LastName}";
             UserInitials = $"{currentUser.FirstName[0]}{(string.IsNullOrEmpty(currentUser.LastName) ? "" : currentUser.LastName[0].ToString())}".ToUpper();
-=======
-            // Updating the object in local storage since AuthService uses it as source of truth for current user
-            await AuthService.RegisterAsync(currentUser.Username, "", currentUser.FirstName, currentUser.LastName,
-            currentUser.UnitIds);
-            // Note: RegisterAsync in current impl overwrites. Password hashing might be an issue if I pass empty.
-            // Better to update AuthService to have an UpdateProfile method.
->>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
 
             Snackbar.Add("Perfil atualizado com sucesso!", Severity.Success);
             StateHasChanged();

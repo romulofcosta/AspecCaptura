@@ -3,16 +3,15 @@
 @inject AppState appState
 @implements IDisposable
 
-<MudThemeProvider Theme="currentTheme" IsDarkMode="@appState.IsDarkMode" />
+<MudThemeProvider Theme="currentTheme" @bind-IsDarkMode="appState.IsDarkMode" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 <MudPopoverProvider />
 
 <MudLayout>
     <div style="position: fixed; top: 16px; right: 24px; z-index: 1000;">
-<<<<<<< HEAD
-        <MudIconButton Icon="@Icons.Material.Filled.BrightnessMedium" Color="Color.Default" OnClick="ToggleTheme"
-            Class="shadow-sm theme-toggle-btn"
+        <MudIconButton Icon="@(appState.IsDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+            Color="Color.Default" OnClick="ToggleTheme" Class="shadow-sm theme-toggle-btn"
             Style="background-color: var(--mud-palette-surface); border: 1px solid rgba(0,0,0,0.1);" />
     </div>
     <MudMainContent Class="mud-width-full auth-background" Style="min-height: 100vh; display: block; overflow: hidden;">
@@ -20,26 +19,13 @@
             style="min-height: 100vh; width: 100%; overflow-y: auto;">
             @Body
         </div>
-=======
-        <MudIconButton Icon="@(appState.IsDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
-            Color="Color.Default" OnClick="ToggleTheme" Class="shadow-sm"
-            Style="background-color: var(--mud-palette-surface); border: 1px solid rgba(0,0,0,0.1);" />
-    </div>
-    <MudMainContent Class="d-flex justify-center align-center mud-width-full auth-background"
-        Style="min-height: 100vh;">
-        @Body
->>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
     </MudMainContent>
 </MudLayout>
 
 @code {
     protected override async Task OnInitializedAsync()
     {
-<<<<<<< HEAD
         appState.OnChange += HandleAppStateChange;
-=======
-        appState.OnChange += StateHasChanged;
->>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
 
         try
         {
@@ -54,48 +40,34 @@
 
     public void Dispose()
     {
-<<<<<<< HEAD
         appState.OnChange -= HandleAppStateChange;
     }
 
     private void HandleAppStateChange()
     {
         InvokeAsync(StateHasChanged);
-=======
-        appState.OnChange -= StateHasChanged;
->>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
     }
 
     private async Task ToggleTheme()
     {
-<<<<<<< HEAD
         try
         {
             appState.IsDarkMode = !appState.IsDarkMode;
             await JSRuntime.InvokeVoidAsync("appInterop.setTheme", appState.IsDarkMode ? "dark" : "light");
         }
         catch { }
-=======
-        appState.IsDarkMode = !appState.IsDarkMode;
-        await JSRuntime.InvokeVoidAsync("appInterop.setTheme", appState.IsDarkMode ? "dark" : "light");
->>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
     }
 
     private MudTheme currentTheme = new MudTheme()
         {
             LayoutProperties = new LayoutProperties()
             {
-<<<<<<< HEAD
                 DefaultBorderRadius = "8px"
-=======
-                DefaultBorderRadius = "12px"
->>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
             },
             Typography = new Typography()
             {
                 Default = new DefaultTypography()
                 {
-<<<<<<< HEAD
                     FontFamily = new[] { "Outfit", "Inter", "Roboto", "Helvetica", "Arial", "sans-serif" },
                     FontSize = "0.875rem"
                 },
@@ -104,26 +76,7 @@
             },
             PaletteLight = new PaletteLight()
             {
-                Primary = "#0056b3",
-                AppbarBackground = "#003366",
-                Background = "#f8f9fa",
-                Surface = "#ffffff",
-                ActionDefault = "#495057"
-            },
-            PaletteDark = new PaletteDark()
-            {
-                Primary = "#4da3ff",
-                AppbarBackground = "#1a1d21",
-                Background = "#0f1114",
-                Surface = "#1a1d21",
-                ActionDefault = "#dee2e6"
-=======
-                    FontFamily = new[] { "Outfit", "Roboto", "Helvetica", "Arial", "sans-serif" }
-                }
-            },
-            PaletteLight = new PaletteLight()
-            {
-                Primary = "#0066CC",
+                Primary = "#0066CC", // ASPEC Blue
                 AppbarBackground = "#003366",
                 Background = "#F5F7FA",
                 Surface = "#FFFFFF",
@@ -131,12 +84,13 @@
             },
             PaletteDark = new PaletteDark()
             {
-                Primary = "#4A90E2",
+                Primary = "#4da3ff",
                 AppbarBackground = "#1A2238",
                 Background = "#121212",
-                Surface = "#1E1E1E",
-                ActionDefault = "#4A90E2"
->>>>>>> 1ea91de2e5a60c2d6f6d3cd6ed6efe20ba63c5c7
+                Surface = "#1e1e1e",
+                ActionDefault = "#4da3ff", // Contrast high
+                TextPrimary = "#FFFFFF",
+                TextSecondary = "#B0BEC5"
             }
         };
 }
