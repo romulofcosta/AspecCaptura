@@ -1,254 +1,113 @@
 @page "/stats"
 @using pwa_camera_poc_blazor.Models
 @inject IIndexedDbService DbService
+@inject IJSRuntime JSRuntime
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Estatísticas - ASPEC Capture</PageTitle>
 
-<div class="stats-container">
-    <div class="stats-header">
-        <h1>Visão Geral do Inventário</h1>
-        <p>Acompanhe o progresso das capturas e distribuição por categoria.</p>
-    </div>
+<MudContainer id="stats-container" MaxWidth="MaxWidth.Large" Class="mt-4"
+    Style="height: calc(100vh - 150px); overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; padding-bottom: 80px;">
+    <MudText Typo="Typo.h4" Class="mb-2 font-weight-bold">Visão Geral do Inventário</MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-8">Acompanhe o progresso das capturas e distribuição
+        por categoria.</MudText>
 
-    <div class="stats-grid">
-        <div class="stats-card highlight">
-            <div class="stat-icon">📦</div>
-            <div class="stat-content">
-                <span class="stat-value">@items.Count</span>
-                <span class="stat-label">Total de Itens</span>
-            </div>
-        </div>
-
-        <div class="stats-card">
-            <div class="stat-icon">📅</div>
-            <div class="stat-content">
-                <span class="stat-value">@todayCount</span>
-                <span class="stat-label">Capturados Hoje</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="charts-section">
-        <div class="chart-card">
-            <h3>Por Categoria</h3>
-            <div class="category-bars">
-                @foreach (var cat in categoryStats)
-                {
-                    <div class="category-row">
-                        <div class="category-info">
-                            <span class="cat-name">@cat.Key</span>
-                            <span class="cat-count">@cat.Value</span>
-                        </div>
-                        <div class="progress-bg">
-                            <div class="progress-fill" style="width: @(CalculatePercentage(cat.Value))%"></div>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
-
-    <div class="recent-activity">
-        <h3>Últimas Capturas</h3>
-        <div class="activity-timeline">
-            @foreach (var item in items.OrderByDescending(i => i.Timestamp).Take(5))
-            {
-                <div class="timeline-item">
-                    <div class="timeline-marker"></div>
-                    <div class="timeline-content">
-                        <span class="time">@item.Timestamp.ToString("HH:mm")</span>
-                        <span class="name">@item.Name</span>
-                        <span class="meta">@item.Category • @item.Code</span>
-                    </div>
+    <MudGrid Spacing="3">
+        <!-- Total Items Card -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="1" Class="pa-6 d-flex align-center gap-4 rounded-lg"
+                Style="background: linear-gradient(135deg, var(--mud-palette-surface) 0%, rgba(var(--mud-palette-primary-rgb), 0.05) 100%); border-left: 6px solid var(--mud-palette-primary);">
+                <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Large" Color="Color.Primary" />
+                <div>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold">@items.Count</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Total de Itens</MudText>
                 </div>
-            }
-        </div>
-    </div>
-</div>
+            </MudPaper>
+        </MudItem>
 
-<style>
-    .stats-container {
-        padding: 1.5rem;
-        max-width: 900px;
-        margin: 0 auto;
-    }
+        <!-- Captured Today Card -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="1" Class="pa-6 d-flex align-center gap-4 rounded-lg">
+                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Large" Color="Color.Secondary" />
+                <div>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold">@todayCount</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Capturados Hoje</MudText>
+                </div>
+            </MudPaper>
+        </MudItem>
 
-    .stats-header {
-        margin-bottom: 2.5rem;
-    }
+        <MudItem xs="12" md="8">
+            <MudCard Elevation="1" Class="rounded-lg h-100">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Por Categoria</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <div class="d-flex flex-column gap-6">
+                        @foreach (var cat in categoryStats)
+                        {
+                            <div>
+                                <div class="d-flex justify-space-between mb-1">
+                                    <MudText Typo="Typo.body2" Class="font-weight-medium">@cat.Key</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">@cat.Value</MudText>
+                                </div>
+                                <MudProgressLinear Color="Color.Primary" Value="@CalculatePercentage(cat.Value)"
+                                    Class="rounded-pill" Size="Size.Medium" />
+                            </div>
+                        }
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
 
-    .stats-header h1 {
-        font-size: 1.75rem;
-        color: var(--text-primary);
-        margin-bottom: 0.5rem;
-    }
-
-    .stats-header p {
-        color: var(--text-secondary);
-    }
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2.5rem;
-    }
-
-    .stats-card {
-        background: var(--surface-color);
-        border: 1px solid var(--border-color);
-        border-radius: 20px;
-        padding: 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: 1.25rem;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .stats-card.highlight {
-        border-color: var(--primary-color);
-        background: linear-gradient(135deg, var(--surface-color) 0%, rgba(var(--primary-rgb), 0.05) 100%);
-    }
-
-    .stat-icon {
-        font-size: 2.5rem;
-        line-height: 1;
-    }
-
-    .stat-content {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .stat-value {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: var(--text-primary);
-        line-height: 1;
-    }
-
-    .stat-label {
-        font-size: 0.875rem;
-        color: var(--text-secondary);
-        margin-top: 0.25rem;
-    }
-
-    .charts-section {
-        margin-bottom: 2.5rem;
-    }
-
-    .chart-card {
-        background: var(--surface-color);
-        border: 1px solid var(--border-color);
-        border-radius: 20px;
-        padding: 1.5rem;
-    }
-
-    .chart-card h3 {
-        font-size: 1.1rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .category-bars {
-        display: flex;
-        flex-direction: column;
-        gap: 1.25rem;
-    }
-
-    .category-row {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .category-info {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.9rem;
-    }
-
-    .cat-name {
-        color: var(--text-primary);
-        font-weight: 500;
-    }
-
-    .cat-count {
-        color: var(--text-secondary);
-    }
-
-    .progress-bg {
-        height: 8px;
-        background: var(--bg-body);
-        border-radius: 4px;
-        overflow: hidden;
-    }
-
-    .progress-fill {
-        height: 100%;
-        background: var(--primary-color);
-        border-radius: 4px;
-        transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .recent-activity h3 {
-        font-size: 1.1rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .activity-timeline {
-        padding-left: 1rem;
-        border-left: 2px solid var(--border-color);
-    }
-
-    .timeline-item {
-        position: relative;
-        padding-bottom: 1.5rem;
-        padding-left: 1.5rem;
-    }
-
-    .timeline-item:last-child {
-        padding-bottom: 0;
-    }
-
-    .timeline-marker {
-        position: absolute;
-        left: -1.45rem;
-        top: 0.25rem;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: var(--primary-color);
-        border: 2px solid var(--surface-color);
-    }
-
-    .timeline-content {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .time {
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: var(--primary-color);
-        margin-bottom: 0.15rem;
-    }
-
-    .name {
-        font-weight: 600;
-        color: var(--text-primary);
-    }
-
-    .meta {
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-    }
-</style>
+        <MudItem xs="12" md="4">
+            <MudCard Elevation="1" Class="rounded-lg h-100">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Últimas Atividades</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudTimeline TimelinePosition="TimelinePosition.Start">
+                        @foreach (var item in items.OrderByDescending(i => i.Timestamp).Take(5))
+                        {
+                            <MudTimelineItem Color="Color.Primary" Size="Size.Small">
+                                <ItemContent>
+                                    <div class="d-flex flex-column">
+                                        <MudText Typo="Typo.caption" Color="Color.Primary" Class="font-weight-bold">
+                                            @item.Timestamp.ToString("HH:mm")</MudText>
+                                        <MudText Typo="Typo.body2" Class="font-weight-medium">@item.Name</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Category • @item.Code
+                                        </MudText>
+                                    </div>
+                                </ItemContent>
+                            </MudTimelineItem>
+                        }
+                    </MudTimeline>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
 
 @code {
     private List<InventoryItem> items = new();
     private int todayCount = 0;
     private Dictionary<string, int> categoryStats = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await Task.Delay(500);
+                await JSRuntime.InvokeVoidAsync("appInterop.checkOverflow", "#stats-container");
+            }
+            catch { }
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {

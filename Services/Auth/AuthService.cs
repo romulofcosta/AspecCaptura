@@ -31,8 +31,10 @@ namespace pwa_camera_poc_blazor.Services.Auth
                     user = new User
                     {
                         Username = "admin",
+                        FirstName = "Administrador",
+                        LastName = "do Sistema",
                         PasswordHash = "",
-                        UnitIds = new List<int> {1},
+                        UnitIds = new List<int> { 1 },
                         CurrentUnitId = 1,
                         CreatedAt = DateTime.Now
                     };
@@ -73,14 +75,17 @@ namespace pwa_camera_poc_blazor.Services.Auth
             return user2;
         }
 
-        public async Task<User> RegisterAsync(string username, string password, List<int> unitIds)
+        public async Task<User> RegisterAsync(string username, string password, string firstName, string lastName, List<int> unitIds)
         {
+            var distinctIds = unitIds.Distinct().ToList();
             var user = new User
             {
                 Username = username.ToLower().Trim(),
+                FirstName = firstName,
+                LastName = lastName,
                 PasswordHash = HashPassword(password),
-                UnitIds = unitIds,
-                CurrentUnitId = unitIds.Count > 0 ? unitIds[0] : null,
+                UnitIds = distinctIds,
+                CurrentUnitId = distinctIds.Count > 0 ? distinctIds[0] : null,
                 CreatedAt = DateTime.Now
             };
 
@@ -137,6 +142,19 @@ namespace pwa_camera_poc_blazor.Services.Auth
                 v /= 36;
             }
             return negative ? "-" + result : result;
+        }
+        public async Task UpdateUserAsync(User user)
+        {
+            user.UnitIds = user.UnitIds.Distinct().ToList();
+            await _localStorage.SetItemAsync(user.Username, user);
+
+            // If the updated user is the current session user, update session as well
+            var session = await _localStorage.GetItemAsync<UserSession>(SESSION_KEY);
+            if (session != null && session.Username == user.Username)
+            {
+                session.UnitId = user.CurrentUnitId ?? 0;
+                await _localStorage.SetItemAsync(SESSION_KEY, session);
+            }
         }
     }
 

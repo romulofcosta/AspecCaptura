@@ -1,10 +1,94 @@
 @inherits LayoutComponentBase
+@inject IJSRuntime JSRuntime
+@inject AppState appState
+@implements IDisposable
 
-<div class="auth-background"></div>
+<MudThemeProvider Theme="currentTheme" IsDarkMode="@appState.IsDarkMode" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
 
-<div class="auth-container">
-    @Body
-</div>
+<MudLayout>
+    <div style="position: fixed; top: 16px; right: 24px; z-index: 1000;">
+        <MudIconButton Icon="@Icons.Material.Filled.BrightnessMedium" Color="Color.Default" OnClick="ToggleTheme"
+            Class="shadow-sm theme-toggle-btn"
+            Style="background-color: var(--mud-palette-surface); border: 1px solid rgba(0,0,0,0.1);" />
+    </div>
+    <MudMainContent Class="mud-width-full auth-background" Style="min-height: 100vh; display: block; overflow: hidden;">
+        <div class="d-flex justify-center align-start pt-4 pt-sm-10"
+            style="min-height: 100vh; width: 100%; overflow-y: auto;">
+            @Body
+        </div>
+    </MudMainContent>
+</MudLayout>
 
 @code {
+    protected override async Task OnInitializedAsync()
+    {
+        appState.OnChange += HandleAppStateChange;
+
+        try
+        {
+            var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
+            appState.IsDarkMode = theme == "dark";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading theme in AuthLayout: {ex.Message}");
+        }
+    }
+
+    public void Dispose()
+    {
+        appState.OnChange -= HandleAppStateChange;
+    }
+
+    private void HandleAppStateChange()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ToggleTheme()
+    {
+        try
+        {
+            appState.IsDarkMode = !appState.IsDarkMode;
+            await JSRuntime.InvokeVoidAsync("appInterop.setTheme", appState.IsDarkMode ? "dark" : "light");
+        }
+        catch { }
+    }
+
+    private MudTheme currentTheme = new MudTheme()
+        {
+            LayoutProperties = new LayoutProperties()
+            {
+                DefaultBorderRadius = "8px"
+            },
+            Typography = new Typography()
+            {
+                Default = new DefaultTypography()
+                {
+                    FontFamily = new[] { "Outfit", "Inter", "Roboto", "Helvetica", "Arial", "sans-serif" },
+                    FontSize = "0.875rem"
+                },
+                H3 = new H3Typography() { FontSize = "2rem", FontWeight = "700" },
+                H5 = new H5Typography() { FontSize = "1.5rem", FontWeight = "600" }
+            },
+            PaletteLight = new PaletteLight()
+            {
+                Primary = "#0056b3",
+                AppbarBackground = "#003366",
+                Background = "#f8f9fa",
+                Surface = "#ffffff",
+                ActionDefault = "#495057"
+            },
+            PaletteDark = new PaletteDark()
+            {
+                Primary = "#4da3ff",
+                AppbarBackground = "#1a1d21",
+                Background = "#0f1114",
+                Surface = "#1a1d21",
+                ActionDefault = "#dee2e6"
+            }
+        };
 }

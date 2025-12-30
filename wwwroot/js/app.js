@@ -13,5 +13,16 @@ window.appInterop = {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    },
+    checkOverflow: (selector) => {
+        const el = document.querySelector(selector);
+        if (!el) return false;
+        const hasOverflow = el.scrollHeight > el.clientHeight;
+        if (hasOverflow) {
+            el.classList.add('has-overflow');
+        } else {
+            el.classList.remove('has-overflow');
+        }
+        return hasOverflow;
     }
 };

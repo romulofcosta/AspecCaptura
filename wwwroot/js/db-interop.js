@@ -1,7 +1,7 @@
 window.dbInterop = {
     db: null,
     dbName: 'PwaInventoryDB',
-    dbVersion: 1,
+    dbVersion: 2,
 
     init: async function () {
         return new Promise((resolve, reject) => {

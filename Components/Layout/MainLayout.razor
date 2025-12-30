@@ -7,34 +7,120 @@
 @inject IAuthService AuthService
 @inject IJSRuntime JSRuntime
 @using System.Text
+@using MudBlazor
+@inject ISnackbar Snackbar
 
-<div class="app-container">
-    <Header OnToggleMenu="ToggleMenu" />
+<MudThemeProvider Theme="currentTheme" @bind-IsDarkMode="appState.IsDarkMode" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
 
-    <NavMenu IsOpen="isMenuOpen" OnClose="ToggleMenu" OnUnitSelected="HandleUnitSelected" />
+<MudLayout>
+    <MudAppBar Elevation="2" Color="Color.Primary" Fixed="true">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleMenu" />
+        <MudImage Src="images/aspec_logo.png" Alt="Aspec Capture" Width="32" Height="32" Class="mr-2 ml-3" Style="border-radius: 4px;"/>
+        <MudText Typo="Typo.h6">Aspec Capture</MudText>
+        <MudSpacer />
+    </MudAppBar>
 
-    <main class="main-content">
+    <MudDrawer @bind-Open="isMenuOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Variant="DrawerVariant.Responsive">
+        <NavMenu OnThemeToggle="ToggleTheme" OnUnitSelected="HandleUnitSelected" OnMenuItemClick="@(() => isMenuOpen = false)" />
+    </MudDrawer>
+
+    <MudMainContent Class="mud-width-full" Style="min-height: 100vh; display: flex; flex-direction: column;">
         @Body
-    </main>
+    </MudMainContent>
 
     @if (!appState.IsCameraActive)
     {
         <Footer ActiveTab="@activeTab" PendingSyncCount="@appState.PendingSyncCount" OnTabChanged="HandleTabChanged"
             OnCaptureClick="HandleCaptureClick" OnExportClick="HandleExportClick" />
     }
-
-    <Toast @ref="toastComponent" />
-</div>
+</MudLayout>
 
 @code {
     private bool isMenuOpen = false;
     private string activeTab = "home";
-    private Toast? toastComponent;
+
+    // ASPEC Identity Theme Configuration
+    // ASPEC Identity Theme Configuration
+    private MudTheme currentTheme = new MudTheme()
+    {
+        LayoutProperties = new LayoutProperties()
+        {
+            DefaultBorderRadius = "8px",
+            DrawerWidthLeft = "280px",
+            DrawerWidthRight = "300px"
+        },
+        Typography = new Typography()
+        {
+            Default = new DefaultTypography()
+            {
+                FontFamily = new[] { "Outfit", "Inter", "Roboto", "Helvetica", "Arial", "sans-serif" },
+                FontSize = "0.875rem",
+                FontWeight = "400",
+                LineHeight = "1.43",
+                LetterSpacing = ".01071em"
+            },
+            H3 = new H3Typography() { FontSize = "2rem", FontWeight = "700", LineHeight = "1.2" },
+            H4 = new H4Typography() { FontSize = "1.75rem", FontWeight = "700", LineHeight = "1.2" },
+            H5 = new H5Typography() { FontSize = "1.5rem", FontWeight = "600", LineHeight = "1.3" },
+            H6 = new H6Typography() { FontSize = "1.25rem", FontWeight = "600", LineHeight = "1.3" },
+            Button = new ButtonTypography() { TextTransform = "none", FontWeight = "600", FontSize = "0.875rem" }
+        },
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#0056b3",
+            Secondary = "#6c757d",
+            Success = "#28a745",
+            Info = "#17a2b8",
+            Warning = "#ffc107",
+            Error = "#dc3545",
+            AppbarBackground = "#003366",
+            Background = "#f8f9fa",
+            Surface = "#ffffff",
+            DrawerBackground = "#ffffff",
+            TextPrimary = "#212529",
+            TextSecondary = "#6c757d",
+            ActionDefault = "#495057",
+            Divider = "#dee2e6"
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Primary = "#4da3ff",
+            Secondary = "#adb5bd",
+            Success = "#34ce57",
+            Info = "#2dbbd2",
+            Warning = "#ffcd39",
+            Error = "#e35d6a",
+            AppbarBackground = "#1a1d21",
+            Background = "#0f1114",
+            Surface = "#1a1d21",
+            DrawerBackground = "#1a1d21",
+            TextPrimary = "#f8f9fa",
+            TextSecondary = "#adb5bd",
+            ActionDefault = "#dee2e6",
+            Divider = "rgba(255, 255, 255, 0.12)"
+        }
+    };
 
     protected override async Task OnInitializedAsync()
     {
-        ToastService.OnShow += ShowToast;
-        appState.OnChange += StateHasChanged;
+        ToastService.OnShow += HandleToastShow;
+        appState.OnChange += HandleAppStateChange;
+        Navigation.LocationChanged += HandleLocationChanged;
+
+        UpdateActiveTab();
+
+        try
+        {
+            var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
+            appState.IsDarkMode = theme == "dark";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading theme: {ex.Message}");
+        }
 
         try
         {
@@ -60,6 +146,42 @@
         }
     }
 
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        InvokeAsync(() =>
+        {
+            UpdateActiveTab();
+            StateHasChanged();
+        });
+    }
+
+    private void HandleAppStateChange()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void HandleToastShow(string message, string type)
+    {
+        InvokeAsync(() => ShowToast(message, type));
+    }
+
+    private void UpdateActiveTab()
+    {
+        var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri).ToLower();
+        if (string.IsNullOrEmpty(relativePath) || relativePath == "home") activeTab = "home";
+        else if (relativePath == "stats") activeTab = "stats";
+        else if (relativePath == "sync") activeTab = "sync";
+        else activeTab = ""; // Other pages might not have a tab
+
+        // If we navigate away from camera, ensure IsCameraActive is false
+        if (relativePath != "camera" && appState.IsCameraActive)
+        {
+            // Note: Camera page usually handles this in Dispose, 
+            // but this is a safety net for "stuck" state.
+            appState.IsCameraActive = false;
+        }
+    }
+
     private async Task UpdateSyncCount()
     {
         try
@@ -79,9 +201,27 @@
         isMenuOpen = !isMenuOpen;
     }
 
+    private async Task ToggleTheme()
+    {
+        appState.IsDarkMode = !appState.IsDarkMode;
+        await JSRuntime.InvokeVoidAsync("appInterop.setTheme", appState.IsDarkMode ? "dark" : "light");
+    }
+
     private void ShowToast(string message, string type)
     {
-        toastComponent?.Show(message, type);
+        try
+        {
+            Severity severity = type switch
+            {
+                "success" => Severity.Success,
+                "error" => Severity.Error,
+                "warning" => Severity.Warning,
+                "info" => Severity.Info,
+                _ => Severity.Normal
+            };
+            Snackbar.Add(message, severity);
+        }
+        catch { }
     }
 
     private void HandleTabChanged(string tab)
@@ -144,7 +284,8 @@
 
     public void Dispose()
     {
-        ToastService.OnShow -= ShowToast;
-        appState.OnChange -= StateHasChanged;
+        ToastService.OnShow -= HandleToastShow;
+        appState.OnChange -= HandleAppStateChange;
+        Navigation.LocationChanged -= HandleLocationChanged;
     }
 }

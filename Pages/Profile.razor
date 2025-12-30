@@ -1,0 +1,127 @@
+@page "/profile"
+@using pwa_camera_poc_blazor.Models
+@inject IAuthService AuthService
+@inject IIndexedDbService DbService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Perfil - ASPEC Capture</PageTitle>
+
+<MudContainer id="profile-container" MaxWidth="MaxWidth.Small" Class="mt-4 pb-16">
+    <MudPaper Elevation="4" Class="pa-8 rounded-lg">
+        <div class="d-flex flex-column align-center mb-6">
+            <MudAvatar Color="Color.Primary" Size="Size.Large"
+                Class="mb-4 shadow-md border-white border-2 profile-avatar-lg">
+                @UserInitials
+            </MudAvatar>
+            <MudText Typo="Typo.h5" Class="font-weight-bold">@FullName</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@Email</MudText>
+        </div>
+
+        <MudDivider Class="my-6" />
+
+        <EditForm Model="@profileModel" OnValidSubmit="HandleUpdateProfile">
+            <DataAnnotationsValidator />
+
+            <MudGrid Spacing="2">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Nome</MudText>
+                    <MudTextField @bind-Value="profileModel.FirstName" Placeholder="Seu nome" Variant="Variant.Outlined"
+                        For="@(() => profileModel.FirstName)" FullWidth="true" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Sobrenome</MudText>
+                    <MudTextField @bind-Value="profileModel.LastName" Placeholder="Seu sobrenome" Variant="Variant.Outlined"
+                        For="@(() => profileModel.LastName)" FullWidth="true" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">E-mail</MudText>
+                    <MudTextField @bind-Value="profileModel.Username" Variant="Variant.Outlined" Disabled="true"
+                        FullWidth="true" />
+                </MudItem>
+
+                <MudItem xs="12" Class="mt-4">
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                        Class="py-3 shadow-md" Size="Size.Large">
+                        Salvar Alterações
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+
+        <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true" Class="mt-4"
+            OnClick="@(() => Navigation.NavigateTo("/home"))">
+            Voltar para Home
+        </MudButton>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private ProfileModel profileModel = new();
+    private User? currentUser;
+    private string UserInitials = "U";
+    private string FullName = "";
+    private string Email = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await Task.Delay(500);
+                await JSRuntime.InvokeVoidAsync("appInterop.checkOverflow", "#profile-container");
+            }
+            catch { }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await AuthService.GetCurrentUserAsync();
+        if (currentUser != null)
+        {
+            profileModel.FirstName = currentUser.FirstName;
+            profileModel.LastName = currentUser.LastName;
+            profileModel.Username = currentUser.Username;
+
+            Email = currentUser.Username;
+            FullName = $"{currentUser.FirstName} {currentUser.LastName}";
+            if (!string.IsNullOrEmpty(currentUser.FirstName) && !string.IsNullOrEmpty(currentUser.LastName))
+            {
+                UserInitials = $"{currentUser.FirstName[0]}{currentUser.LastName[0]}".ToUpper();
+            }
+        }
+    }
+
+    private async Task HandleUpdateProfile()
+    {
+        if (currentUser != null)
+        {
+            currentUser.FirstName = profileModel.FirstName;
+            currentUser.LastName = profileModel.LastName;
+
+            await DbService.UpdateAsync("users", currentUser);
+            await AuthService.UpdateUserAsync(currentUser);
+
+            FullName = $"{currentUser.FirstName} {currentUser.LastName}";
+            UserInitials = $"{currentUser.FirstName[0]}{(string.IsNullOrEmpty(currentUser.LastName) ? "" : currentUser.LastName[0].ToString())}".ToUpper();
+
+            Snackbar.Add("Perfil atualizado com sucesso!", Severity.Success);
+            StateHasChanged();
+        }
+    }
+
+    public class ProfileModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
+        public string FirstName { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
+        public string LastName { get; set; } = "";
+
+        public string Username { get; set; } = "";
+    }
+}

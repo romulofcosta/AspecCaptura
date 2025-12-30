@@ -8,251 +8,162 @@
 
 <PageTitle>Cadastro - ASPEC Inventory</PageTitle>
 
-<button class="theme-toggle" @onclick="ToggleTheme" aria-label="Alternar tema">
-    <span>
-        @if (isDarkMode)
-        {
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            </svg>
-        }
-        else
-        {
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="4" />
-                <path
-                    d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-            </svg>
-        }
-    </span>
-</button>
+@* Theme toggle removed in favor of global layout/system preference *@
 
-<div class="auth-card">
-    <div class="auth-header">
-        <div class="auth-logo">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="4" y="6" width="16" height="14" rx="3" />
-                <path d="M4 10h16" />
-            </svg>
-        </div>
-        <h1 class="auth-title">Criar Conta</h1>
-        <p class="auth-subtitle">Cadastre-se para começar</p>
-    </div>
-
-    @if (!string.IsNullOrEmpty(alertMessage))
-    {
-        <div class="auth-alert @alertType show">@alertMessage</div>
-    }
-
-    <EditForm Model="@registerModel" OnValidSubmit="HandleRegister" class="auth-form">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <div class="form-group">
-            <label for="register-username" class="form-label">E-mail</label>
-            <InputText id="register-username" class="form-input" @bind-Value="registerModel.Username"
-                placeholder="Escolha um e-mail" />
-            <ValidationMessage For="@(() => registerModel.Username)" />
-        </div>
-
-        <div class="form-group">
-            <label for="register-password" class="form-label">Senha</label>
-            <InputText type="password" id="register-password" class="form-input" @bind-Value="registerModel.Password"
-                placeholder="Escolha uma senha" />
-            <ValidationMessage For="@(() => registerModel.Password)" />
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Unidades Gestoras (Selecione pelo menos uma)</label>
-            <div class="units-filter-bar">
-                <InputText id="units-search-input" class="form-input" @bind-Value="searchQuery"
-                    placeholder="Buscar unidade por nome" />
-                <div class="units-filters-row">
-                    <select class="form-select" @onchange="OnStateChanged">
-                        <option value="">Todos os Estados</option>
-                        @foreach (var state in states)
-                        {
-                            <option value="@state.Id">@state.Id - @state.Name</option>
-                        }
-                    </select>
-                    <select class="form-select" disabled="@(string.IsNullOrEmpty(selectedStateId))"
-                    @onchange="OnCityChanged">
-                        <option value="">Todas as Cidades</option>
-                        @foreach (var city in filteredCities)
-                        {
-                            <option value="@city.Id">@city.Name</option>
-                        }
-                    </select>
-                </div>
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-center justify-start pa-4" Style="min-height: 100vh;">
+    <MudPaper id="register-card" Elevation="4" Class="d-flex flex-column rounded-lg premium-card w-100" Style="max-width: 500px; height: auto; max-height: 85vh; overflow: hidden;">
+        
+        <!-- Header (Fixed) -->
+        <div class="pa-6 pa-sm-8 pb-4 d-flex flex-column align-center">
+            <div class="d-flex justify-center mb-4">
+                <MudImage Src="images/aspec_logo.png" Alt="ASPEC Logo"
+                    Style="width: 70px; height: 70px; object-fit: contain; border-radius: 12px;"
+                    Class="shadow-sm" />
             </div>
+            <MudText Typo="Typo.h5" Align="Align.Center" Class="font-weight-bold">Criar Conta</MudText>
+            <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">Cadastre-se para começar</MudText>
+        </div>
 
-            @if (selectedUnits.Any())
+        <MudDivider />
+
+        <!-- Content/Form (Scrollable) -->
+        <div class="flex-grow-1 pa-6 pa-sm-8 overflow-y-auto" style="scroll-behavior: smooth;">
+            @if (!string.IsNullOrEmpty(alertMessage))
             {
-                <div class="selected-units">
-                    @foreach (var unit in selectedUnits)
-                    {
-                        <div class="unit-chip">
-                            <span>@unit.Value</span>
-                            <button type="button" @onclick="() => RemoveUnit(unit.Key)">×</button>
-                        </div>
-                    }
-                </div>
+                <MudAlert Severity="@(alertType == "success" ? Severity.Success : Severity.Error)" Class="mb-4">
+                    @alertMessage
+                </MudAlert>
             }
 
-            <div class="units-container">
-                @if (availableUnits.Any())
-                {
-                    @foreach (var unit in filteredAvailableUnits)
+            <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
+                <DataAnnotationsValidator />
+
+                <MudGrid Spacing="1">
+                    <MudItem xs="12" sm="6" Class="pb-2">
+                        <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Nome</MudText>
+                        <MudTextField @bind-Value="registerModel.FirstName" Placeholder="Ex: João" Variant="Variant.Outlined"
+                            For="@(() => registerModel.FirstName)" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" Class="pb-2">
+                        <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Sobrenome</MudText>
+                        <MudTextField @bind-Value="registerModel.LastName" Placeholder="Ex: Silva" Variant="Variant.Outlined"
+                            For="@(() => registerModel.LastName)" FullWidth="true" />
+                    </MudItem>
+
+                    <MudItem xs="12" Class="pb-2">
+                        <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">E-mail</MudText>
+                        <MudTextField @bind-Value="registerModel.Username" Placeholder="exemplo@aspec.com.br" Variant="Variant.Outlined"
+                            Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email"
+                            For="@(() => registerModel.Username)" FullWidth="true" />
+                    </MudItem>
+
+                    <MudItem xs="12" Class="pb-4">
+                        <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Senha</MudText>
+                        <MudTextField @bind-Value="registerModel.Password" Placeholder="Mínimo 6 caracteres" Variant="Variant.Outlined"
+                            InputType="InputType.Password" Adornment="Adornment.Start"
+                            AdornmentIcon="@Icons.Material.Filled.Lock" For="@(() => registerModel.Password)" Margin="Margin.Dense" FullWidth="true" />
+                    </MudItem>
+
+                    <MudItem xs="12" Class="mt-2">
+                        <MudText Typo="Typo.subtitle2" Class="mb-2 font-weight-bold">Unidades Gestoras</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="string" Label="Estado" Value="selectedStateId" ValueChanged="OnStateChanged"
+                            Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="@("")">Todos</MudSelectItem>
+                            @foreach (var state in states)
+                            {
+                                <MudSelectItem Value="@state.Id">@state.Id - @state.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="int?" Label="Cidade" Value="selectedCityId" ValueChanged="OnCityChanged"
+                            Disabled="@(string.IsNullOrEmpty(selectedStateId))" Variant="Variant.Outlined"
+                            AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem T="int?" Value="@null">Todas</MudSelectItem>
+                            @foreach (var city in filteredCities)
+                            {
+                                <MudSelectItem T="int?" Value="@city.Id">@city.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="searchQuery" Placeholder="Buscar unidade" Variant="Variant.Outlined"
+                            Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" FullWidth="true" />
+                    </MudItem>
+
+                    @if (selectedUnits.Any())
                     {
-                        <div class="unit-checkbox-item">
-                            <div class="unit-label">@unit.Name</div>
-                            <button type="button" class="add-unit-btn" @onclick="() => AddUnit(unit)"
-                                disabled="@selectedUnits.ContainsKey(unit.Id)">
-                                @if (selectedUnits.ContainsKey(unit.Id))
+                        <MudItem xs="12">
+                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                @foreach (var unit in selectedUnits)
                                 {
-                                    <span>Adicionado</span>
+                                    <MudChip T="string" Color="Color.Primary" OnClose="() => RemoveUnit(unit.Key)" Size="Size.Small">
+                                        @unit.Value
+                                    </MudChip>
                                 }
-                                else
-                                {
-                                    <svg viewBox="0 0 24 24">
-                                        <path d="M12 5v14" />
-                                        <path d="M5 12h14" />
-                                    </svg> <span>Adicionar</span>
-                                }
-                            </button>
-                        </div>
+                            </div>
+                        </MudItem>
                     }
-                }
-                else
-                {
-                    <div class="units-placeholder">Selecione uma cidade primeiro</div>
-                }
-            </div>
+
+                    <MudItem xs="12">
+                        <div class="units-container mud-paper-outlined pa-2" style="max-height: 151px; overflow-y: auto; border-radius: 8px;">
+                            @if (filteredAvailableUnits.Any())
+                            {
+                                <MudList T="Unit" Dense="true">
+                                    @foreach (var unit in filteredAvailableUnits)
+                                    {
+                                        <MudListItem>
+                                            <div class="d-flex justify-space-between align-center width-100">
+                                                <MudText Typo="Typo.body2">@unit.Name</MudText>
+                                                <MudIconButton
+                                                    Icon="@(selectedUnits.ContainsKey(unit.Id) ? Icons.Material.Filled.Check : Icons.Material.Filled.Add)"
+                                                    Color="@(selectedUnits.ContainsKey(unit.Id) ? Color.Success : Color.Default)"
+                                                    OnClick="() => AddUnit(unit)" Disabled="@selectedUnits.ContainsKey(unit.Id)"
+                                                    Size="Size.Small" />
+                                            </div>
+                                        </MudListItem>
+                                    }
+                                </MudList>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block pa-4 text-secondary">
+                                    @(availableUnits.Any() ? "Nenhuma unidade encontrada na busca." : "Selecione estado e cidade.")
+                                </MudText>
+                            }
+                        </div>
+                    </MudItem>
+
+                    <MudItem xs="12" Class="mt-6">
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                            FullWidth="true" Disabled="@isLoading" Size="Size.Large" Class="py-3 shadow-md">
+                            @(isLoading ? "Cadastrando..." : "Cadastrar")
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
         </div>
 
-        <button type="submit" class="btn-primary @(isLoading ? "btn-loading" : "")" disabled="@isLoading">
-            @(isLoading ? "" : "Cadastrar")
-        </button>
-    </EditForm>
+        <MudDivider />
 
-    <div class="auth-toggle">
-        <span>Já tem conta?</span>
-        <a href="/login" class="auth-toggle-link">Faça login</a>
-    </div>
-</div>
+        <!-- Footer (Fixed) -->
+        <div class="pa-4 d-flex justify-center">
+            <MudLink Href="/login" Underline="Underline.Hover">Já tem conta? Faça login</MudLink>
+        </div>
+    </MudPaper>
+</MudContainer>
 
-<style>
-    .units-container {
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 0.75rem;
-        max-height: 150px;
-        overflow-y: auto;
-        background: var(--bg-input);
-    }
 
-    .units-filter-bar {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .units-filters-row {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .units-placeholder {
-        color: var(--text-secondary);
-        font-size: 0.875rem;
-        text-align: center;
-        padding: 1rem;
-    }
-
-    .unit-checkbox-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 0.5rem;
-        padding: 0.25rem;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .unit-checkbox-item:last-child {
-        border-bottom: none;
-    }
-
-    .unit-label {
-        flex: 1;
-        font-size: 0.9rem;
-        color: var(--text-primary);
-        line-height: 1.4;
-        padding-right: 10px;
-    }
-
-    .selected-units {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin: 0.5rem 0;
-    }
-
-    .unit-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        background: var(--surface-elevated);
-        border: 1px solid var(--border-color);
-        border-radius: 16px;
-        padding: 0.25rem 0.5rem;
-        font-size: 0.85rem;
-        color: var(--text-primary);
-    }
-
-    .unit-chip button {
-        border: none;
-        background: none;
-        color: var(--danger-color);
-        cursor: pointer;
-        font-size: 1rem;
-        line-height: 1;
-        padding: 0 0.25rem;
-    }
-
-    .add-unit-btn {
-        border: 1px solid var(--border-color);
-        background: var(--surface-color);
-        color: var(--text-secondary);
-        border-radius: 8px;
-        padding: 0.25rem 0.5rem;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        font-size: 0.8rem;
-    }
-
-    .add-unit-btn svg {
-        width: 14px;
-        height: 14px;
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 2;
-    }
-
-    .add-unit-btn:disabled {
-        opacity: 0.6;
-        cursor: default;
-    }
-</style>
 
 @code {
     private RegisterModel registerModel = new();
     private string? alertMessage;
     private string? alertType;
     private bool isLoading = false;
-    private bool isDarkMode = false;
     private string searchQuery = "";
 
     private List<State> states = new();
@@ -263,42 +174,143 @@
     private string? selectedStateId;
     private int? selectedCityId;
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await Task.Delay(500); // Wait for animations
+                await JSRuntime.InvokeVoidAsync("appInterop.checkOverflow", "#register-card .overflow-y-auto");
+            }
+            catch { }
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        await DbService.InitAsync();
-        states = await DbService.GetAllAsync<State>("states");
-        var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
-        isDarkMode = theme == "dark";
+        try
+        {
+            isLoading = true;
+            await DbService.InitAsync();
+            states = await DbService.GetAllAsync<State>("states");
+
+            // Auto-seed if data is missing
+            if (!states.Any())
+            {
+                await SeedDataAsync();
+                states = await DbService.GetAllAsync<State>("states");
+            }
+        }
+        catch (Exception ex)
+        {
+            alertMessage = "Erro ao inicializar dados localmente: " + ex.Message;
+            alertType = "error";
+            Console.Error.WriteLine($"Initialitation error: {ex}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
-    private async Task OnStateChanged(ChangeEventArgs e)
+    private async Task SeedDataAsync()
     {
-        selectedStateId = e.Value?.ToString();
+        try
+        {
+            // States
+            if (await DbService.GetAsync<State>("states", "CE") == null)
+                await DbService.AddAsync("states", new State { Id = "CE", Name = "Ceará" });
+            if (await DbService.GetAsync<State>("states", "RN") == null)
+                await DbService.AddAsync("states", new State { Id = "RN", Name = "Rio Grande do Norte" });
+            if (await DbService.GetAsync<State>("states", "PA") == null)
+                await DbService.AddAsync("states", new State { Id = "PA", Name = "Pará" });
+            if (await DbService.GetAsync<State>("states", "MA") == null)
+                await DbService.AddAsync("states", new State { Id = "MA", Name = "Maranhão" });
+
+            // Cities
+            if (await DbService.GetAsync<City>("cities", 1) == null)
+                await DbService.AddAsync("cities", new City { Id = 1, StateId = "CE", Name = "Fortaleza" });
+            if (await DbService.GetAsync<City>("cities", 2) == null)
+                await DbService.AddAsync("cities", new City { Id = 2, StateId = "RN", Name = "Natal" });
+            if (await DbService.GetAsync<City>("cities", 3) == null)
+                await DbService.AddAsync("cities", new City { Id = 3, StateId = "PA", Name = "Belém" });
+            if (await DbService.GetAsync<City>("cities", 4) == null)
+                await DbService.AddAsync("cities", new City { Id = 4, StateId = "MA", Name = "São Luís" });
+            if (await DbService.GetAsync<City>("cities", 5) == null)
+                await DbService.AddAsync("cities", new City { Id = 5, StateId = "CE", Name = "Horizonte" });
+
+            // Units
+            var demoUnits = new List<Unit>
+            {
+                new Unit { Id = 1, CityId = 5, Name = "Prefeitura Municipal de Horizonte" },
+                new Unit { Id = 2, CityId = 5, Name = "Fundo Municipal de Saúde" },
+                new Unit { Id = 3, CityId = 5, Name = "Câmara Municipal de Horizonte" },
+                new Unit { Id = 4, CityId = 1, Name = "Prefeitura de Fortaleza" },
+                new Unit { Id = 5, CityId = 3, Name = "Prefeitura de Belém" },
+                new Unit { Id = 6, CityId = 4, Name = "Prefeitura de São Luís" },
+                new Unit { Id = 7, CityId = 2, Name = "Prefeitura de Natal" }
+            };
+
+            foreach (var u in demoUnits)
+            {
+                if (await DbService.GetAsync<Unit>("units", u.Id) == null)
+                    await DbService.AddAsync("units", u);
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Seeding error: {ex}");
+            throw;
+        }
+    }
+
+    private async Task OnStateChanged(string value)
+    {
+        if (selectedStateId == value) return;
+
+        selectedStateId = value;
         selectedCityId = null;
         availableUnits.Clear();
-        if (string.IsNullOrEmpty(selectedStateId))
+        filteredCities.Clear();
+
+        if (!string.IsNullOrEmpty(selectedStateId))
         {
-            filteredCities.Clear();
+            try
+            {
+                filteredCities = await DbService.GetAllFromIndexAsync<City>("cities", "stateId", selectedStateId);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error loading cities: {ex.Message}");
+            }
         }
-        else
-        {
-            filteredCities = await DbService.GetAllFromIndexAsync<City>("cities", "stateId",
-            selectedStateId);
-        }
+
+        StateHasChanged();
     }
 
-    private async Task OnCityChanged(ChangeEventArgs e)
+    private async Task OnCityChanged(int? value)
     {
-        if (int.TryParse(e.Value?.ToString(), out var cityId))
+        if (selectedCityId == value) return;
+
+        selectedCityId = value;
+        availableUnits.Clear();
+
+        if (value.HasValue)
         {
-            selectedCityId = cityId;
-            availableUnits = await DbService.GetAllFromIndexAsync<Unit>("units", "cityId", cityId);
+            try
+            {
+                availableUnits = await DbService.GetAllFromIndexAsync<Unit>("units", "cityId", value.Value);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error loading units: {ex.Message}");
+            }
         }
-        else
-        {
-            selectedCityId = null;
-            availableUnits.Clear();
-        }
+
+        StateHasChanged();
     }
 
     private IEnumerable<Unit> filteredAvailableUnits =>
@@ -333,7 +345,8 @@
 
         try
         {
-            await AuthService.RegisterAsync(registerModel.Username, registerModel.Password, selectedUnits.Keys.ToList());
+            await AuthService.RegisterAsync(registerModel.Username, registerModel.Password, registerModel.FirstName,
+            registerModel.LastName, selectedUnits.Keys.ToList());
             alertMessage = "Cadastro realizado com sucesso!";
             alertType = "success";
             await Task.Delay(1000);
@@ -350,17 +363,17 @@
         }
     }
 
-    private async Task ToggleTheme()
-    {
-        isDarkMode = !isDarkMode;
-        await JSRuntime.InvokeVoidAsync("appInterop.setTheme", isDarkMode ? "dark" : "light");
-    }
-
     public class RegisterModel
     {
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
         [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Formato de e-mail inválido")]
         public string Username { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
+        public string FirstName { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
+        public string LastName { get; set; } = string.Empty;
 
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
         [System.ComponentModel.DataAnnotations.MinLength(6, ErrorMessage = "A senha deve ter pelo menos 6 caracteres")]

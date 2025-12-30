@@ -5,138 +5,165 @@
 @inject CameraService CameraService
 @inject pwa_camera_poc_blazor.Services.ToastService ToastService
 @inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
+@using MudBlazor
+@inject AppState appState
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Detalhes do Item - ASPEC Capture</PageTitle>
 
-<div class="item-details">
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4 pb-16">
     @if (isLoading)
     {
-        <div class="loading">
-            <p>Carregando item...</p>
+        <div class="d-flex justify-center align-center" style="height: 50vh;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
         </div>
     }
     else if (item == null)
     {
-        <div class="error">
-            <h2>Item não encontrado</h2>
-            <p>O item solicitado não existe ou foi removido.</p>
-            <button class="btn btn-primary" @onclick="GoBack">← Voltar</button>
-        </div>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-4">Item não encontrado ou removido.
+        </MudAlert>
+        <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="GoBack">Voltar</MudButton>
     }
     else
     {
-        <!-- Cabeçalho com info do item -->
-        <div class="item-header">
-            <h2>@item.Name</h2>
-            <div class="item-meta">
-                <span class="item-code">Código: @item.Code</span>
-                <span class="item-category">@item.Category</span>
-                <span class="item-location">@item.Location</span>
-            </div>
-            <div class="item-details-extra">
-                <p><strong>Observações:</strong> @item.Observations</p>
-                <p><strong>Data de Cadastro:</strong> @item.Timestamp.ToString("dd/MM/yyyy HH:mm")</p>
-                <p><strong>Status:</strong> @(item.Synced ? "Sincronizado" : "Pendente")</p>
-                <p><strong>Unidade:</strong> @item.UnitId</p>
-            </div>
-        </div>
+        <MudCard Elevation="4" Class="mb-4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h5">@item.Name</MudText>
+                    <div class="d-flex gap-2 mt-2">
+                        <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Outlined">
+                            @item.Category</MudChip>
+                        <MudChip T="string" Color="Color.Secondary" Size="Size.Small" Variant="Variant.Outlined">@item.Code
+                        </MudChip>
+                    </div>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Default" OnClick="EditItem" />
+                </CardHeaderActions>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Localização</MudText>
+                        <MudText Typo="Typo.body1" Class="mb-2">@item.Location</MudText>
+                    </MudItem>
+                    <MudItem xs="6" sm="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Status</MudText>
+                        <MudText Typo="Typo.body1" Class="mb-2">@(item.Synced ? "Sincronizado" : "Pendente")</MudText>
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Observações</MudText>
+                            <MudText Typo="Typo.body1" Class="mb-2">@item.Observations</MudText>
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Data Cadastro</MudText>
+                            <MudText Typo="Typo.body1">@item.Timestamp.ToString("dd/MM/yyyy HH:mm")</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="6">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Unidade</MudText>
+                            <MudText Typo="Typo.body1">@item.UnitId</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
 
-        <!-- Galeria de fotos -->
-        <div class="photo-gallery">
-            <div class="gallery-header">
-                <h3>Fotos (@item.Photos.Count)</h3>
-                <button class="btn btn-primary" @onclick="AddPhotos">📷 Adicionar Fotos</button>
-            </div>
-            @if (item.Photos.Any())
-            {
-                <div class="photo-grid">
-                    @foreach (var (photo, index) in item.Photos.Select((p, i) => (p, i)))
-                    {
-                        <div class="photo-card">
-                            <img src="@photo" alt="Foto @(index + 1)" @onclick="() => ViewFullImage(photo)" />
-                            <button class="delete-btn" @onclick="() => ConfirmRemovePhoto(index)" title="Remover foto">🗑️</button>
-                            @if (index == 0)
-                            {
-                                <div class="cover-badge">Capa</div>
-                            }
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <div class="no-photos">
-                    <p>Nenhuma foto cadastrada</p>
-                </div>
-            }
-        </div>
-
-        <!-- Ações -->
-        <div class="actions">
-            <button class="btn btn-secondary" @onclick="EditItem">✏️ Editar Item</button>
-            <button class="btn btn-secondary" @onclick="GoBack">← Voltar</button>
-        </div>
-    }
-</div>
-
-<!-- Modal de câmera para adicionar fotos -->
-@if (showCameraModal)
-{
-    <div class="camera-modal-overlay" @onclick="CloseCameraModal">
-        <div class="camera-modal" @onclick:stopPropagation="true">
-            <div class="modal-header">
-                <h3>Adicionar Novas Fotos</h3>
-                <button class="icon-btn" @onclick="CloseCameraModal">✕</button>
-            </div>
-            <div class="camera-content">
-                <video id="detail-camera-feed" autoplay playsinline></video>
-                <div class="camera-controls">
-                    <button class="btn btn-primary" @onclick="CaptureNewPhoto">📸 Capturar</button>
-                    <button class="btn btn-secondary" @onclick="SwitchCamera">🔄 Alternar Câmera</button>
-                </div>
-                @if (newPhotos.Any())
+        <MudCard Elevation="4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Fotos (@item.Photos.Count)</MudText>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudButton StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Primary" OnClick="AddPhotos">
+                        Adicionar</MudButton>
+                </CardHeaderActions>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (item.Photos.Any())
                 {
-                    <div class="new-photos-preview">
-                        <h4>Novas fotos capturadas (@newPhotos.Count)</h4>
-                        <div class="preview-grid">
-                            @foreach (var photo in newPhotos)
-                            {
-                                <img src="@photo" alt="Nova foto" />
-                            }
-                        </div>
-                        <button class="btn btn-success" @onclick="SaveNewPhotos">💾 Salvar Fotos</button>
+                    <MudGrid Spacing="2">
+                        @foreach (var (photo, index) in item.Photos.Select((p, i) => (p, i)))
+                        {
+                            <MudItem xs="6" sm="4" md="3">
+                                <div style="position: relative; aspect-ratio: 1/1;">
+                                    <MudImage Src="@photo" ObjectFit="ObjectFit.Cover"
+                                        Style="width:100%; height:100%; border-radius: 4px; cursor: pointer;"
+                                    @onclick="() => ViewFullImage(photo)" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                                        Style="position: absolute; top: 4px; right: 4px; background: rgba(255,255,255,0.8);"
+                                        OnClick="() => ConfirmRemovePhoto(index)" />
+                                    @if (index == 0)
+                                    {
+                                        <MudChip T="string" Color="Color.Primary" Size="Size.Small"
+                                            Style="position: absolute; bottom: 4px; left: 4px;">Capa</MudChip>
+                                    }
+                                </div>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                }
+                else
+                {
+                    <div class="d-flex justify-center align-center py-8">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Nenhuma foto cadastrada</MudText>
                     </div>
                 }
-            </div>
-        </div>
-    </div>
-}
+            </MudCardContent>
+        </MudCard>
 
-<!-- Modal de confirmação para remover foto -->
-@if (showDeleteConfirm)
+        <div class="mt-4">
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Variant="Variant.Outlined" OnClick="GoBack">Voltar para
+                Lista</MudButton>
+        </div>
+    }
+</MudContainer>
+
+<!-- Camera Overlay using MudOverlay -->
+@if (showCameraModal)
 {
-    <div class="confirm-modal-overlay" @onclick="CancelRemovePhoto">
-        <div class="confirm-modal" @onclick:stopPropagation="true">
-            <h3>Confirmar Remoção</h3>
-            <p>Deseja realmente remover esta foto?</p>
-            <div class="confirm-actions">
-                <button class="btn btn-danger" @onclick="RemovePhoto">🗑️ Remover</button>
-                <button class="btn btn-secondary" @onclick="CancelRemovePhoto">Cancelar</button>
+    <MudOverlay Visible="true" DarkBackground="true" AutoClose="false" ZIndex="2000">
+        <MudPaper Class="pa-4 d-flex flex-column align-center" Style="width: 90vw; height: 90vh; max-width: 600px;">
+            <div class="d-flex justify-space-between width-100 mb-2">
+                <MudText Typo="Typo.h6">Nova Foto</MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" OnClick="CloseCameraModal" />
             </div>
-        </div>
-    </div>
+
+            <div class="flex-grow-1 width-100 mb-2" style="background: black; position: relative;">
+                <video id="detail-camera-feed" autoplay playsinline
+                    style="width: 100%; height: 100%; object-fit: cover;"></video>
+            </div>
+
+            <div class="d-flex gap-4">
+                <MudIconButton Icon="@Icons.Material.Filled.FlipCameraIos" Color="Color.Secondary" OnClick="SwitchCamera"
+                    Size="Size.Large" />
+                <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Camera" OnClick="CaptureNewPhoto" />
+            </div>
+
+            @if (newPhotos.Any())
+            {
+                <div class="d-flex gap-2 mt-4 overflow-x-auto width-100">
+                    @foreach (var p in newPhotos)
+                    {
+                        <MudImage Src="@p" Width="60" Height="60" ObjectFit="ObjectFit.Cover" Class="rounded" />
+                    }
+                </div>
+                <MudButton Variant="Variant.Filled" Color="Color.Success" FullWidth="true" Class="mt-2" OnClick="SaveNewPhotos">
+                    Salvar (@newPhotos.Count)</MudButton>
+            }
+        </MudPaper>
+    </MudOverlay>
 }
 
-<!-- Modal de visualização em tela cheia -->
+<!-- Full Image Overlay -->
 @if (showFullImage)
 {
-    <div class="full-image-modal-overlay" @onclick="CloseFullImage">
-        <div class="full-image-modal" @onclick:stopPropagation="true">
-            <button class="close-full-image" @onclick="CloseFullImage">✕</button>
-            <img src="@fullImageSrc" alt="Imagem em tela cheia" />
+    <MudOverlay Visible="true" DarkBackground="true" AutoClose="true" OnClick="CloseFullImage" ZIndex="3000">
+        <div class="d-flex justify-center align-center" style="width: 100vw; height: 100vh; padding: 20px;">
+            <MudImage Src="@fullImageSrc" ObjectFit="ObjectFit.Contain" Style="max-width: 100%; max-height: 100%;" />
+            <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Surface" Size="Size.Large"
+                Style="position: absolute; top: 20px; right: 20px;" OnClick="CloseFullImage" />
         </div>
-    </div>
+    </MudOverlay>
 }
 
 @code {
@@ -146,8 +173,6 @@
     private bool showCameraModal = false;
     private bool useFrontCamera = false;
     private List<string> newPhotos = new();
-    private bool showDeleteConfirm = false;
-    private int photoToRemove = -1;
     private bool showFullImage = false;
     private string fullImageSrc = string.Empty;
 
@@ -176,6 +201,7 @@
     private async Task AddPhotos()
     {
         showCameraModal = true;
+        appState.IsCameraActive = true;
         newPhotos.Clear();
         StateHasChanged();
         await CameraService.StartCameraAsync("detail-camera-feed", useFrontCamera);
@@ -197,7 +223,6 @@
             {
                 newPhotos.Add(photo);
                 ToastService.ShowSuccess("Foto capturada!");
-                StateHasChanged();
             }
         }
         catch (Exception ex)
@@ -224,35 +249,33 @@
         }
     }
 
-    private void ConfirmRemovePhoto(int index)
+    // Replaces the custom modal with MudDialog MessageBox
+    private async Task ConfirmRemovePhoto(int index)
     {
-        photoToRemove = index;
-        showDeleteConfirm = true;
+        bool? result = await DialogService.ShowMessageBox(
+        "Confirmar Remoção",
+        "Deseja realmente remover esta foto?",
+        yesText: "Remover", cancelText: "Cancelar");
+
+        if (result == true)
+        {
+            await RemovePhoto(index);
+        }
     }
 
-    private async Task RemovePhoto()
+    private async Task RemovePhoto(int index)
     {
-        if (item == null || photoToRemove < 0 || photoToRemove >= item.Photos.Count) return;
-
+        if (item == null) return;
         try
         {
-            item.Photos.RemoveAt(photoToRemove);
+            item.Photos.RemoveAt(index);
             await DbService.UpdateAsync("items", item);
-            showDeleteConfirm = false;
-            photoToRemove = -1;
             ToastService.ShowSuccess("Foto removida com sucesso!");
-            StateHasChanged();
         }
         catch (Exception ex)
         {
             ToastService.ShowError("Erro ao remover foto: " + ex.Message);
         }
-    }
-
-    private void CancelRemovePhoto()
-    {
-        showDeleteConfirm = false;
-        photoToRemove = -1;
     }
 
     private void ViewFullImage(string photo)
@@ -271,13 +294,12 @@
     {
         await CameraService.StopCameraAsync("detail-camera-feed");
         showCameraModal = false;
+        appState.IsCameraActive = false;
         newPhotos.Clear();
-        StateHasChanged();
     }
 
     private void EditItem()
     {
-        // TODO: Implementar edição de metadados
         ToastService.Show("Funcionalidade de edição em desenvolvimento", "info");
     }
 
