@@ -4,7 +4,6 @@
 html,
 body {
     height: 100%;
-    overflow: hidden;
     /* MudLayout handles scrolling */
     font-family: 'Roboto', sans-serif;
     scroll-behavior: smooth;

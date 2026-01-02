@@ -1,69 +1,68 @@
 #!/usr/bin/env bash
-# Script para instalar o .NET 8 e publicar o projeto Blazor PWA no Netlify
-
-# Interromper em caso de erro
+# Build script universal - Netlify e Cloudflare Pages
 set -e
 
-echo "=== Iniciando instalação do .NET SDK 8.0.416 ==="
-curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.416 --install-dir "$PWD/.dotnet"
-
-# Configurar variáveis de ambiente para o dotnet
-export DOTNET_ROOT="$PWD/.dotnet"
-export PATH="$DOTNET_ROOT:$PATH"
-
-# Criar alias para garantir o uso do dotnet local
-DOTNET_EXEC="$DOTNET_ROOT/dotnet"
-
-echo "=== Verificando binário dotnet em uso ==="
-echo "Caminho do dotnet local: $DOTNET_EXEC"
-
-if [ -f "$DOTNET_EXEC" ]; then
-    echo "Binário encontrado!"
-    
-    # Verificar permissões e tipo do arquivo
-    echo "Permissões do binário:"
-    ls -lh "$DOTNET_EXEC"
-    
-    echo "Tipo do arquivo:"
-    file "$DOTNET_EXEC" || echo "Comando 'file' não disponível"
-    
-    # Adicionar permissão de execução
-    chmod +x "$DOTNET_EXEC"
-    
-    echo "Testando execução do dotnet:"
-    DOTNET_VERSION=$("$DOTNET_EXEC" --version 2>&1)
-    echo "Versão detectada: $DOTNET_VERSION"
+# Detectar plataforma
+if [ -n "$NETLIFY" ]; then
+    PLATFORM="netlify"
+    OUTPUT_DIR="bin/Release/net8.0/publish"
+elif [ -n "$CF_PAGES" ]; then
+    PLATFORM="cloudflare"
+    OUTPUT_DIR="bin/Release/net8.0/publish/wwwroot"
 else
-    echo "ERRO: Binário dotnet não encontrado em $DOTNET_EXEC"
-    exit 1
+    # Local/padrão
+    PLATFORM="local"
+    OUTPUT_DIR="bin/Release/net8.0/publish/wwwroot"
 fi
 
-echo "=== SDKs instalados localmente ==="
-ls -la "$DOTNET_ROOT/sdk" 2>/dev/null || echo "Nenhum SDK encontrado"
+echo "=== Plataforma detectada: $PLATFORM ==="
 
-# Verificar se o SDK 8.0.416 existe
-if [ ! -d "$DOTNET_ROOT/sdk/8.0.416" ]; then
-    echo "Erro: SDK 8.0.416 não foi instalado corretamente."
-    exit 1
+# Instalar .NET se necessário
+if ! command -v dotnet &> /dev/null; then
+    echo "Instalando .NET SDK 8.0.416..."
+    curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.416 --install-dir "$PWD/.dotnet"
+    export DOTNET_ROOT="$PWD/.dotnet"
+    export PATH="$DOTNET_ROOT:$PATH"
+    DOTNET_EXEC="$DOTNET_ROOT/dotnet"
+    chmod +x "$DOTNET_EXEC"
+else
+    DOTNET_EXEC="dotnet"
 fi
 
-echo "=== Executando dotnet restore ==="
+echo "=== Restaurando e publicando ==="
 "$DOTNET_EXEC" restore
-
-echo "=== Limpando diretórios de publicação antigos ==="
 rm -rf bin/Release/net8.0/publish
-
-echo "=== Executando dotnet publish ==="
 "$DOTNET_EXEC" publish pwa-camera-poc-blazor.csproj -c Release -o bin/Release/net8.0/publish
 
-echo "=== Ajustando estrutura de arquivos para o Netlify ==="
-if [ -d "bin/Release/net8.0/publish/wwwroot" ]; then
-    echo "Movendo conteúdo de wwwroot para a raiz..."
+# Ajustes específicos por plataforma
+if [ "$PLATFORM" = "netlify" ]; then
+    echo "=== Ajustando para Netlify ==="
     cp -rv bin/Release/net8.0/publish/wwwroot/* bin/Release/net8.0/publish/
-    # rm -rf bin/Release/net8.0/publish/wwwroot
+    
+    # _redirects na raiz para Netlify
+    cat > bin/Release/net8.0/publish/_redirects << 'EOF'
+/*    /index.html   200
+EOF
+
+elif [ "$PLATFORM" = "cloudflare" ] || [ "$PLATFORM" = "local" ]; then
+    echo "=== Ajustando para Cloudflare Pages ==="
+    
+    # _redirects dentro de wwwroot
+    cat > bin/Release/net8.0/publish/wwwroot/_redirects << 'EOF'
+/*    /index.html   200
+EOF
+
+    # _headers dentro de wwwroot
+    cat > bin/Release/net8.0/publish/wwwroot/_headers << 'EOF'
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+/_framework/*
+  Cache-Control: public, max-age=31536000, immutable
+/service-worker.js
+  Cache-Control: no-cache
+EOF
 fi
 
-echo "=== Conteúdo final do diretório de publicação ==="
-ls -F bin/Release/net8.0/publish/
-
-echo "=== Build concluído com sucesso ==="
+echo "=== Build concluído! Saída: $OUTPUT_DIR ==="
+ls -lh "$OUTPUT_DIR" | head -15

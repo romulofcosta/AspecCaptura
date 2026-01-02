@@ -9,7 +9,7 @@
 
 <PageTitle>Sincronização - ASPEC Capture</PageTitle>
 
-<MudContainer id="sync-container" MaxWidth="MaxWidth.Large" Class="mt-4 pb-16">
+<MudContainer id="sync-container" MaxWidth="MaxWidth.Large" Class="mt-4">
     <MudText Typo="Typo.h4" Class="mb-2 font-weight-bold">Sincronização Cloud</MudText>
     <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-8">Envie seus itens capturados localmente para o servidor ASPEC.</MudText>
 
@@ -84,17 +84,10 @@
     private int syncedCount = 0;
     private bool isSyncing = false;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            try
-            {
-                await Task.Delay(500);
-                await JSRuntime.InvokeVoidAsync("appInterop.checkOverflow", "#sync-container");
-            }
-            catch { }
-        }
+        // Removido Task.Delay e checkOverflow para evitar ajuste de layout
+        return Task.CompletedTask;
     }
 
     protected override async Task OnInitializedAsync()

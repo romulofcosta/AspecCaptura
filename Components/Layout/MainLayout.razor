@@ -27,15 +27,12 @@
         <NavMenu OnThemeToggle="ToggleTheme" OnUnitSelected="HandleUnitSelected" OnMenuItemClick="@(() => isMenuOpen = false)" />
     </MudDrawer>
 
-    <MudMainContent Class="mud-width-full" Style="min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 80px;">
+    <MudMainContent Class="mud-width-full" Style="display: flex; flex-direction: column;">
         @Body
     </MudMainContent>
 
-    @if (!appState.IsCameraActive)
-    {
-        <Footer ActiveTab="@activeTab" PendingSyncCount="@appState.PendingSyncCount" OnTabChanged="HandleTabChanged"
-            OnCaptureClick="HandleCaptureClick" OnExportClick="HandleExportClick" />
-    }
+    <Footer ActiveTab="@activeTab" PendingSyncCount="@appState.PendingSyncCount" OnTabChanged="HandleTabChanged"
+        OnCaptureClick="HandleCaptureClick" OnExportClick="HandleExportClick" IsHidden="@appState.IsCameraActive" />
 </MudLayout>
 
 @code {
