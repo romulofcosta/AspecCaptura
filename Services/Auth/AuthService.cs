@@ -75,14 +75,14 @@ namespace pwa_camera_poc_blazor.Services.Auth
             return user2;
         }
 
-        public async Task<User> RegisterAsync(string username, string password, string firstName, string lastName, List<int> unitIds)
+        public async Task<User> RegisterAsync(string firstName, string lastName, string username, string password, List<int> unitIds)
         {
             var distinctIds = unitIds.Distinct().ToList();
             var user = new User
             {
                 Username = username.ToLower().Trim(),
-                FirstName = firstName,
-                LastName = lastName,
+                FirstName = firstName.Trim(),
+                LastName = lastName.Trim(),
                 PasswordHash = HashPassword(password),
                 UnitIds = distinctIds,
                 CurrentUnitId = distinctIds.Count > 0 ? distinctIds[0] : null,

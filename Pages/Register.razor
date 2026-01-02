@@ -1,179 +1,198 @@
 @page "/register"
 @layout AuthLayout
+@using System.ComponentModel.DataAnnotations
 @using pwa_camera_poc_blazor.Models
 @inject IAuthService AuthService
-@inject IIndexedDbService DbService
 @inject NavigationManager Navigation
+@inject IIndexedDbService DbService
 @inject IJSRuntime JSRuntime
+@inject AppState appState
 
 <PageTitle>Cadastro - ASPEC Inventory</PageTitle>
 
-@* Theme toggle removed in favor of global layout/system preference *@
-
-<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-center justify-start pa-4" Style="min-height: 100vh;">
-    <MudPaper id="register-card" Elevation="4" Class="d-flex flex-column rounded-lg premium-card w-100" Style="max-width: 500px; height: auto; max-height: 85vh; overflow: hidden;">
-        
-        <!-- Header (Fixed) -->
-        <div class="pa-6 pa-sm-8 pb-4 d-flex flex-column align-center">
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-center justify-start pa-0">
+    <MudPaper id="register-card" Elevation="4" Class="pa-8 pa-sm-10 rounded-lg premium-card w-100 mb-8"
+        Style="max-width: 480px;">
+        <div class="d-flex flex-column align-center mb-6">
             <div class="d-flex justify-center mb-4">
                 <MudImage Src="images/aspec_logo.png" Alt="ASPEC Logo"
-                    Style="width: 70px; height: 70px; object-fit: contain; border-radius: 12px;"
-                    Class="shadow-sm" />
+                    Style="width: 100px; height: 100px; object-fit: contain; border-radius: 12px;"
+                    Class="logo-hover shadow-sm" />
             </div>
-            <MudText Typo="Typo.h5" Align="Align.Center" Class="font-weight-bold">Criar Conta</MudText>
-            <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">Cadastre-se para começar</MudText>
+            <div class="d-flex justify-center mb-2">
+                <h1 class="app-title-login">Aspec Capture</h1>
+            </div>
+            <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true" Class="font-weight-bold">
+                Criar conta
+            </MudText>
+            <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">
+                Preencha os dados abaixo para começar a usar o app
+            </MudText>
         </div>
 
-        <MudDivider />
+        @if (!string.IsNullOrEmpty(alertMessage))
+        {
+            <MudAlert Severity="@(alertType == "success" ? Severity.Success : Severity.Error)" Class="mb-4">
+                @alertMessage
+            </MudAlert>
+        }
 
-        <!-- Content/Form (Scrollable) -->
-        <div class="flex-grow-1 pa-6 pa-sm-8 overflow-y-auto" style="scroll-behavior: smooth;">
-            @if (!string.IsNullOrEmpty(alertMessage))
-            {
-                <MudAlert Severity="@(alertType == "success" ? Severity.Success : Severity.Error)" Class="mb-4">
-                    @alertMessage
-                </MudAlert>
-            }
+        <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
+            <DataAnnotationsValidator />
 
-            <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
-                <DataAnnotationsValidator />
+            <MudGrid Spacing="1">
+                <MudItem xs="12" Class="pb-4">
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Nome</MudText>
+                    <MudTextField @bind-Value="registerModel.FirstName" Placeholder="Digite seu nome"
+                        Variant="Variant.Outlined" InputType="InputType.Text" Adornment="Adornment.Start"
+                        AdornmentIcon="@Icons.Material.Filled.Person" For="@(() => registerModel.FirstName)"
+                        FullWidth="true" Class="mb-2" />
+                </MudItem>
 
-                <MudGrid Spacing="1">
-                    <MudItem xs="12" sm="6" Class="pb-2">
-                        <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Nome</MudText>
-                        <MudTextField @bind-Value="registerModel.FirstName" Placeholder="Ex: João" Variant="Variant.Outlined"
-                            For="@(() => registerModel.FirstName)" FullWidth="true" />
-                    </MudItem>
-                    <MudItem xs="12" sm="6" Class="pb-2">
-                        <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Sobrenome</MudText>
-                        <MudTextField @bind-Value="registerModel.LastName" Placeholder="Ex: Silva" Variant="Variant.Outlined"
-                            For="@(() => registerModel.LastName)" FullWidth="true" />
-                    </MudItem>
+                <MudItem xs="12" Class="pb-4">
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Sobrenome</MudText>
+                    <MudTextField @bind-Value="registerModel.LastName" Placeholder="Digite seu sobrenome"
+                        Variant="Variant.Outlined" InputType="InputType.Text" Adornment="Adornment.Start"
+                        AdornmentIcon="@Icons.Material.Filled.Badge" For="@(() => registerModel.LastName)"
+                        FullWidth="true" Class="mb-2" />
+                </MudItem>
 
-                    <MudItem xs="12" Class="pb-2">
-                        <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">E-mail</MudText>
-                        <MudTextField @bind-Value="registerModel.Username" Placeholder="exemplo@aspec.com.br" Variant="Variant.Outlined"
-                            Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email"
-                            For="@(() => registerModel.Username)" FullWidth="true" />
-                    </MudItem>
+                <MudItem xs="12" Class="pb-4">
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">E-mail</MudText>
+                    <MudTextField @bind-Value="registerModel.Username" Placeholder="Digite seu e-mail"
+                        Variant="Variant.Outlined" InputType="InputType.Email" Adornment="Adornment.Start"
+                        AdornmentIcon="@Icons.Material.Filled.Email" For="@(() => registerModel.Username)"
+                        FullWidth="true" Class="mb-2" />
+                </MudItem>
 
-                    <MudItem xs="12" Class="pb-4">
-                        <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Senha</MudText>
-                        <MudTextField @bind-Value="registerModel.Password" Placeholder="Mínimo 6 caracteres" Variant="Variant.Outlined"
-                            InputType="InputType.Password" Adornment="Adornment.Start"
-                            AdornmentIcon="@Icons.Material.Filled.Lock" For="@(() => registerModel.Password)" FullWidth="true" />
-                    </MudItem>
+                <MudItem xs="12" Class="pb-4">
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Senha</MudText>
+                    <MudTextField @bind-Value="registerModel.Password" Placeholder="Crie uma senha"
+                        Variant="Variant.Outlined" InputType="InputType.Password" Adornment="Adornment.Start"
+                        AdornmentIcon="@Icons.Material.Filled.Lock" For="@(() => registerModel.Password)"
+                        FullWidth="true" Class="mb-2" />
+                </MudItem>
 
-                    <MudItem xs="12" Class="mt-2">
-                        <MudText Typo="Typo.subtitle2" Class="mb-2 font-weight-bold">Unidades Gestoras</MudText>
-                    </MudItem>
+                <MudItem xs="12" Class="pb-4">
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Confirmar senha</MudText>
+                    <MudTextField @bind-Value="registerModel.ConfirmPassword" Placeholder="Repita a senha"
+                        Variant="Variant.Outlined" InputType="InputType.Password" Adornment="Adornment.Start"
+                        AdornmentIcon="@Icons.Material.Filled.Lock" For="@(() => registerModel.ConfirmPassword)"
+                        FullWidth="true" Class="mb-2" />
+                </MudItem>
 
-                    <MudItem xs="12" sm="6">
-                        <MudSelect T="string" Label="Estado" Value="selectedStateId" ValueChanged="OnStateChanged"
-                            Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
-                            <MudSelectItem Value="@("")">Todos</MudSelectItem>
+                <MudItem xs="12" Class="pb-2">
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">
+                        Estado
+                    </MudText>
+                    <MudSelect T="string" Value="@selectedStateId" ValueChanged="OnStateChanged"
+                               Variant="Variant.Outlined" Adornment="Adornment.Start"
+                               AdornmentIcon="@Icons.Material.Filled.Public"
+                               FullWidth="true" Class="mb-2" Placeholder="Selecione o estado"
+                               Disabled="@(isLoading || !statesLoaded)">
+                        @if (!statesLoaded)
+                        {
+                            <MudSelectItem Value="@selectedStateId">Carregando estados...</MudSelectItem>
+                        }
+                        else
+                        {
                             @foreach (var state in states)
                             {
-                                <MudSelectItem Value="@state.Id">@state.Id - @state.Name</MudSelectItem>
+                                <MudSelectItem Value="@state.Id">@state.Name</MudSelectItem>
                             }
-                        </MudSelect>
-                    </MudItem>
-                    <MudItem xs="12" sm="6">
-                        <MudSelect T="int?" Label="Cidade" Value="selectedCityId" ValueChanged="OnCityChanged"
-                            Disabled="@(string.IsNullOrEmpty(selectedStateId))" Variant="Variant.Outlined"
-                            AnchorOrigin="Origin.BottomCenter">
-                            <MudSelectItem T="int?" Value="@null">Todas</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" Class="pb-2">
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">
+                        Município
+                    </MudText>
+                    <MudSelect T="int" Value="@selectedCityId" ValueChanged="OnCityChanged"
+                               Variant="Variant.Outlined" Adornment="Adornment.Start"
+                               AdornmentIcon="@Icons.Material.Filled.LocationCity"
+                               FullWidth="true" Class="mb-2" Placeholder="Selecione o município"
+                               Disabled="@(isLoading || !citiesLoaded || string.IsNullOrEmpty(selectedStateId))">
+                        @if (!citiesLoaded || string.IsNullOrEmpty(selectedStateId))
+                        {
+                            <MudSelectItem Value="0">Selecione um estado primeiro</MudSelectItem>
+                        }
+                        else
+                        {
                             @foreach (var city in filteredCities)
                             {
-                                <MudSelectItem T="int?" Value="@city.Id">@city.Name</MudSelectItem>
+                                <MudSelectItem Value="@city.Id">@city.Name</MudSelectItem>
                             }
-                        </MudSelect>
-                    </MudItem>
+                        }
+                    </MudSelect>
+                </MudItem>
 
-                    <MudItem xs="12">
-                        <MudTextField @bind-Value="searchQuery" Placeholder="Buscar unidade" Variant="Variant.Outlined"
-                            Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" FullWidth="true" />
-                    </MudItem>
-
-                    @if (selectedUnits.Any())
-                    {
-                        <MudItem xs="12">
-                            <div class="d-flex flex-wrap gap-2 mb-2">
-                                @foreach (var unit in selectedUnits)
-                                {
-                                    <MudChip T="string" Color="Color.Primary" OnClose="() => RemoveUnit(unit.Key)" Size="Size.Small"
-                                        Variant="Variant.Filled">
-                                        @unit.Value
-                                    </MudChip>
-                                }
-                            </div>
-                        </MudItem>
-                    }
-
-                    <MudItem xs="12">
-                        <div class="units-container mud-paper-outlined pa-2" style="max-height: 151px; overflow-y: auto; border-radius: 8px;">
-                            @if (filteredAvailableUnits.Any())
+                <MudItem xs="12" Class="pb-2">
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">
+                        Unidades gestoras
+                    </MudText>
+                    <MudSelect T="int" MultiSelection="true"
+                               SelectedValues="registerModel.UnitIds"
+                               SelectedValuesChanged="@(values => registerModel.UnitIds = values.ToList())"
+                               Variant="Variant.Outlined" Adornment="Adornment.Start"
+                               AdornmentIcon="@Icons.Material.Filled.Business"
+                               FullWidth="true" Class="mb-2" Placeholder="Selecione uma ou mais unidades"
+                               Disabled="@(isLoading || !unitsLoaded || selectedCityId == 0)">
+                        @if (!unitsLoaded || selectedCityId == 0)
+                        {
+                            <MudSelectItem Value="0">Selecione um município primeiro</MudSelectItem>
+                        }
+                        else
+                        {
+                            @foreach (var unit in filteredUnits)
                             {
-                                <MudList T="Unit" Dense="true">
-                                    @foreach (var unit in filteredAvailableUnits)
-                                    {
-                                        <MudListItem>
-                                            <div class="d-flex justify-space-between align-center width-100">
-                                                <MudText Typo="Typo.body2">@unit.Name</MudText>
-                                                <MudIconButton
-                                                    Icon="@(selectedUnits.ContainsKey(unit.Id) ? Icons.Material.Filled.Check : Icons.Material.Filled.Add)"
-                                                    Color="@(selectedUnits.ContainsKey(unit.Id) ? Color.Success : Color.Default)"
-                                                    OnClick="() => AddUnit(unit)" Disabled="@selectedUnits.ContainsKey(unit.Id)"
-                                                    Size="Size.Small" />
-                                            </div>
-                                        </MudListItem>
-                                    }
-                                </MudList>
+                                <MudSelectItem Value="@unit.Id">@unit.Name</MudSelectItem>
                             }
-                            else
-                            {
-                                <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block pa-4 text-secondary">
-                                    @(availableUnits.Any() ? "Nenhuma unidade encontrada na busca." : "Selecione estado e cidade.")
-                                </MudText>
-                            }
-                        </div>
-                    </MudItem>
+                        }
+                    </MudSelect>
+                </MudItem>
 
-                    <MudItem xs="12" Class="mt-6">
-                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
-                            FullWidth="true" Disabled="@isLoading" Size="Size.Large" Class="py-3 shadow-md">
-                            @(isLoading ? "Cadastrando..." : "Cadastrar")
-                        </MudButton>
-                    </MudItem>
-                </MudGrid>
-            </EditForm>
-        </div>
+                <MudItem xs="12" Class="pt-2">
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                        FullWidth="true" Disabled="@isLoading" Size="Size.Large" Class="mt-2 py-3 shadow-md">
+                        @if (isLoading)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                            <span class="ms-2">Criando conta...</span>
+                        }
+                        else
+                        {
+                            <span>Criar conta</span>
+                        }
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
 
-        <MudDivider />
-
-        <!-- Footer (Fixed) -->
-        <div class="pa-4 d-flex justify-center">
-            <MudLink Href="/login" Underline="Underline.Hover">Já tem conta? Faça login</MudLink>
+        <div class="d-flex justify-center mt-6">
+            <MudText Typo="Typo.body2" Class="mr-2">Já tem conta?</MudText>
+            <MudLink Href="/login" Underline="Underline.Hover">Entrar</MudLink>
         </div>
     </MudPaper>
 </MudContainer>
 
-
-
 @code {
     private RegisterModel registerModel = new();
+    private List<State> states = new();
+    private List<City> cities = new();
+    private List<Unit> units = new();
+    private List<City> filteredCities = new();
+    private List<Unit> filteredUnits = new();
+    private bool statesLoaded = false;
+    private bool citiesLoaded = false;
+    private bool unitsLoaded = false;
+
+    private string selectedStateId = string.Empty;
+    private int selectedCityId;
+
     private string? alertMessage;
     private string? alertType;
     private bool isLoading = false;
-    private string searchQuery = "";
-
-    private List<State> states = new();
-    private List<City> filteredCities = new();
-    private List<Unit> availableUnits = new();
-    private Dictionary<int, string> selectedUnits = new();
-
-    private string? selectedStateId;
-    private int? selectedCityId;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -181,8 +200,8 @@
         {
             try
             {
-                await Task.Delay(500); // Wait for animations
-                await JSRuntime.InvokeVoidAsync("appInterop.checkOverflow", "#register-card .overflow-y-auto");
+                await Task.Delay(500);
+                await JSRuntime.InvokeVoidAsync("appInterop.checkOverflow", "#register-card");
             }
             catch { }
         }
@@ -192,170 +211,90 @@
     {
         try
         {
-            isLoading = true;
-            await DbService.InitAsync();
-            states = await DbService.GetAllAsync<State>("states");
+            var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
+            appState.IsDarkMode = theme == "dark";
+        }
+        catch { }
 
-            // Auto-seed if data is missing
-            if (!states.Any())
-            {
-                await SeedDataAsync();
-                states = await DbService.GetAllAsync<State>("states");
-            }
-        }
-        catch (Exception ex)
-        {
-            alertMessage = "Erro ao inicializar dados localmente: " + ex.Message;
-            alertType = "error";
-            Console.Error.WriteLine($"Initialitation error: {ex}");
-        }
-        finally
-        {
-            isLoading = false;
-        }
-    }
-
-    private async Task SeedDataAsync()
-    {
         try
         {
-            // States
-            if (await DbService.GetAsync<State>("states", "CE") == null)
-                await DbService.AddAsync("states", new State { Id = "CE", Name = "Ceará" });
-            if (await DbService.GetAsync<State>("states", "RN") == null)
-                await DbService.AddAsync("states", new State { Id = "RN", Name = "Rio Grande do Norte" });
-            if (await DbService.GetAsync<State>("states", "PA") == null)
-                await DbService.AddAsync("states", new State { Id = "PA", Name = "Pará" });
-            if (await DbService.GetAsync<State>("states", "MA") == null)
-                await DbService.AddAsync("states", new State { Id = "MA", Name = "Maranhão" });
-
-            // Cities
-            if (await DbService.GetAsync<City>("cities", 1) == null)
-                await DbService.AddAsync("cities", new City { Id = 1, StateId = "CE", Name = "Fortaleza" });
-            if (await DbService.GetAsync<City>("cities", 2) == null)
-                await DbService.AddAsync("cities", new City { Id = 2, StateId = "RN", Name = "Natal" });
-            if (await DbService.GetAsync<City>("cities", 3) == null)
-                await DbService.AddAsync("cities", new City { Id = 3, StateId = "PA", Name = "Belém" });
-            if (await DbService.GetAsync<City>("cities", 4) == null)
-                await DbService.AddAsync("cities", new City { Id = 4, StateId = "MA", Name = "São Luís" });
-            if (await DbService.GetAsync<City>("cities", 5) == null)
-                await DbService.AddAsync("cities", new City { Id = 5, StateId = "CE", Name = "Horizonte" });
-
-            // Units
-            var demoUnits = new List<Unit>
-            {
-                new Unit { Id = 1, CityId = 5, Name = "Prefeitura Municipal de Horizonte" },
-                new Unit { Id = 2, CityId = 5, Name = "Fundo Municipal de Saúde" },
-                new Unit { Id = 3, CityId = 5, Name = "Câmara Municipal de Horizonte" },
-                new Unit { Id = 4, CityId = 1, Name = "Prefeitura de Fortaleza" },
-                new Unit { Id = 5, CityId = 3, Name = "Prefeitura de Belém" },
-                new Unit { Id = 6, CityId = 4, Name = "Prefeitura de São Luís" },
-                new Unit { Id = 7, CityId = 2, Name = "Prefeitura de Natal" }
-            };
-
-            foreach (var u in demoUnits)
-            {
-                if (await DbService.GetAsync<Unit>("units", u.Id) == null)
-                    await DbService.AddAsync("units", u);
-            }
-
-            StateHasChanged();
+            states = await DbService.GetAllAsync<State>("states");
+            statesLoaded = true;
         }
-        catch (Exception ex)
+        catch
         {
-            Console.Error.WriteLine($"Seeding error: {ex}");
-            throw;
+            statesLoaded = false;
+        }
+
+        try
+        {
+            cities = await DbService.GetAllAsync<City>("cities");
+            citiesLoaded = true;
+        }
+        catch
+        {
+            citiesLoaded = false;
+        }
+
+        try
+        {
+            units = await DbService.GetAllAsync<Unit>("units");
+            unitsLoaded = true;
+        }
+        catch
+        {
+            unitsLoaded = false;
         }
     }
 
-    private async Task OnStateChanged(string value)
+    private void OnStateChanged(string value)
     {
-        if (selectedStateId == value) return;
-
         selectedStateId = value;
-        selectedCityId = null;
-        availableUnits.Clear();
-        filteredCities.Clear();
-
-        if (!string.IsNullOrEmpty(selectedStateId))
-        {
-            try
-            {
-                filteredCities = await DbService.GetAllFromIndexAsync<City>("cities", "stateId", selectedStateId);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error loading cities: {ex.Message}");
-            }
-        }
-
-        StateHasChanged();
+        selectedCityId = 0;
+        filteredCities = cities.Where(c => c.StateId == selectedStateId).ToList();
+        filteredUnits = new List<Unit>();
+        registerModel.UnitIds.Clear();
     }
 
-    private async Task OnCityChanged(int? value)
+    private void OnCityChanged(int value)
     {
-        if (selectedCityId == value) return;
-
         selectedCityId = value;
-        availableUnits.Clear();
-
-        if (value.HasValue)
-        {
-            try
-            {
-                availableUnits = await DbService.GetAllFromIndexAsync<Unit>("units", "cityId", value.Value);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error loading units: {ex.Message}");
-            }
-        }
-
-        StateHasChanged();
-    }
-
-    private IEnumerable<Unit> filteredAvailableUnits =>
-    string.IsNullOrWhiteSpace(searchQuery)
-    ? availableUnits
-    : availableUnits.Where(u => u.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
-
-    private void AddUnit(Unit unit)
-    {
-        if (!selectedUnits.ContainsKey(unit.Id))
-        {
-            selectedUnits.Add(unit.Id, unit.Name);
-        }
-    }
-
-    private void RemoveUnit(int id)
-    {
-        selectedUnits.Remove(id);
+        filteredUnits = units.Where(u => u.CityId == selectedCityId).ToList();
+        registerModel.UnitIds.Clear();
     }
 
     private async Task HandleRegister()
     {
-        if (!selectedUnits.Any())
+        alertMessage = null;
+        alertType = null;
+        isLoading = true;
+
+        if (registerModel.UnitIds == null || !registerModel.UnitIds.Any())
         {
-            alertMessage = "Selecione pelo menos uma unidade gestora.";
+            alertMessage = "Selecione ao menos uma unidade gestora.";
             alertType = "error";
+            isLoading = false;
             return;
         }
 
-        isLoading = true;
-        alertMessage = null;
-
         try
         {
-            await AuthService.RegisterAsync(registerModel.Username, registerModel.Password, registerModel.FirstName,
-            registerModel.LastName, selectedUnits.Keys.ToList());
-            alertMessage = "Cadastro realizado com sucesso!";
+            await AuthService.RegisterAsync(
+                registerModel.FirstName,
+                registerModel.LastName,
+                registerModel.Username,
+                registerModel.Password,
+                registerModel.UnitIds);
+
+            alertMessage = "Cadastro realizado com sucesso! Redirecionando para o login...";
             alertType = "success";
+            StateHasChanged();
             await Task.Delay(1000);
             Navigation.NavigateTo("/login");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            alertMessage = "Erro ao realizar cadastro: " + ex.Message;
+            alertMessage = "Erro ao realizar cadastro. Tente novamente.";
             alertType = "error";
         }
         finally
@@ -366,18 +305,24 @@
 
     public class RegisterModel
     {
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
-        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Formato de e-mail inválido")]
-        public string Username { get; set; } = string.Empty;
-
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
+        [Required(ErrorMessage = "Campo obrigatório")]
         public string FirstName { get; set; } = string.Empty;
 
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
+        [Required(ErrorMessage = "Campo obrigatório")]
         public string LastName { get; set; } = string.Empty;
 
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
-        [System.ComponentModel.DataAnnotations.MinLength(6, ErrorMessage = "A senha deve ter pelo menos 6 caracteres")]
+        [Required(ErrorMessage = "Campo obrigatório")]
+        [EmailAddress(ErrorMessage = "Formato de e-mail inválido")]
+        public string Username { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Campo obrigatório")]
+        [MinLength(6, ErrorMessage = "A senha deve ter no mínimo 6 caracteres")]
         public string Password { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Campo obrigatório")]
+        [Compare(nameof(Password), ErrorMessage = "As senhas não coincidem")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+
+        public List<int> UnitIds { get; set; } = new();
     }
 }

@@ -8,7 +8,7 @@
 <PageTitle>Login - ASPEC Inventory</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-center justify-start pa-0">
-    <MudPaper id="login-card" Elevation="4" Class="pa-8 pa-sm-10 rounded-lg premium-card w-100 mb-8"
+    <MudPaper id="login-card" Elevation="4" Class="@($"pa-8 pa-sm-10 rounded-lg premium-card w-100 mb-8 {loginContentClass}")"
         Style="max-width: 440px;">
         <div class="d-flex flex-column align-center mb-6">
             <div class="d-flex justify-center mb-4">
@@ -54,7 +54,15 @@
                 <MudItem xs="12">
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
                         FullWidth="true" Disabled="@isLoading" Size="Size.Large" Class="mt-2 py-3 shadow-md">
-                        @(isLoading ? "Entrando..." : "Entrar")
+                        @if (isLoading)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                            <span class="ms-2">Entrando...</span>
+                        }
+                        else
+                        {
+                            <span>Entrar</span>
+                        }
                     </MudButton>
                 </MudItem>
             </MudGrid>
@@ -65,13 +73,28 @@
             <MudLink Href="/register" Underline="Underline.Hover">Cadastre-se</MudLink>
         </div>
     </MudPaper>
+
+    <div class="d-flex justify-center mt-4">
+        <MudText Typo="Typo.caption" Color="Color.Secondary">Versão: v0.1.0 (Protótipo)</MudText>
+    </div>
 </MudContainer>
+
+@if (showLoadingOverlay)
+{
+    <div class="loading-overlay show">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" Class="mb-4" />
+        <MudText Color="Color.Primary" Typo="Typo.h6">@loadingMessage</MudText>
+    </div>
+}
 
 @code {
     private LoginModel loginModel = new();
     private string? alertMessage;
     private string? alertType;
     private bool isLoading = false;
+    private bool showLoadingOverlay = false;
+    private string loadingMessage = "Entrando...";
+    private string loginContentClass = "fade-in";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -100,16 +123,22 @@
     {
         isLoading = true;
         alertMessage = null;
+        loadingMessage = "Entrando...";
+        showLoadingOverlay = true;
+        StateHasChanged();
 
         try
         {
-            var user = await AuthService.LoginAsync(loginModel.Username, loginModel.Password);
-            if (user != null)
-            {
-                alertMessage = "Login realizado com sucesso!";
-                alertType = "success";
-                await Task.Delay(1000);
-                Navigation.NavigateTo("/home");
+                var user = await AuthService.LoginAsync(loginModel.Username, loginModel.Password);
+                if (user != null)
+                {
+                    alertMessage = "Login realizado com sucesso!";
+                    alertType = "success";
+                    loadingMessage = "Redirecionando...";
+                    loginContentClass = "fade-out";
+                    StateHasChanged();
+                    await Task.Delay(1000);
+                    Navigation.NavigateTo("/home");
             }
             else
             {
@@ -124,7 +153,9 @@
         }
         finally
         {
+            showLoadingOverlay = false;
             isLoading = false;
+            StateHasChanged();
         }
     }
 

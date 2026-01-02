@@ -12,7 +12,7 @@
 <PageTitle>Inventário - ASPEC Capture</PageTitle>
 
 <MudContainer id="home-container" MaxWidth="MaxWidth.Large" Class="mt-4">
-    <MudGrid Spacing="3">
+    <MudGrid Spacing="2">
         <!-- Search and Filter Bar -->
         <MudItem xs="12">
             <MudPaper Elevation="0" Class="d-flex gap-2 align-center pa-2 mud-background-gray rounded-lg">
@@ -87,8 +87,8 @@
         {
             @foreach (var item in pagedItems)
             {
-                <MudItem xs="12" sm="@(viewMode == "list" ? 12 : 6)" md="@(viewMode == "list" ? 12 : 4)"
-                    lg="@(viewMode == "list" ? 12 : 3)">
+                <MudItem Class="inventory-grid-item" xs="12" sm="@(viewMode == "list" ? 12 : 6)" md="@(viewMode == "list" ? 12 : 6)"
+                    lg="@(viewMode == "list" ? 12 : 6)">
                     <ItemCard Item="item" OnView="NavigateToItemCallback" IsListView="@(viewMode == "list")" />
                 </MudItem>
             }

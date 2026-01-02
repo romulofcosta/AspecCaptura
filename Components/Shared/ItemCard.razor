@@ -4,7 +4,7 @@
     Style="@(IsListView ? "cursor: pointer; display: flex; flex-direction: row; height: 120px; width: 100%; overflow: hidden;" : "cursor: pointer; height: 100%; display: flex; flex-direction: column; overflow: hidden;")">
 
     <div
-        style="@(IsListView ? "position: relative; width: 120px; height: 100%;" : "position: relative; height: 160px; width: 100%; background-color: var(--mud-palette-background-grey);")">
+        style="@(IsListView ? "position: relative; width: 120px; height: 100%;" : "position: relative; width: 100%; aspect-ratio: 1 / 1; background-color: var(--mud-palette-background-grey);")">
         <MudImage Src="@(string.IsNullOrEmpty(Item.CoverImage) ? "images/placeholder.svg" : Item.CoverImage)"
             Alt="@Item.Name" ObjectFit="ObjectFit.Cover" Style="width: 100%; height: 100%;" />
 

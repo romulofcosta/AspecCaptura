@@ -49,6 +49,12 @@ async function onFetch(event) {
         const request = shouldServeIndexHtml ? 'index.html' : event.request;
         const cache = await caches.open(cacheName);
         cachedResponse = await cache.match(request);
+
+        // If a navigation request resulted in a redirected response from cache, bypass the cache
+        if (shouldServeIndexHtml && cachedResponse && cachedResponse.redirected) {
+            console.warn('Service worker: Navigation request resulted in a redirected response from cache. Bypassing cache.');
+            cachedResponse = null;
+        }
     }
 
     return cachedResponse || fetch(event.request);
