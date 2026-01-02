@@ -242,10 +242,12 @@ body {
 
 .inventory-grid-item {
     display: flex;
+    padding: 4px 0;
 }
 
 .inventory-grid-item .mud-card {
     width: 100%;
+    margin: 0;
 }
 
 /* Animation Classes */

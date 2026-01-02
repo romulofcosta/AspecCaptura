@@ -46,7 +46,7 @@
                     <MudTextField @bind-Value="registerModel.FirstName" Placeholder="Digite seu nome"
                         Variant="Variant.Outlined" InputType="InputType.Text" Adornment="Adornment.Start"
                         AdornmentIcon="@Icons.Material.Filled.Person" For="@(() => registerModel.FirstName)"
-                        FullWidth="true" Class="mb-2" />
+                        FullWidth="true" Class="mb-2" AutoFocus="true" />
                 </MudItem>
 
                 <MudItem xs="12" Class="pb-4">
@@ -131,25 +131,58 @@
                     <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">
                         Unidades gestoras
                     </MudText>
-                    <MudSelect T="int" MultiSelection="true"
-                               SelectedValues="registerModel.UnitIds"
-                               SelectedValuesChanged="@(values => registerModel.UnitIds = values.ToList())"
-                               Variant="Variant.Outlined" Adornment="Adornment.Start"
-                               AdornmentIcon="@Icons.Material.Filled.Business"
-                               FullWidth="true" Class="mb-2" Placeholder="Selecione uma ou mais unidades"
-                               Disabled="@(isLoading || !unitsLoaded || selectedCityId == 0)">
-                        @if (!unitsLoaded || selectedCityId == 0)
-                        {
-                            <MudSelectItem Value="0">Selecione um município primeiro</MudSelectItem>
-                        }
-                        else
-                        {
-                            @foreach (var unit in filteredUnits)
+
+                    <div class="d-flex flex-column">
+                        <MudSelect T="int" @bind-Value="selectedUnitIdForAdd"
+                                   Variant="Variant.Outlined" Adornment="Adornment.Start"
+                                   AdornmentIcon="@Icons.Material.Filled.Business"
+                                   FullWidth="true" Class="mb-1" Placeholder="Selecione uma unidade"
+                                   Disabled="@(isLoading || !unitsLoaded || selectedCityId == 0)">
+                            @if (!unitsLoaded || selectedCityId == 0)
                             {
-                                <MudSelectItem Value="@unit.Id">@unit.Name</MudSelectItem>
+                                <MudSelectItem Value="0">Selecione um município primeiro</MudSelectItem>
                             }
+                            else
+                            {
+                                @foreach (var unit in filteredUnits)
+                                {
+                                    <MudSelectItem Value="@unit.Id">@unit.Name</MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+
+                        <div class="d-flex align-center mb-1">
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       Disabled="@(isLoading || !unitsLoaded || selectedCityId == 0)"
+                                       OnClick="AddUnit"
+                                       StartIcon="@Icons.Material.Filled.Add">
+                                Adicionar unidade
+                            </MudButton>
+                        </div>
+
+                        @if (registerModel.UnitIds.Any())
+                        {
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                @foreach (var unitId in registerModel.UnitIds)
+                                {
+                                    <MudChip T="int" Variant="Variant.Filled" Color="Color.Primary">
+                                        @GetUnitName(unitId)
+                                        <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                       Size="Size.Small"
+                                                       Color="Color.Inherit"
+                                                       OnClick="@(() => RemoveUnit(unitId))"
+                                                       Class="ml-1" />
+                                    </MudChip>
+                                }
+                            </div>
                         }
-                    </MudSelect>
+
+                        @if (!string.IsNullOrEmpty(unitSelectionError))
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Error">@unitSelectionError</MudText>
+                        }
+                    </div>
                 </MudItem>
 
                 <MudItem xs="12" Class="pt-2">
@@ -189,6 +222,8 @@
 
     private string selectedStateId = string.Empty;
     private int selectedCityId;
+    private int selectedUnitIdForAdd;
+    private string? unitSelectionError;
 
     private string? alertMessage;
     private string? alertType;
@@ -261,6 +296,43 @@
         selectedCityId = value;
         filteredUnits = units.Where(u => u.CityId == selectedCityId).ToList();
         registerModel.UnitIds.Clear();
+    }
+
+    private void AddUnit()
+    {
+        unitSelectionError = null;
+
+        if (!unitsLoaded || selectedCityId == 0)
+        {
+            unitSelectionError = "Selecione um município antes de adicionar unidades.";
+            return;
+        }
+
+        if (selectedUnitIdForAdd == 0)
+        {
+            unitSelectionError = "Selecione uma unidade gestora.";
+            return;
+        }
+
+        if (registerModel.UnitIds.Contains(selectedUnitIdForAdd))
+        {
+            unitSelectionError = "Esta unidade já foi adicionada.";
+            return;
+        }
+
+        registerModel.UnitIds.Add(selectedUnitIdForAdd);
+    }
+
+    private void RemoveUnit(int unitId)
+    {
+        unitSelectionError = null;
+        registerModel.UnitIds.Remove(unitId);
+    }
+
+    private string GetUnitName(int unitId)
+    {
+        var unit = filteredUnits.FirstOrDefault(u => u.Id == unitId) ?? units.FirstOrDefault(u => u.Id == unitId);
+        return unit?.Name ?? $"Unidade {unitId}";
     }
 
     private async Task HandleRegister()
