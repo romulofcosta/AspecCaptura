@@ -129,16 +129,16 @@
 
         try
         {
-                var user = await AuthService.LoginAsync(loginModel.Username, loginModel.Password);
-                if (user != null)
-                {
-                    alertMessage = "Login realizado com sucesso!";
-                    alertType = "success";
-                    loadingMessage = "Redirecionando...";
-                    loginContentClass = "fade-out";
-                    StateHasChanged();
-                    await Task.Delay(1000);
-                    Navigation.NavigateTo("/home");
+            var user = await AuthService.LoginAsync(loginModel.Username, loginModel.Password);
+            if (user != null)
+            {
+                alertMessage = "Login realizado com sucesso!";
+                alertType = "success";
+                loadingMessage = "Redirecionando...";
+                loginContentClass = "fade-out";
+                StateHasChanged();
+                await Task.Delay(1000);
+                Navigation.NavigateTo("/home");
             }
             else
             {

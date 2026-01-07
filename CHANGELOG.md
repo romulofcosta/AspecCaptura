@@ -14,6 +14,17 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **Sincronização Progressiva**: Melhoria na tela de sincronização com indicadores visuais de progresso e feedback em tempo real.
 - **Dados de Exemplo**: Implementada carga automática de item de exemplo (`exemplo-item.json`) quando o inventário está vazio para auxiliar novos usuários.
 
+#### ☁️ Integração AWS e Cloud (Sincronização Direta)
+- **Migração para Infraestrutura AWS**: Substituição da simulação de backend por integração real com **AWS Cognito** (Auth) e **AWS S3** (Storage).
+- **Segurança Serverless**: Fluxo de autenticação PWA -> Cognito User Pool -> Identity Pool para obter credenciais temporárias do IAM (STS).
+- **Padrão de Armazenamento**: Organização de arquivos seguindo `uploads/{UnitId}/{UserId}/{ItemId}/` para compatibilidade com sistema legado.
+- **Metadados em JSON**: Cada item gera um arquivo `item.json` no S3, servindo como "registro de banco" para processos secundários (Harbour/dBase).
+- **Gestão Remota**: Implementada exclusão de fotos diretamente no S3 através da tela de detalhes do item.
+- **Otimização de Banco Local**: Remoção automática de dados Base64 do IndexedDB após sincronização com sucesso.
+
+#### 🚀 Deploy e Infraestrutura
+- **Resolução de Impedimento**: Migração para **Cloudflare Pages**, resolvendo limitações de deploy anteriores e garantindo suporte a SPA routing.
+
 #### 📸 Câmera e Inventário
 - **Suporte Multi-Foto**: Agora é possível capturar e associar múltiplas fotografias a um único item de inventário.
 - **Gestão Pós-Captura**: Adicionada funcionalidade de adicionar novas fotos ou remover existentes diretamente da tela de detalhes do item.

@@ -33,9 +33,11 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 - **Ícones**: Material Icons (5 variantes: Filled, Outlined, Two Tone, Round, Sharp)
 - **Layout System**: Flexbox e CSS Grid com variáveis CSS para consistência e responsividade
 - **Linguagens**: C#, HTML, CSS, JavaScript
-- **Armazenamento**: IndexedDB (para inventário), localStorage (para autenticação)
+- **Armazenamento**: IndexedDB (para inventário local), localStorage (para preferência de temas), **AWS S3** (armazenamento persistente na nuvem)
+- **Autenticação**: **AWS Cognito** (User Pools & Identity Pools) com credenciais temporárias IAM (STS)
 - **PWA**: Service Worker, Manifest JSON
 - **Interoperabilidade**: JavaScript interop para câmera e IndexedDB
+- **SDKs**: AWS SDK para .NET (S3, Cognito, STS)
 - **Build/Deploy**: .NET CLI, potencialmente Netlify ou similar
 
 ## Estrutura do Projeto
@@ -137,8 +139,9 @@ O modelo `InventoryItem` (localizado em `Models/Item.cs`) representa um item de 
 | Timestamp | DateTime | Sim | Data/hora de criação (padrão: DateTime.Now) |
 | Synced | bool | Não | Indica se o item foi sincronizado (padrão: false) |
 | UnitId | int? | Não | ID da unidade gestora associada |
-| Photos | List<string> | Não | Lista de fotos em base64 |
-| CoverImage | string? | Não | Propriedade auxiliar que retorna a primeira foto (somente leitura) |
+| Photos | List<string> | Não | Lista de fotos em base64 (removido após sincronização) |
+| RemoteUrls | List<string> | Não | Lista de URLs persistentes no AWS S3 |
+| CoverImage | string? | Não | Retorna a primeira `RemoteUrl` se disponível, senão a primeira `Photo` |
 
 **Validações aplicadas:**
 - `Name`, `Code` e `Location` são obrigatórios via `[Required]`.
@@ -181,10 +184,31 @@ O modelo `InventoryItem` (localizado em `Models/Item.cs`) representa um item de 
 - **Usuários:** Armazenados por username (ex: chave "admin" para User object)
 - **Limites:** ~5-10MB por origem, dependendo do navegador.
 
-#### Estratégia de Sincronização
-- Campo `Synced` indica se o item foi sincronizado.
-- Contador global `PendingSyncCount` no AppState para itens pendentes.
-- TODO: Implementar sincronização real com backend (atualmente apenas flag local).
+#### Estratégia de Sincronização Serverless
+1. **Autenticação**: O usuário faz login via AWS Cognito. O sistema obtém um ID Token (User Pool).
+2. **Autorização**: O ID Token é trocado por credenciais temporárias do IAM via Identity Pool (AccessKey/Secret/SessionToken).
+3. **Upload Mídia**: Imagens convertidas de Base64 para Stream são enviadas para o S3: `uploads/{UnitId}/{UserId}/{ItemId}/{PhotoName}.jpg`.
+4. **Upload Metadata**: Um arquivo `item.json` é enviado para o mesmo diretório, servindo de registro para o sistema legado (Harbour).
+5. **Limpeza Local**: Após o sucesso, os dados Base64 são removidos do IndexedDB e substituídos pelas URLs do S3.
+6. **Legado**: O sistema Harbour consome os diretórios do S3 via API de listagem ou sincronização direta de arquivos.
+
+## ⚙️ Configuração do Ambiente
+
+O projeto utiliza o arquivo `wwwroot/appsettings.json` para definir os recursos da AWS. O **AppClientId** deve ser configurado como **Public Client** (sem Client Secret).
+
+```json
+{
+  "Aws": {
+    "Region": "us-east-1",
+    "UserPoolId": "us-east-1_XXXXXXXXX",
+    "AppClientId": "XXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "IdentityPoolId": "us-east-1:XXXX-XXXX-XXXX-XXXX-XXXX",
+    "BucketName": "pwa-inventory-uploads"
+  }
+}
+```
+
+> **Importante:** O Bucket S3 deve ter políticas de **CORS** habilitadas para aceitar requisições `PUT`, `GET` e `DELETE` da origem da aplicação (localhost e domínio de produção).
 
 ### Gerenciamento de Imagens (Estado Atual)
 

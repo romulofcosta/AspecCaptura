@@ -26,11 +26,14 @@ namespace pwa_camera_poc_blazor.Models
         public bool Synced { get; set; } = false;
         public int? UnitId { get; set; }
 
-        // Armazenamento de imagens (Base64)
+        // Armazenamento de imagens (Base64 local ou URLs remotas)
         public List<string> Photos { get; set; } = new();
 
-        // Propriedade auxiliar para capa
-        public string? CoverImage => Photos.FirstOrDefault();
+        // URLs remotas do S3 após sincronização
+        public List<string> RemoteUrls { get; set; } = new();
+
+        // Propriedade auxiliar para capa (prioriza local se não sincronizado, ou remota se disponível)
+        public string? CoverImage => RemoteUrls.Any() ? RemoteUrls.FirstOrDefault() : Photos.FirstOrDefault();
 
         // Extra property for 'EntityId' migration support?
         // public int? EntityId { get; set; }

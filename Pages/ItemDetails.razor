@@ -8,6 +8,9 @@
 @inject IDialogService DialogService
 @using MudBlazor
 @inject AppState appState
+@using pwa_camera_poc_blazor.Services.AWS
+@inject IAwsStorageService AwsService
+@inject IAuthService AuthService
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Detalhes do Item - ASPEC Capture</PageTitle>
@@ -71,7 +74,7 @@
         <MudCard Elevation="4">
             <MudCardHeader>
                 <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Fotos (@item.Photos.Count)</MudText>
+                    <MudText Typo="Typo.h6">Fotos (@(item.Photos.Count + item.RemoteUrls.Count))</MudText>
                 </CardHeaderContent>
                 <CardHeaderActions>
                     <MudButton StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Primary" OnClick="AddPhotos">
@@ -79,10 +82,10 @@
                 </CardHeaderActions>
             </MudCardHeader>
             <MudCardContent>
-                @if (item.Photos.Any())
+                @if (item.Photos.Any() || item.RemoteUrls.Any())
                 {
                     <MudGrid Spacing="2">
-                        @foreach (var (photo, index) in item.Photos.Select((p, i) => (p, i)))
+                        @foreach (var (photo, index) in item.RemoteUrls.Concat(item.Photos).Select((p, i) => (p, i)))
                         {
                             <MudItem xs="6" sm="4" md="3">
                                 <div style="position: relative; aspect-ratio: 1/1;">
@@ -268,7 +271,32 @@
         if (item == null) return;
         try
         {
-            item.Photos.RemoveAt(index);
+            // Determinar se é remota ou local
+            if (index < item.RemoteUrls.Count)
+            {
+                var remoteUrl = item.RemoteUrls[index];
+                // Extrair Key do S3 da URL
+                // URL: https://bucket.s3.region.amazonaws.com/uploads/...
+                var uri = new Uri(remoteUrl);
+                var key = uri.AbsolutePath.TrimStart('/'); // Remove a primeira /
+
+                // Inicializar AWS se necessário
+                if (!string.IsNullOrEmpty(AuthService.AwsIdToken))
+                    AwsService.InitializeWithToken(AuthService.AwsIdToken);
+
+                var success = await AwsService.DeleteObjectAsync(key);
+                if (success)
+                {
+                    item.RemoteUrls.RemoveAt(index);
+                }
+            }
+            else
+            {
+                // Ajustar índice para lista local
+                var localIndex = index - item.RemoteUrls.Count;
+                item.Photos.RemoveAt(localIndex);
+            }
+
             await DbService.UpdateAsync("items", item);
             ToastService.ShowSuccess("Foto removida com sucesso!");
         }

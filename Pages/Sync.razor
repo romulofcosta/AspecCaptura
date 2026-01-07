@@ -5,6 +5,9 @@
 @inject pwa_camera_poc_blazor.Services.ToastService ToastService
 @inject IJSRuntime JSRuntime
 @inject AppState appState
+@using pwa_camera_poc_blazor.Services.AWS
+@inject IAwsStorageService AwsService
+@inject ISnackbar Snackbar
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Sincronização - ASPEC Capture</PageTitle>
@@ -110,18 +113,56 @@
 
         try
         {
-            // Simular chamada de API para cada item
-            int successCount = 0;
-            foreach (var item in unsyncedItems.ToList())
+            var currentUser = await AuthService.GetCurrentUserAsync();
+            if (currentUser == null) throw new Exception("Usuário não autenticado.");
+
+            // Inicializa serviço AWS com o token da sessão
+            if (!string.IsNullOrEmpty(AuthService.AwsIdToken))
             {
-                // Aqui seria a chamada real de API: await Http.PostAsJsonAsync("api/sync", item);
-                await Task.Delay(500); // Simula rede
+                AwsService.InitializeWithToken(AuthService.AwsIdToken);
+            }
 
-                item.Synced = true;
-                await DbService.UpdateAsync("items", item);
-                successCount++;
+            int total = unsyncedItems.Count;
+            int successCount = 0;
+            
+            foreach (var (item, index) in unsyncedItems.Select((v, i) => (v, i)).ToList())
+            {
+                var unitId = item.UnitId?.ToString() ?? "0";
+                var userId = currentUser.Username;
+                var itemId = item.Id;
+                
+                Snackbar.Add($"Sincronizando item {index + 1} de {total}: {item.Name}", Severity.Info);
+                
+                var remoteUrls = new List<string>();
 
-                // Atualiza UI progressivamente se desejar, mas vamos carregar no fim
+                // 1. Upload das Fotos
+                for (int i = 0; i < item.Photos.Count; i++)
+                {
+                    var base64 = item.Photos[i];
+                    var fileName = $"photo_{i}.jpg";
+                    var result = await AwsService.UploadPhotoAsync(unitId, userId, itemId, fileName, base64);
+                    
+                    if (result.Success && result.Url != null)
+                    {
+                        remoteUrls.Add(result.Url);
+                    }
+                }
+
+                // 2. Upload do Metadata
+                item.RemoteUrls = remoteUrls;
+                var metadataResult = await AwsService.UploadMetadataAsync(unitId, userId, itemId, item);
+
+                if (metadataResult.Success)
+                {
+                    // 3. Limpeza local: substitui base64 por referências (removendo base64 para economizar espaço)
+                    item.Photos = new List<string>(); 
+                    item.Synced = true;
+                    
+                    await DbService.UpdateAsync("items", item);
+                    successCount++;
+                }
+                
+                await Task.Delay(200); // UI breathing room
             }
 
             ToastService.ShowSuccess($"{successCount} itens sincronizados com sucesso!");
@@ -130,6 +171,7 @@
         catch (Exception ex)
         {
             ToastService.ShowError("Erro durante a sincronização: " + ex.Message);
+            Console.WriteLine(ex);
         }
         finally
         {

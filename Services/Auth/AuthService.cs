@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 using pwa_camera_poc_blazor.Models;
 using pwa_camera_poc_blazor.Services.Storage;
 using Microsoft.AspNetCore.Components.Authorization;
+using Amazon.CognitoIdentityProvider;
+using Amazon.Extensions.CognitoAuthentication;
+using Amazon;
 
 
 namespace pwa_camera_poc_blazor.Services.Auth
@@ -12,12 +15,15 @@ namespace pwa_camera_poc_blazor.Services.Auth
     {
         private readonly ILocalStorageService _localStorage;
         private readonly AuthenticationStateProvider _authStateProvider;
+        private readonly AwsConfig _awsConfig;
         private const string SESSION_KEY = "pwa-inventory-session";
+        public string? AwsIdToken { get; private set; }
 
-        public AuthService(ILocalStorageService localStorage, AuthenticationStateProvider authStateProvider)
+        public AuthService(ILocalStorageService localStorage, AuthenticationStateProvider authStateProvider, AwsConfig awsConfig)
         {
             _localStorage = localStorage;
             _authStateProvider = authStateProvider;
+            _awsConfig = awsConfig;
         }
 
         public async Task<User?> LoginAsync(string username, string password)
@@ -59,6 +65,25 @@ namespace pwa_camera_poc_blazor.Services.Auth
 
             var inputHash = HashPassword(password);
             if (user2.PasswordHash != inputHash) return null;
+
+            // AWS Cognito Flow (Simulated/Implementation)
+            try
+            {
+                if (!string.IsNullOrEmpty(_awsConfig.UserPoolId))
+                {
+                    var provider = new AmazonCognitoIdentityProviderClient(new Amazon.Runtime.AnonymousAWSCredentials(), RegionEndpoint.GetBySystemName(_awsConfig.Region));
+                    var userPool = new CognitoUserPool(_awsConfig.UserPoolId, _awsConfig.AppClientId, provider);
+                    var cognitoUser = new CognitoUser(username, _awsConfig.AppClientId, userPool, provider);
+
+                    var authResponse = await cognitoUser.StartWithSrpAuthAsync(new InitiateSrpAuthRequest { Password = password });
+                    AwsIdToken = authResponse.AuthenticationResult.IdToken;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Cognito Login Error: {ex.Message}");
+                // In a real scenario, we might fail here, but for POC let's continue if local auth passed
+            }
 
             user2.LastLogin = DateTime.Now;
             await _localStorage.SetItemAsync(user2.Username, user2);
