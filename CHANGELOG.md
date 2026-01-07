@@ -7,6 +7,31 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Não Lançado]
 
+### Adicionado - 2026-01-07
+
+#### 📊 Gestão de Dados e Exportação
+- **Exportação para CSV**: Adicionado recurso de exportação completa do inventário local para arquivo CSV via menu inferior.
+- **Sincronização Progressiva**: Melhoria na tela de sincronização com indicadores visuais de progresso e feedback em tempo real.
+- **Dados de Exemplo**: Implementada carga automática de item de exemplo (`exemplo-item.json`) quando o inventário está vazio para auxiliar novos usuários.
+
+#### 📸 Câmera e Inventário
+- **Suporte Multi-Foto**: Agora é possível capturar e associar múltiplas fotografias a um único item de inventário.
+- **Gestão Pós-Captura**: Adicionada funcionalidade de adicionar novas fotos ou remover existentes diretamente da tela de detalhes do item.
+- **Visualização Full-Screen**: Implementada sobreposição (overlay) para visualização de fotos em tamanho real com zoom e fechar.
+- **Galeria de Visualização**: Implementada navegação entre fotos capturadas antes do salvamento com opção de remoção individual.
+- **Resiliência da Câmera**: Tratamento de erros aprimorado para dispositivos iOS/Safari e mensagens de erro amigáveis para permissões negadas ou dispositivos ocupados.
+
+#### ⚡ UI/UX e Navegação
+- **Menu de Navegação Inferior (Bottom Bar)**: Implementada barra de navegação principal para acesso rápido a Home, Estatísticas, Câmera e Sincronização, otimizada para uso com uma mão.
+- **Paginação e Ordenação**: Tela inicial agora conta com paginação robusta e diversas opções de ordenação (por data, nome e código).
+- **Badge de Sincronização**: Adicionado contador visual no menu inferior indicando a quantidade de itens pendentes de sincronização.
+
+### Corrigido - 2026-01-07
+- **Filtros de Categoria**: Corrigida a lógica de filtragem que ocasionalmente falhava ao alternar rapidamente entre categorias.
+- **Estado Global**: Sincronização do modo escuro persistida corretamente no primeiro carregamento via script inline no `index.html`.
+
+## [0.2.0] - 2025-12-30
+
 ### Adicionado - 2025-12-30
 
 #### 🎨 Refinamento de UI/UX e Identidade Visual

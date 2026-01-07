@@ -9,12 +9,13 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 ## Funcionalidades
 
 - **Autenticação Local**: Login e registro de usuários com armazenamento em localStorage e suporte a múltiplos perfis.
-- **Captura de Imagens**: Integração com câmera do dispositivo para fotografar itens com preview e metadados.
-- **Gerenciamento de Inventário**: Adição, edição e visualização de itens com suporte a categorias e unidades gestoras.
-- **Armazenamento Offline**: Uso de IndexedDB para dados de inventário e localStorage para persistência de sessão.
+- **Captura de Imagens**: Integração com câmera do dispositivo para fotografar itens com suporte a múltiplas fotos por item, preview e galeria de revisão.
+- **Gerenciamento de Inventário**: Adição, edição e visualização de itens com suporte a categorias, unidades gestoras, busca avançada e ordenação personalizada.
+- **Armazenamento Offline**: Uso de IndexedDB para dados de inventário e localStorage para persistência de sessão e temas.
+- **Exportação de Dados**: Funcionalidade de exportação do inventário local para formato CSV, facilitando a portabilidade dos dados.
 - **PWA Real**: Instalável, offline-first, com logotipos oficiais da ASPEC e suporte a ícones **Maskable**.
 - **Temas Dinâmicos**: Suporte a modo claro/escuro com detecção automática de sistema e salvamento de preferência.
-- **Responsividade Mobile-First**: Interface otimizada para tablets e smartphones, com alvos de toque aumentados e navegação por menu flutuante.
+- **Responsividade Mobile-First**: Interface otimizada com barra de navegação inferior (Bottom Navigation) e menu lateral para gestão de perfis e unidades.
 - **UI de Alta Fidelidade**: Baseada em MudBlazor, oferecendo uma experiência Material Design refinada e profissional.
 - **Gestão de Unidades**: Sistema de filtragem e seleção de unidades gestoras (Prefeituras, Fundos, Câmaras) com nomes reais e seeding automático.
 
@@ -209,8 +210,9 @@ O modelo `InventoryItem` (localizado em `Models/Item.cs`) representa um item de 
    - Chama `DbService.AddAsync("items", itemModel)`.
    - Atualiza `appState.PendingSyncCount`.
    - Navega para `/home`.
-8. **Páginas/Componentes Envolvidos:** Camera.razor, Home.razor (para listagem).
-9. **Serviços:** CameraService, IndexedDbService, AuthService, ToastService, AppState.
+8. **Exportação (Opcional):** Usuário clica no ícone de exportação no menu inferior para baixar CSV com todos os itens locais.
+9. **Páginas/Componentes Envolvidos:** Camera.razor, Home.razor, Stats.razor, Sync.razor, Footer.razor.
+10. **Serviços:** CameraService, IndexedDbService, AuthService, ToastService, AppState.
 
 ### Serviços e Interoperabilidade JavaScript
 
