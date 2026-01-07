@@ -184,9 +184,11 @@ O modelo `InventoryItem` (localizado em `Models/Item.cs`) representa um item de 
 - **Usuários:** Armazenados por username (ex: chave "admin" para User object)
 - **Limites:** ~5-10MB por origem, dependendo do navegador.
 
-#### Estratégia de Sincronização Serverless
-1. **Autenticação**: O usuário faz login via AWS Cognito. O sistema obtém um ID Token (User Pool).
-2. **Autorização**: O ID Token é trocado por credenciais temporárias do IAM via Identity Pool (AccessKey/Secret/SessionToken).
+#### Estratégia de Sincronização Serverless (Modo PoC)
+> ⚠️ **SECURITY WARNING:** A versão atual utiliza credenciais estáticas (Access Key / Secret Key) no lado do cliente apenas para fins de validação técnica (Motto: PoC). **NÃO utilizar chaves reais em ambiente de produção**, pois elas estão expostas no código/configuração do navegador.
+
+1. **Autenticação**: O usuário é validado localmente (LocalStorage).
+2. **Sincronização**: O sistema utiliza as chaves configuradas em `appsettings.json` para acessar diretamente o S3.
 3. **Upload Mídia**: Imagens convertidas de Base64 para Stream são enviadas para o S3: `uploads/{UnitId}/{UserId}/{ItemId}/{PhotoName}.jpg`.
 4. **Upload Metadata**: Um arquivo `item.json` é enviado para o mesmo diretório, servindo de registro para o sistema legado (Harbour).
 5. **Limpeza Local**: Após o sucesso, os dados Base64 são removidos do IndexedDB e substituídos pelas URLs do S3.
@@ -200,13 +202,18 @@ O projeto utiliza o arquivo `wwwroot/appsettings.json` para definir os recursos 
 {
   "Aws": {
     "Region": "us-east-1",
-    "UserPoolId": "us-east-1_XXXXXXXXX",
-    "AppClientId": "XXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "IdentityPoolId": "us-east-1:XXXX-XXXX-XXXX-XXXX-XXXX",
-    "BucketName": "pwa-inventory-uploads"
+    "BucketName": "pwa-inventory-uploads",
+    "AccessKey": "USUARIO_ACCESS_KEY",
+    "SecretKey": "USUARIO_SECRET_KEY"
   }
 }
 ```
+
+### Roadmap de Segurança
+Para a versão de produção, é **obrigatória** a migração para **AWS Cognito Identity Pools**, permitindo:
+- Isolamento de dados por usuário via IAM Policy variables (`s3:prefix`).
+- Eliminação de chaves fixas no client-side.
+- Credenciais temporárias com tempo de vida limitado.
 
 > **Importante:** O Bucket S3 deve ter políticas de **CORS** habilitadas para aceitar requisições `PUT`, `GET` e `DELETE` da origem da aplicação (localhost e domínio de produção).
 

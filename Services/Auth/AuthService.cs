@@ -67,23 +67,22 @@ namespace pwa_camera_poc_blazor.Services.Auth
             if (user2.PasswordHash != inputHash) return null;
 
             // AWS Cognito Flow (Simulated/Implementation)
-            try
-            {
-                if (!string.IsNullOrEmpty(_awsConfig.UserPoolId))
-                {
+            /* 
+            // Commented out for PoC mode with static credentials
+            try {
+                if (!string.IsNullOrEmpty(_awsConfig.UserPoolId)) {
                     var provider = new AmazonCognitoIdentityProviderClient(new Amazon.Runtime.AnonymousAWSCredentials(), RegionEndpoint.GetBySystemName(_awsConfig.Region));
                     var userPool = new CognitoUserPool(_awsConfig.UserPoolId, _awsConfig.AppClientId, provider);
                     var cognitoUser = new CognitoUser(username, _awsConfig.AppClientId, userPool, provider);
-
+                    
                     var authResponse = await cognitoUser.StartWithSrpAuthAsync(new InitiateSrpAuthRequest { Password = password });
                     AwsIdToken = authResponse.AuthenticationResult.IdToken;
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 Console.WriteLine($"Cognito Login Error: {ex.Message}");
                 // In a real scenario, we might fail here, but for POC let's continue if local auth passed
             }
+            */
 
             user2.LastLogin = DateTime.Now;
             await _localStorage.SetItemAsync(user2.Username, user2);

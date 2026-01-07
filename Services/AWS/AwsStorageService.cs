@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Amazon;
-using Amazon.CognitoIdentity;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
@@ -15,26 +14,30 @@ namespace pwa_camera_poc_blazor.Services.AWS
     public class AwsStorageService : IAwsStorageService
     {
         private readonly AwsConfig _config;
-        private CognitoAWSCredentials? _credentials;
         private AmazonS3Client? _s3Client;
 
         public AwsStorageService(AwsConfig config)
         {
             _config = config;
+            InitializeWithStaticCredentials();
+        }
+
+        private void InitializeWithStaticCredentials()
+        {
+            if (!string.IsNullOrEmpty(_config.AccessKey) && !string.IsNullOrEmpty(_config.SecretKey))
+            {
+                var credentials = new BasicAWSCredentials(_config.AccessKey, _config.SecretKey);
+                var region = RegionEndpoint.GetBySystemName(_config.Region);
+                _s3Client = new AmazonS3Client(credentials, region);
+                Console.WriteLine("S3 Client initialized with static credentials.");
+            }
         }
 
         public void InitializeWithToken(string idToken)
         {
-            var region = RegionEndpoint.GetBySystemName(_config.Region);
-            _credentials = new CognitoAWSCredentials(
-                _config.IdentityPoolId,
-                region
-            );
-
-            var providerName = $"cognito-idp.{_config.Region}.amazonaws.com/{_config.UserPoolId}";
-            _credentials.AddLogin(providerName, idToken);
-
-            _s3Client = new AmazonS3Client(_credentials, region);
+            // Future Cognito implementation
+            // For PoC, we are using static credentials initialized in constructor
+            Console.WriteLine("Cognito token initialization skipped in PoC mode.");
         }
 
         public async Task<(bool Success, string? Url)> UploadPhotoAsync(string unitId, string userId, string itemId, string fileName, string base64Data)
@@ -73,7 +76,11 @@ namespace pwa_camera_poc_blazor.Services.AWS
 
             try
             {
-                var json = System.Text.Json.JsonSerializer.Serialize(item);
+                // Create a clean copy for metadata upload, removing local photos to reduce file size
+                var metadataItem = System.Text.Json.JsonSerializer.Deserialize<InventoryItem>(System.Text.Json.JsonSerializer.Serialize(item));
+                if (metadataItem != null) metadataItem.Photos = new List<string>();
+
+                var json = System.Text.Json.JsonSerializer.Serialize(metadataItem);
                 var key = $"uploads/{unitId}/{userId}/{itemId}/item.json";
 
                 var request = new PutObjectRequest
