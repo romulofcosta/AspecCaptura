@@ -7,6 +7,44 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Não Lançado]
 
+### Adicionado - 2026-01-08
+
+#### 🔄 Sincronização S3 com Padrão Desktop
+
+- **Fluxo de Sincronização Unidirecional (PWA → S3)**:
+  - Implementado upload de itens do IndexedDB para AWS S3 seguindo padrão de nomenclatura compatível com módulo Desktop
+  - Estrutura de arquivos: `capturas/{itemId}.jpg` e `capturas/{itemId}.json`
+  - Upload apenas da primeira foto (capa) de cada item
+  - Metadados em formato JSON compatível com Desktop, incluindo campo obrigatório `usuarioEnvio`
+
+- **Modelo de Metadados (`ItemMetadata.cs`)**:
+  - Criado modelo específico para sincronização com campos em português
+  - Campo obrigatório `UsuarioEnvio`: username do fiscal que realizou o envio
+  - Campo `DataEnvio`: timestamp do momento da sincronização
+  - Isolamento de dados por usuário via atributo `UsuarioEnvio` no JSON
+
+- **Filtro de Visualização por Usuário**:
+  - Adicionada propriedade `CreatedBy` ao modelo `InventoryItem`
+  - Home e Sync exibem apenas itens criados pelo usuário logado
+  - Garantia de privacidade: cada fiscal visualiza apenas seus próprios registros
+
+- **Indicadores Visuais de Status**:
+  - Ícone de nuvem cinza: Item pendente de sincronização (apenas local)
+  - Ícone de nuvem verde: Item confirmado no S3
+  - Verificação rápida de existência no S3 via método `ItemExistsInS3Async`
+
+- **Segurança e Configuração**:
+  - Removidas credenciais AWS do código-fonte
+  - Placeholders no `appsettings.json` para injeção via variáveis de ambiente
+  - Preparado para deploy no Cloudflare Pages com secrets gerenciados
+
+#### 📝 Documentação de Integração
+
+- **Padrão de Integração Desktop**:
+  - Documentado que o isolamento de dados no bucket é feito via `UsuarioEnvio` no JSON
+  - Fluxo de dados: Captura Local → IndexedDB → Sync S3 (JSON+JPG) → Consumo Desktop
+  - Sistema não permite edição de itens já sincronizados (upload-only)
+
 ### Adicionado - 2026-01-07
 
 #### 📊 Gestão de Dados e Exportação

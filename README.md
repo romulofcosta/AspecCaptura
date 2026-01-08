@@ -227,21 +227,22 @@ Para a versão de produção, é **obrigatória** a migração para **AWS Cognit
 
 ### Fluxo de Dados Atual
 
-1. **Navegação para Câmera:** Usuário acessa `/camera` (Camera.razor).
-2. **Inicialização:** `OnInitializedAsync` obtém usuário atual via `AuthService`.
-3. **Start Câmera:** `OnAfterRenderAsync` chama `CameraService.StartCameraAsync("camera-feed", useFrontCamera)`.
-4. **Captura:** Botão "Capture" chama `CapturePhoto()`, que:
-   - Chama `CameraService.TakePhotoAsync("camera-feed")` para obter base64.
-   - Para câmera, mostra form de metadados.
-5. **Form de Metadados:** Usuário preenche `InventoryItem` (Name, Code, etc.).
-6. **Adicionar Fotos Extras:** Botão "Add More Photo" permite capturar mais fotos.
-7. **Salvamento:** `HandleSave()`:
-   - Define `itemModel.Photos = capturedPhotos`.
-   - Define `UnitId` e `Timestamp`.
-   - Chama `DbService.AddAsync("items", itemModel)`.
-   - Atualiza `appState.PendingSyncCount`.
-   - Navega para `/home`.
-8. **Exportação (Opcional):** Usuário clica no ícone de exportação no menu inferior para baixar CSV com todos os itens locais.
+### Fluxo de Dados Atual (Sincronização PWA → S3 → Desktop)
+
+1. **Navegação para Câmera:** Usuário acessa `/camera`.
+2. **Captura e Metadados:** Usuário tira fotos e preenche dados (Nome, Código e Localização).
+3. **Salvamento Local (IndexedDB):** 
+   - Item salvo com status `Synced = false`.
+   - Propriedade `CreatedBy` recebe o usuário logado para isolamento.
+4. **Visualização (Home/Sync):**
+   - Itens pendentes aparecem com **Nuvem Cinza**.
+   - A lista é filtrada para mostrar apenas itens do usuário atual.
+5. **Sincronização (Sync):**
+   - Usuário clica em "Sincronizar Tudo".
+   - **Upload Imagem:** Capa enviada para `capturas/{itemId}.jpg`.
+   - **Upload Metadados:** JSON enviado para `capturas/{itemId}.json` (inclui `usuarioEnvio`).
+   - **Confirmação:** Se sucesso, status muda para `Synced = true` (**Nuvem Verde**) e fotos locais são removidas.
+6. **Consumo Desktop:** Aplicação Desktop lê os JSONs/JPGs do bucket S3.
 9. **Páginas/Componentes Envolvidos:** Camera.razor, Home.razor, Stats.razor, Sync.razor, Footer.razor.
 10. **Serviços:** CameraService, IndexedDbService, AuthService, ToastService, AppState.
 

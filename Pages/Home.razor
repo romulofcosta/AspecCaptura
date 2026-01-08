@@ -6,6 +6,8 @@
 @inject AppState appState
 @inject HttpClient HttpClient
 @inject IJSRuntime JSRuntime
+@using pwa_camera_poc_blazor.Services.AWS
+@inject IAwsStorageService AwsService
 @implements IDisposable
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
@@ -147,8 +149,50 @@
             {
                 await Task.Delay(500);
                 await JSRuntime.InvokeVoidAsync("appInterop.checkOverflow", "#home-container");
+                
+                // Verifica status de sincronização em background
+                _ = CheckRemoteSyncStatus();
             }
             catch { /* Log or handle JS interop errors if necessary */ }
+        }
+    }
+
+    private async Task CheckRemoteSyncStatus()
+    {
+        // Verifica apenas itens pendentes (Synced = false) para economizar requisições
+        var pendingItems = items.Where(i => !i.Synced).ToList();
+        if (!pendingItems.Any()) return;
+        
+        // Verifica conexão básica antes de tentar (opcional, aqui assumimos que AwsService lida com falhas)
+        bool stateChanged = false;
+
+        foreach (var item in pendingItems)
+        {
+            // Verifica se o arquivo .json existe no S3
+            bool exists = await AwsService.ItemExistsInS3Async(item.Id);
+            
+            if (exists)
+            {
+                // Se existe no S3 mas estava localmente como não sincronizado, atualiza
+                item.Synced = true;
+                item.Photos = new List<string>(); // Limpa fotos locais para economizar espaço
+                await DbService.UpdateAsync("items", item);
+                stateChanged = true;
+            }
+        }
+
+        if (stateChanged)
+        {
+            // Atualiza UI e contadores
+            var user = await AuthService.GetCurrentUserAsync();
+            if (user != null)
+            {
+                var allItems = await DbService.GetItemsByUnitAsync(user.CurrentUnitId ?? 0);
+                var userItems = allItems.Where(i => i.CreatedBy == user.Username).ToList();
+                appState.PendingSyncCount = userItems.Count(i => !i.Synced);
+            }
+            
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -171,13 +215,17 @@
             var user = await AuthService.GetCurrentUserAsync();
             if (user?.CurrentUnitId != null)
             {
-                items = await DbService.GetItemsByUnitAsync(user.CurrentUnitId.Value);
+                var allItems = await DbService.GetItemsByUnitAsync(user.CurrentUnitId.Value);
+                
+                // Filtra apenas os itens criados pelo usuário atual
+                items = allItems.Where(i => i.CreatedBy == user.Username).ToList();
 
                 // If no items, load example item
                 if (!items.Any())
                 {
-                    await LoadExampleItem(user.CurrentUnitId.Value);
-                    items = await DbService.GetItemsByUnitAsync(user.CurrentUnitId.Value);
+                    await LoadExampleItem(user.CurrentUnitId.Value, user.Username);
+                    allItems = await DbService.GetItemsByUnitAsync(user.CurrentUnitId.Value);
+                    items = allItems.Where(i => i.CreatedBy == user.Username).ToList();
                 }
             }
             else
@@ -195,7 +243,7 @@
         }
     }
 
-    private async Task LoadExampleItem(int unitId)
+    private async Task LoadExampleItem(int unitId, string username)
     {
         try
         {
@@ -204,6 +252,7 @@
             if (exampleItem != null)
             {
                 exampleItem.UnitId = unitId;
+                exampleItem.CreatedBy = username; // Define o criador
                 await DbService.AddAsync("items", exampleItem);
             }
         }

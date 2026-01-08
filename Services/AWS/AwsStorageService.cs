@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon;
 using Amazon.Runtime;
@@ -40,14 +41,18 @@ namespace pwa_camera_poc_blazor.Services.AWS
             Console.WriteLine("Cognito token initialization skipped in PoC mode.");
         }
 
-        public async Task<(bool Success, string? Url)> UploadPhotoAsync(string unitId, string userId, string itemId, string fileName, string base64Data)
+        /// <summary>
+        /// Faz upload de uma foto para o S3 seguindo o padrão: capturas/{itemId}.jpg
+        /// </summary>
+        public async Task<(bool Success, string? Url)> UploadPhotoAsync(string itemId, string base64Data)
         {
             if (_s3Client == null) return (false, null);
 
             try
             {
+                // Remove o prefixo data:image/jpeg;base64, se existir
                 var bytes = Convert.FromBase64String(base64Data.Contains(",") ? base64Data.Split(',')[1] : base64Data);
-                var key = $"uploads/{unitId}/{userId}/{itemId}/{fileName}";
+                var key = $"capturas/{itemId}.jpg";
 
                 using var stream = new MemoryStream(bytes);
                 var request = new PutObjectRequest
@@ -61,27 +66,34 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 await _s3Client.PutObjectAsync(request);
 
                 var url = $"https://{_config.BucketName}.s3.{_config.Region}.amazonaws.com/{key}";
+                Console.WriteLine($"✓ Photo uploaded: {key}");
                 return (true, url);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"S3 Upload Error: {ex.Message}");
+                Console.WriteLine($"✗ S3 Photo Upload Error: {ex.Message}");
                 return (false, null);
             }
         }
 
-        public async Task<(bool Success, string? Url)> UploadMetadataAsync(string unitId, string userId, string itemId, InventoryItem item)
+        /// <summary>
+        /// Faz upload dos metadados para o S3 seguindo o padrão: capturas/{itemId}.json
+        /// O JSON segue o formato compatível com o módulo Desktop.
+        /// </summary>
+        public async Task<(bool Success, string? Url)> UploadMetadataAsync(string itemId, ItemMetadata metadata)
         {
             if (_s3Client == null) return (false, null);
 
             try
             {
-                // Create a clean copy for metadata upload, removing local photos to reduce file size
-                var metadataItem = System.Text.Json.JsonSerializer.Deserialize<InventoryItem>(System.Text.Json.JsonSerializer.Serialize(item));
-                if (metadataItem != null) metadataItem.Photos = new List<string>();
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                };
 
-                var json = System.Text.Json.JsonSerializer.Serialize(metadataItem);
-                var key = $"uploads/{unitId}/{userId}/{itemId}/item.json";
+                var json = JsonSerializer.Serialize(metadata, options);
+                var key = $"capturas/{itemId}.json";
 
                 var request = new PutObjectRequest
                 {
@@ -94,15 +106,19 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 await _s3Client.PutObjectAsync(request);
 
                 var url = $"https://{_config.BucketName}.s3.{_config.Region}.amazonaws.com/{key}";
+                Console.WriteLine($"✓ Metadata uploaded: {key}");
                 return (true, url);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"S3 Metadata Upload Error: {ex.Message}");
+                Console.WriteLine($"✗ S3 Metadata Upload Error: {ex.Message}");
                 return (false, null);
             }
         }
 
+        /// <summary>
+        /// Lista objetos no bucket com o prefixo especificado
+        /// </summary>
         public async Task<List<string>> ListObjectsAsync(string prefix)
         {
             if (_s3Client == null) return new List<string>();
@@ -120,11 +136,45 @@ namespace pwa_camera_poc_blazor.Services.AWS
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"S3 List Error: {ex.Message}");
+                Console.WriteLine($"✗ S3 List Error: {ex.Message}");
                 return new List<string>();
             }
         }
 
+        /// <summary>
+        /// Verifica se um item existe no S3 verificando a presença do arquivo .json
+        /// Usado para atualizar o status visual (ícone de nuvem verde/cinza)
+        /// </summary>
+        public async Task<bool> ItemExistsInS3Async(string itemId)
+        {
+            if (_s3Client == null) return false;
+
+            try
+            {
+                var key = $"capturas/{itemId}.json";
+                var request = new GetObjectMetadataRequest
+                {
+                    BucketName = _config.BucketName,
+                    Key = key
+                };
+
+                await _s3Client.GetObjectMetadataAsync(request);
+                return true;
+            }
+            catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"✗ S3 Exists Check Error: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Deleta um objeto do S3
+        /// </summary>
         public async Task<bool> DeleteObjectAsync(string key)
         {
             if (_s3Client == null) return false;
@@ -138,11 +188,12 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 };
 
                 await _s3Client.DeleteObjectAsync(request);
+                Console.WriteLine($"✓ Object deleted: {key}");
                 return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"S3 Delete Error: {ex.Message}");
+                Console.WriteLine($"✗ S3 Delete Error: {ex.Message}");
                 return false;
             }
         }
