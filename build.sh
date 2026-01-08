@@ -15,6 +15,16 @@ else
     OUTPUT_DIR="bin/Release/net8.0/publish/wwwroot"
 fi
 
+echo "Substituindo variáveis no appsettings.json..."
+
+sed -i "s|__AWS_REGION__|$AWS_REGION|g" wwwroot/appsettings.json
+sed -i "s|__AWS_USER_POOL_ID__|$AWS_USER_POOL_ID|g" wwwroot/appsettings.json
+sed -i "s|__AWS_APP_CLIENT_ID__|$AWS_APP_CLIENT_ID|g" wwwroot/appsettings.json
+sed -i "s|__AWS_IDENTITY_POOL_ID__|$AWS_IDENTITY_POOL_ID|g" wwwroot/appsettings.json
+sed -i "s|__AWS_BUCKET_NAME__|$AWS_BUCKET_NAME|g" wwwroot/appsettings.json
+sed -i "s|__AWS_ACCESS_KEY__|$AWS_ACCESS_KEY|g" wwwroot/appsettings.json
+sed -i "s|__AWS_SECRET_KEY__|$AWS_SECRET_KEY|g" wwwroot/appsettings.json
+
 echo "=== Plataforma detectada: $PLATFORM ==="
 
 # Instalar .NET se necessário
