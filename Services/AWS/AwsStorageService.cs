@@ -25,12 +25,34 @@ namespace pwa_camera_poc_blazor.Services.AWS
 
         private void InitializeWithStaticCredentials()
         {
-            if (!string.IsNullOrEmpty(_config.AccessKey) && !string.IsNullOrEmpty(_config.SecretKey))
+            try
             {
-                var credentials = new BasicAWSCredentials(_config.AccessKey, _config.SecretKey);
-                var region = RegionEndpoint.GetBySystemName(_config.Region);
-                _s3Client = new AmazonS3Client(credentials, region);
-                Console.WriteLine("S3 Client initialized with static credentials.");
+                if (_config == null) return;
+
+                // Verificação defensiva de placeholders para evitar crash na inicialização
+                bool isPlaceholder = _config.Region.Contains("PLACEHOLDER") ||
+                                   _config.AccessKey.Contains("PLACEHOLDER") ||
+                                   _config.Region.StartsWith("__");
+
+                if (!string.IsNullOrEmpty(_config.AccessKey) &&
+                    !string.IsNullOrEmpty(_config.SecretKey) &&
+                    !isPlaceholder)
+                {
+                    var credentials = new BasicAWSCredentials(_config.AccessKey, _config.SecretKey);
+                    var region = RegionEndpoint.GetBySystemName(_config.Region);
+                    _s3Client = new AmazonS3Client(credentials, region);
+                    Console.WriteLine("S3 Client initialized with static credentials.");
+                }
+                else
+                {
+                    Console.WriteLine("AWS S3 Client not initialized: missing credentials or placeholders detected.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to initialize AWS S3 Client: {ex.Message}");
+                // Suprimir exceção para não impedir a inicialização do app
+                _s3Client = null;
             }
         }
 
