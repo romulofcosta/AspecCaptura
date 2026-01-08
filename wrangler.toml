@@ -1,5 +1,0 @@
-name = "pwa-camera-poc-blazor"
-compatibility_date = "2024-09-23"
-
-# Esta configuração ajuda o Cloudflare a entender que é um projeto gerenciado
-# e evita tentativas errôneas de detectar Functions se pastas suspeitas existirem.

@@ -46,22 +46,7 @@ EOF
 
 elif [ "$PLATFORM" = "cloudflare" ] || [ "$PLATFORM" = "local" ]; then
     echo "=== Ajustando para Cloudflare Pages ==="
-    
-    # _redirects dentro de wwwroot
-    cat > bin/Release/net8.0/publish/wwwroot/_redirects << 'EOF'
-/*    /index.html   200
-EOF
-
-    # _headers dentro de wwwroot
-    cat > bin/Release/net8.0/publish/wwwroot/_headers << 'EOF'
-/*
-  X-Frame-Options: DENY
-  X-Content-Type-Options: nosniff
-/_framework/*
-  Cache-Control: public, max-age=31536000, immutable
-/service-worker.js
-  Cache-Control: no-cache
-EOF
+    # Arquivos estáticos (_redirects, _headers) já estão em wwwroot
 fi
 
 echo "=== Build concluído! Saída: $OUTPUT_DIR ==="
