@@ -6,6 +6,16 @@ Este é um projeto de Prova de Conceito (POC) para uma Progressive Web App (PWA)
 
 O projeto visa criar uma aplicação web que funcione offline, permitindo aos usuários fazer login, capturar itens via câmera, registrar inventário e sincronizar dados quando online. É direcionado para cenários de inventário móvel em ambientes com conectividade limitada.
 
+## ⚠️ Status do Projeto & Limitações Conhecidas
+
+> **Nota Crítica (09/01/2026):** Uma análise técnica detalhada identificou bloqueios na validação de login e incompatibilidade do SDK da AWS com o ambiente WebAssembly puro para uploads S3.
+
+Para detalhes completos e soluções propostas, consulte o [Relatório de Análise Técnica](docs/ANALYSIS_REPORT.md).
+
+**Principais Pontos de Atenção:**
+1.  **Login**: Validação de formato de e-mail impede uso de usuários de teste simples (ex: `admin`).
+2.  **Sincronização**: O upload direto via AWS SDK gera erros de plataforma (`PlatformNotSupportedException`). A solução recomendada é a implementação de **Pre-Signed URLs**.
+
 ## Funcionalidades
 
 - **Autenticação Local**: Login e registro de usuários com armazenamento em localStorage e suporte a múltiplos perfis.

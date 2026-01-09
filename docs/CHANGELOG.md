@@ -7,6 +7,16 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Não Lançado]
 
+### Análise Técnica & Roadmap de Correção - 2026-01-09
+
+> Consulte `docs/ANALYSIS_REPORT.md` para o relatório completo.
+
+#### 🔴 Crítico (Bloqueios)
+- **Correção de Login**: Ajustar `Login.razor` e `LoginModel` para aceitar username simples (`admin`) OU alterar usuário padrão para formato de email (`admin@aspec.com`).
+- **Fix Sincronização (S3)**: O `AmazonS3Client` falha em WASM.
+  - **Ação Necessária**: Pivotar arquitetura de upload para uso de **Pre-Signed URLs** ou Proxy API.
+  - **Meta**: Remover dependência direta do AWS SDK para transferência de dados no cliente.
+
 ### Adicionado - 2026-01-08
 
 #### 🔄 Sincronização S3 com Padrão Desktop
