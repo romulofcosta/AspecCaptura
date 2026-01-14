@@ -35,3 +35,4 @@
 - Resolvido aviso MUD0002 sobre atributo `Hover` ilegal.
 - Corrigido alinhamento de labels em campos `Outlined` no tema escuro.
 - Unificação de ícones de sistema (Alternar Tema).
+
