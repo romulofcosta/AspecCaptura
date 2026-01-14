@@ -219,3 +219,4 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - ✅ PWA (Progressive Web App)
 - ✅ Todos os navegadores modernos
 - ✅ iOS Safari, Chrome Mobile, Edge Mobile
+

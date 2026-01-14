@@ -7,6 +7,9 @@
 *.user
 *.userosscache
 *.sln.docstates
+*.tmp
+*.log
+*.err
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -22,10 +25,15 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
+out/
+
+# Local .NET SDK and runtime
+.dotnet/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
-# Uncomment if you use Visual Studio Code
+
+# Visual Studio Code settings
 .vscode/
 
 # MSTest test Results
@@ -76,15 +84,19 @@ orleans-http/
 *.pyc
 *.pyo
 
-# User-specific files
+# IDE-specific files
 .idea/
 .project
 .classpath
 .settings/
-.vscode/
 
 # Local Netlify folder
 .netlify
+
+# Text files gerados por build/output
+build*.txt
+error*.txt
+output*.txt
 
 # Netlify publish directory (if you want to keep it out of git)
 # Since we are using bin/Release/net8.0/publish/wwwroot, it's already covered by [Bb]in/

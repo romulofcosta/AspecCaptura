@@ -520,3 +520,268 @@ MudBlazor fornece classes CSS utilitárias:
 MudBlazor é uma ferramenta poderosa para criar UIs modernas e responsivas em Blazor. Com +60 componentes, temas customizáveis e excelente documentação, é uma escolha ideal para este projeto PWA.
 
 Para dúvidas ou suporte, consulte a [documentação oficial](https://mudblazor.com/) ou a [comunidade no Discord](https://discord.gg/mudblazor).
+    <MudTextField @bind-Value="item.Name" 
+                  Label="Nome do Item" 
+                  Required="true" 
+                  RequiredError="Nome é obrigatório"
+                  Variant="Variant.Outlined" />
+    
+    <MudTextField @bind-Value="item.Code" 
+                  Label="Código" 
+                  Required="true"
+                  RequiredError="Código é obrigatório"
+                  Variant="Variant.Outlined" />
+    
+    <MudSelect @bind-Value="item.Category" 
+               Label="Categoria"
+               Variant="Variant.Outlined">
+        <MudSelectItem Value="@("Móveis")">Móveis</MudSelectItem>
+        <MudSelectItem Value="@("Eletrônicos")">Eletrônicos</MudSelectItem>
+        <MudSelectItem Value="@("Equipamentos")">Equipamentos</MudSelectItem>
+        <MudSelectItem Value="@("Ferramentas")">Ferramentas</MudSelectItem>
+    </MudSelect>
+    
+    <MudTextField @bind-Value="item.Location" 
+                  Label="Localização" 
+                  Required="true"
+                  RequiredError="Localização é obrigatória"
+                  Variant="Variant.Outlined" />
+    
+    <MudTextField @bind-Value="item.Observations" 
+                  Label="Observações" 
+                  Lines="3"
+                  Variant="Variant.Outlined" />
+    
+    <MudButton Variant="Variant.Filled" 
+               Color="Color.Primary" 
+               Disabled="@(!success)" 
+               FullWidth="true"
+               OnClick="SaveItem">
+        <MudIcon Icon="@Icons.Material.Filled.Save" Class="mr-2" />
+        Salvar Item
+    </MudButton>
+</MudForm>
+```
+
+### Lista de Itens com Busca
+
+```razor
+<MudTextField @bind-Value="searchString" 
+              Placeholder="Buscar itens..." 
+              Adornment="Adornment.Start" 
+              AdornmentIcon="@Icons.Material.Filled.Search" 
+              IconSize="Size.Medium" 
+              Class="mb-4" />
+
+<MudList>
+    @foreach (var item in FilteredItems)
+    {
+        <MudListItem Icon="@Icons.Material.Filled.Inventory" 
+                     OnClick="() => ViewDetails(item)">
+            <div class="d-flex justify-space-between align-center">
+                <div>
+                    <MudText Typo="Typo.body1">@item.Name</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Code</MudText>
+                </div>
+                <MudChip Size="Size.Small" Color="Color.Info">@item.Category</MudChip>
+            </div>
+        </MudListItem>
+        <MudDivider />
+    }
+</MudList>
+
+@code {
+    private string searchString = "";
+    
+    private IEnumerable<InventoryItem> FilteredItems => 
+        items.Where(x => x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                         x.Code.Contains(searchString, StringComparison.OrdinalIgnoreCase));
+}
+```
+
+### Dialog de Confirmação
+
+```razor
+@inject IDialogService DialogService
+
+@code {
+    private async Task DeleteItemWithConfirmation(InventoryItem item)
+    {
+        var parameters = new DialogParameters
+        {
+            ["ContentText"] = $"Deseja realmente excluir o item '{item.Name}'?",
+            ["ButtonText"] = "Excluir",
+            ["Color"] = Color.Error
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirmar Exclusão", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await DeleteItem(item);
+            Snackbar.Add("Item excluído com sucesso!", Severity.Success);
+        }
+    }
+}
+```
+
+### Floating Action Button (FAB) para Câmera
+
+```razor
+<MudFab Color="Color.Primary" 
+        StartIcon="@Icons.Material.Filled.CameraAlt" 
+        OnClick="OpenCamera"
+        Style="position: fixed; bottom: 80px; right: 20px; z-index: 1000;" />
+
+@code {
+    private void OpenCamera()
+    {
+        Navigation.NavigateTo("/camera");
+    }
+}
+```
+
+## Migração Gradual
+
+Para migrar componentes existentes para MudBlazor:
+
+### Passo 1: Identificar Componentes
+
+Comece com os componentes mais usados:
+- Formulários (Login, Register, Camera)
+- Cards (ItemCard)
+- Listas (Home page)
+- Botões e inputs
+
+### Passo 2: Substituir Gradualmente
+
+Não precisa migrar tudo de uma vez. Exemplo de migração de um input:
+
+**Antes (HTML nativo):**
+```razor
+<input type="text" 
+       class="form-input" 
+       @bind-value="item.Name" 
+       placeholder="Nome do item" />
+<ValidationMessage For="@(() => item.Name)" />
+```
+
+**Depois (MudBlazor):**
+```razor
+<MudTextField @bind-Value="item.Name" 
+              Label="Nome do item" 
+              Variant="Variant.Outlined"
+              Required="true"
+              RequiredError="Campo obrigatório" />
+```
+
+### Passo 3: Testar Responsividade
+
+Verifique em diferentes tamanhos de tela:
+- Mobile (< 600px)
+- Tablet (600px - 960px)
+- Desktop (> 960px)
+
+### Passo 4: Manter Consistência
+
+Use o mesmo `Variant` e `Color` em toda a aplicação:
+- **Variant**: `Outlined` para inputs, `Filled` para botões primários
+- **Color**: `Primary` para ações principais, `Secondary` para ações secundárias
+
+## Classes Utilitárias
+
+MudBlazor fornece classes CSS utilitárias:
+
+### Spacing
+
+```razor
+<!-- Padding -->
+<div class="pa-4">Padding all sides: 16px</div>
+<div class="pt-2">Padding top: 8px</div>
+<div class="px-3">Padding horizontal: 12px</div>
+
+<!-- Margin -->
+<div class="ma-4">Margin all sides: 16px</div>
+<div class="mt-2">Margin top: 8px</div>
+<div class="mx-auto">Margin horizontal: auto (centraliza)</div>
+```
+
+### Flexbox
+
+```razor
+<div class="d-flex justify-space-between align-center">
+    <div>Item 1</div>
+    <div>Item 2</div>
+</div>
+
+<div class="d-flex flex-column gap-4">
+    <div>Item 1</div>
+    <div>Item 2</div>
+</div>
+```
+
+### Display
+
+```razor
+<div class="d-none d-sm-block">Visível apenas em tablet+</div>
+<div class="d-block d-md-none">Visível apenas em mobile/tablet</div>
+```
+
+## Próximos Passos
+
+### Tarefas Recomendadas
+
+- [ ] Migrar formulários de Login e Register para MudForm
+- [ ] Implementar MudDataGrid na página Home
+- [ ] Adicionar MudSnackbar para notificações (substituir ToastService)
+- [ ] Criar MudDialog para confirmações
+- [ ] Implementar MudAppBar e MudDrawer para navegação
+- [ ] Adicionar MudFab para câmera
+- [ ] Configurar tema ASPEC customizado
+- [ ] Implementar skeleton loaders com MudSkeleton
+
+### Recursos Adicionais
+
+- **Playground**: https://try.mudblazor.com/ - Teste componentes ao vivo
+- **Templates**: https://github.com/MudBlazor/Templates - Templates de projeto
+- **Discord**: https://discord.gg/mudblazor - Comunidade ativa
+- **YouTube**: Tutoriais em vídeo disponíveis
+
+## Troubleshooting
+
+### Problema: Componentes não aparecem
+
+**Solução**: Verifique se adicionou os providers no layout:
+```razor
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+```
+
+### Problema: Ícones não carregam
+
+**Solução**: Certifique-se de que o Material Icons está no `index.html`:
+```html
+<link href="https://fonts.googleapis.com/css?family=Material+Icons" rel="stylesheet">
+```
+
+### Problema: Tema não aplica
+
+**Solução**: Verifique a ordem de carregamento dos CSS no `index.html`:
+```html
+<!-- MudBlazor deve vir antes do CSS customizado -->
+<link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="css/app.css" />
+```
+
+## Conclusão
+
+MudBlazor é uma ferramenta poderosa para criar UIs modernas e responsivas em Blazor. Com +60 componentes, temas customizáveis e excelente documentação, é uma escolha ideal para este projeto PWA.
+
+Para dúvidas ou suporte, consulte a [documentação oficial](https://mudblazor.com/) ou a [comunidade no Discord](https://discord.gg/mudblazor).
+=======
+```
+
+>>>>>>> main
