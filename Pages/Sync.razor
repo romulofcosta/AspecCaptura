@@ -5,8 +5,7 @@
 @inject pwa_camera_poc_blazor.Services.ToastService ToastService
 @inject IJSRuntime JSRuntime
 @inject AppState appState
-@using pwa_camera_poc_blazor.Services.AWS
-@inject IAwsStorageService AwsService
+@inject HttpClient Http
 @inject ISnackbar Snackbar
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
@@ -116,12 +115,6 @@
             var currentUser = await AuthService.GetCurrentUserAsync();
             if (currentUser == null) throw new Exception("Usuário não autenticado.");
 
-            // Inicializa serviço AWS com o token da sessão
-            if (!string.IsNullOrEmpty(AuthService.AwsIdToken))
-            {
-                AwsService.InitializeWithToken(AuthService.AwsIdToken);
-            }
-
             int total = unsyncedItems.Count;
             int successCount = 0;
             
@@ -130,34 +123,22 @@
                 var unitId = item.UnitId?.ToString() ?? "0";
                 var userId = currentUser.Username;
                 var itemId = item.Id;
-                
+
                 Snackbar.Add($"Sincronizando item {index + 1} de {total}: {item.Name}", Severity.Info);
-                
-                var remoteUrls = new List<string>();
 
-                // 1. Upload das Fotos
-                for (int i = 0; i < item.Photos.Count; i++)
+                var payload = new
                 {
-                    var base64 = item.Photos[i];
-                    var fileName = $"photo_{i}.jpg";
-                    var result = await AwsService.UploadPhotoAsync(unitId, userId, itemId, fileName, base64);
-                    
-                    if (result.Success && result.Url != null)
-                    {
-                        remoteUrls.Add(result.Url);
-                    }
-                }
+                    UnitId = unitId,
+                    UserId = userId,
+                    ItemId = itemId,
+                    Item = item
+                };
 
-                // 2. Upload do Metadata
-                item.RemoteUrls = remoteUrls;
-                var metadataResult = await AwsService.UploadMetadataAsync(unitId, userId, itemId, item);
+                var response = await Http.PostAsJsonAsync("api/sync/item", payload);
 
-                if (metadataResult.Success)
+                if (response.IsSuccessStatusCode)
                 {
-                    // 3. Limpeza local: substitui base64 por referências (removendo base64 para economizar espaço)
-                    item.Photos = new List<string>(); 
                     item.Synced = true;
-                    
                     await DbService.UpdateAsync("items", item);
                     successCount++;
                 }

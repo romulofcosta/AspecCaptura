@@ -6,6 +6,16 @@ Este é um projeto de Prova de Conceito (POC) para uma Progressive Web App (PWA)
 
 O projeto visa criar uma aplicação web que funcione offline, permitindo aos usuários fazer login, capturar itens via câmera, registrar inventário e sincronizar dados quando online. É direcionado para cenários de inventário móvel em ambientes com conectividade limitada.
 
+## ⚠️ Status do Projeto & Limitações Conhecidas
+
+> **Nota Crítica (09/01/2026):** Uma análise técnica detalhada identificou bloqueios na validação de login e incompatibilidade do SDK da AWS com o ambiente WebAssembly puro para uploads S3.
+
+Para detalhes completos e soluções propostas, consulte o [Relatório de Análise Técnica](docs/ANALYSIS_REPORT.md).
+
+**Principais Pontos de Atenção:**
+1.  **Login**: Validação de formato de e-mail impede uso de usuários de teste simples (ex: `admin`).
+2.  **Sincronização**: O upload direto via AWS SDK gera erros de plataforma (`PlatformNotSupportedException`). A solução recomendada é a implementação de **Pre-Signed URLs**.
+
 ## Funcionalidades
 
 - **Autenticação Local**: Login e registro de usuários com armazenamento em localStorage e suporte a múltiplos perfis.
@@ -33,11 +43,10 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 - **Ícones**: Material Icons (5 variantes: Filled, Outlined, Two Tone, Round, Sharp)
 - **Layout System**: Flexbox e CSS Grid com variáveis CSS para consistência e responsividade
 - **Linguagens**: C#, HTML, CSS, JavaScript
-- **Armazenamento**: IndexedDB (para inventário local), localStorage (para preferência de temas), **AWS S3** (armazenamento persistente na nuvem)
-- **Autenticação**: **AWS Cognito** (User Pools & Identity Pools) com credenciais temporárias IAM (STS)
+- **Armazenamento**: IndexedDB (inventário local), localStorage (sessão/tema), armazenamento remoto via API de integração (ex.: S3 usando URLs pré-assinadas)
+- **Autenticação**: Autenticação local baseada em armazenamento no navegador
 - **PWA**: Service Worker, Manifest JSON
 - **Interoperabilidade**: JavaScript interop para câmera e IndexedDB
-- **SDKs**: AWS SDK para .NET (S3, Cognito, STS)
 - **Build/Deploy**: .NET CLI, potencialmente Netlify ou similar
 
 ## Estrutura do Projeto
@@ -184,38 +193,31 @@ O modelo `InventoryItem` (localizado em `Models/Item.cs`) representa um item de 
 - **Usuários:** Armazenados por username (ex: chave "admin" para User object)
 - **Limites:** ~5-10MB por origem, dependendo do navegador.
 
-#### Estratégia de Sincronização Serverless (Modo PoC)
-> ⚠️ **SECURITY WARNING:** A versão atual utiliza credenciais estáticas (Access Key / Secret Key) no lado do cliente apenas para fins de validação técnica (Motto: PoC). **NÃO utilizar chaves reais em ambiente de produção**, pois elas estão expostas no código/configuração do navegador.
-
+#### Estratégia de Sincronização Serverless (Modo Atual)
 1. **Autenticação**: O usuário é validado localmente (LocalStorage).
-2. **Sincronização**: O sistema utiliza as chaves configuradas em `appsettings.json` para acessar diretamente o S3.
-3. **Upload Mídia**: Imagens convertidas de Base64 para Stream são enviadas para o S3: `uploads/{UnitId}/{UserId}/{ItemId}/{PhotoName}.jpg`.
-4. **Upload Metadata**: Um arquivo `item.json` é enviado para o mesmo diretório, servindo de registro para o sistema legado (Harbour).
-5. **Limpeza Local**: Após o sucesso, os dados Base64 são removidos do IndexedDB e substituídos pelas URLs do S3.
-6. **Legado**: O sistema Harbour consome os diretórios do S3 via API de listagem ou sincronização direta de arquivos.
+2. **Sincronização**: O cliente consome uma **API de integração** configurada em `appsettings.json` (`IntegracaoApiUrl`), que expõe endpoints para geração de **URLs pré-assinadas** e operações de armazenamento.
+3. **Upload Mídia**: Imagens em Base64 são convertidas para bytes e enviadas via `HttpClient` com um `PUT` direto para a URL pré-assinada.
+4. **Upload Metadata**: Um JSON de metadados é serializado e enviado via `HttpClient` para a URL pré-assinada correspondente.
+5. **Limpeza Local**: Após o sucesso, os dados Base64 são removidos do IndexedDB e substituídos por URLs remotas persistentes.
+6. **Legado**: O sistema Harbour (ou outro consumidor) lê os arquivos gerados no storage em nuvem através da própria API de integração ou de serviços de backend.
 
 ## ⚙️ Configuração do Ambiente
 
-O projeto utiliza o arquivo `wwwroot/appsettings.json` para definir os recursos da AWS. O **AppClientId** deve ser configurado como **Public Client** (sem Client Secret).
+O projeto utiliza o arquivo `wwwroot/appsettings.json` para definir a URL da **API de integração** responsável por gerar URLs pré-assinadas e conversar com o storage em nuvem.
 
 ```json
 {
   "Aws": {
-    "Region": "us-east-1",
-    "BucketName": "pwa-inventory-uploads",
-    "AccessKey": "USUARIO_ACCESS_KEY",
-    "SecretKey": "USUARIO_SECRET_KEY"
+    "IntegracaoApiUrl": "https://sua-api-de-integracao.example.com"
   }
 }
 ```
 
 ### Roadmap de Segurança
-Para a versão de produção, é **obrigatória** a migração para **AWS Cognito Identity Pools**, permitindo:
-- Isolamento de dados por usuário via IAM Policy variables (`s3:prefix`).
-- Eliminação de chaves fixas no client-side.
-- Credenciais temporárias com tempo de vida limitado.
-
-> **Importante:** O Bucket S3 deve ter políticas de **CORS** habilitadas para aceitar requisições `PUT`, `GET` e `DELETE` da origem da aplicação (localhost e domínio de produção).
+Para a versão de produção, recomenda-se:
+- Manter todas as credenciais de storage apenas na API/Backend.
+- Utilizar URLs pré-assinadas com tempo de expiração curto.
+- Implementar controle de escopo por usuário no backend (por exemplo, via claims de usuário na API).
 
 ### Gerenciamento de Imagens (Estado Atual)
 
@@ -227,21 +229,23 @@ Para a versão de produção, é **obrigatória** a migração para **AWS Cognit
 
 ### Fluxo de Dados Atual
 
-1. **Navegação para Câmera:** Usuário acessa `/camera` (Camera.razor).
-2. **Inicialização:** `OnInitializedAsync` obtém usuário atual via `AuthService`.
-3. **Start Câmera:** `OnAfterRenderAsync` chama `CameraService.StartCameraAsync("camera-feed", useFrontCamera)`.
-4. **Captura:** Botão "Capture" chama `CapturePhoto()`, que:
-   - Chama `CameraService.TakePhotoAsync("camera-feed")` para obter base64.
-   - Para câmera, mostra form de metadados.
-5. **Form de Metadados:** Usuário preenche `InventoryItem` (Name, Code, etc.).
-6. **Adicionar Fotos Extras:** Botão "Add More Photo" permite capturar mais fotos.
-7. **Salvamento:** `HandleSave()`:
-   - Define `itemModel.Photos = capturedPhotos`.
-   - Define `UnitId` e `Timestamp`.
-   - Chama `DbService.AddAsync("items", itemModel)`.
-   - Atualiza `appState.PendingSyncCount`.
-   - Navega para `/home`.
-8. **Exportação (Opcional):** Usuário clica no ícone de exportação no menu inferior para baixar CSV com todos os itens locais.
+### Fluxo de Dados Atual (Sincronização PWA → API de Integração → Storage/Desktop)
+
+1. **Navegação para Câmera:** Usuário acessa `/camera`.
+2. **Captura e Metadados:** Usuário tira fotos e preenche dados (Nome, Código e Localização).
+3. **Salvamento Local (IndexedDB):** 
+   - Item salvo com status `Synced = false`.
+   - Propriedade `CreatedBy` recebe o usuário logado para isolamento.
+4. **Visualização (Home/Sync):**
+   - Itens pendentes aparecem com **Nuvem Cinza**.
+   - A lista é filtrada para mostrar apenas itens do usuário atual.
+5. **Sincronização (Sync):**
+   - Usuário clica em "Sincronizar Tudo".
+   - A aplicação solicita URLs pré-assinadas à API de integração.
+   - **Upload Imagem:** Capa enviada via `HttpClient` para a URL pré-assinada (ex.: `capturas/{itemId}.jpg`).
+   - **Upload Metadados:** JSON enviado via `HttpClient` para a URL pré-assinada (ex.: `capturas/{itemId}.json`, inclui `usuarioEnvio`).
+   - **Confirmação:** Se sucesso, status muda para `Synced = true` (**Nuvem Verde**) e fotos locais são removidas.
+6. **Consumo Desktop:** Aplicação Desktop ou serviços de backend leem os JSONs/JPGs do storage em nuvem.
 9. **Páginas/Componentes Envolvidos:** Camera.razor, Home.razor, Stats.razor, Sync.razor, Footer.razor.
 10. **Serviços:** CameraService, IndexedDbService, AuthService, ToastService, AppState.
 
