@@ -8,13 +8,11 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 
 ## ⚠️ Status do Projeto & Limitações Conhecidas
 
-> **Nota Crítica (09/01/2026):** Uma análise técnica detalhada identificou bloqueios na validação de login e incompatibilidade do SDK da AWS com o ambiente WebAssembly puro para uploads S3.
-
-Para detalhes completos e soluções propostas, consulte o [Relatório de Análise Técnica](docs/ANALYSIS_REPORT.md).
+> **Status (16/01/2026):** A integração com a API BFF foi implementada com sucesso, resolvendo o problema de upload S3 via Pre-Signed URLs. O projeto agora requer a execução da API `pwa-camera-poc-api` em paralelo.
 
 **Principais Pontos de Atenção:**
 1.  **Login**: Validação de formato de e-mail impede uso de usuários de teste simples (ex: `admin`).
-2.  **Sincronização**: O upload direto via AWS SDK gera erros de plataforma (`PlatformNotSupportedException`). A solução recomendada é a implementação de **Pre-Signed URLs**.
+2.  **Sincronização**: Resolvida através da integração com a API BFF.
 
 ## Funcionalidades
 
@@ -32,6 +30,7 @@ Para detalhes completos e soluções propostas, consulte o [Relatório de Análi
 ## Stack Tecnológica
 
 - **Frontend**: Blazor WebAssembly (.NET 8)
+- **Backend**: ASP.NET Core Web API (BFF Pattern) - Projeto `pwa-camera-poc-api`
 - **UI Framework**: 
   - **MudBlazor 7.20.0** (MIT License) - Material Design components library
     - Componentes modernos e responsivos
@@ -194,36 +193,36 @@ O modelo `InventoryItem` (localizado em `Models/Item.cs`) representa um item de 
 - **Usuários:** Armazenados por username (ex: chave "admin" para User object)
 - **Limites:** ~5-10MB por origem, dependendo do navegador.
 
-#### Estratégia de Sincronização Serverless (Modo PoC)
-> ⚠️ **SECURITY WARNING:** A versão atual utiliza credenciais estáticas (Access Key / Secret Key) no lado do cliente apenas para fins de validação técnica (Motto: PoC). **NÃO utilizar chaves reais em ambiente de produção**, pois elas estão expostas no código/configuração do navegador.
+#### Estratégia de Sincronização (Via BFF)
+O projeto utiliza uma arquitetura segura com API Backend for Frontend (BFF) para intermediar o acesso ao S3, eliminando a necessidade de credenciais no cliente.
 
-1. **Autenticação**: O usuário é validado localmente (LocalStorage).
-2. **Sincronização**: O sistema utiliza as chaves configuradas em `appsettings.json` para acessar diretamente o S3.
-3. **Upload Mídia**: Imagens convertidas de Base64 para Stream são enviadas para o S3: `uploads/{UnitId}/{UserId}/{ItemId}/{PhotoName}.jpg`.
-4. **Upload Metadata**: Um arquivo `item.json` é enviado para o mesmo diretório, servindo de registro para o sistema legado (Harbour).
-5. **Limpeza Local**: Após o sucesso, os dados Base64 são removidos do IndexedDB e substituídos pelas URLs do S3.
+1. **Autenticação**: O usuário é validado localmente.
+2. **Sincronização**: O App solicita uma URL assinada (Pre-Signed URL) para a API BFF.
+3. **Upload Direto**: O App faz upload do binário da imagem/JSON diretamente para o S3 usando a URL assinada.
+4. **Segurança**: As credenciais AWS ficam protegidas no servidor (API).
+5. **Limpeza Local**: Após o sucesso, os dados Base64 são removidos do IndexedDB.
 6. **Legado**: O sistema Harbour consome os diretórios do S3 via API de listagem ou sincronização direta de arquivos.
 
 ## ⚙️ Configuração do Ambiente
 
-O projeto utiliza o arquivo `wwwroot/appsettings.json` para definir os recursos da AWS. O **AppClientId** deve ser configurado como **Public Client** (sem Client Secret).
+O projeto utiliza o arquivo `wwwroot/appsettings.json` para configurar a conexão com a API BFF.
 
 ```json
 {
   "Aws": {
     "Region": "us-east-1",
-    "BucketName": "pwa-inventory-uploads",
-    "AccessKey": "USUARIO_ACCESS_KEY",
-    "SecretKey": "USUARIO_SECRET_KEY"
-  }
+    "BucketName": "pwa-inventory-uploads"
+  },
+  "ApiBaseUrl": "http://localhost:5069"
 }
 ```
 
-### Roadmap de Segurança
-Para a versão de produção, é **obrigatória** a migração para **AWS Cognito Identity Pools**, permitindo:
-- Isolamento de dados por usuário via IAM Policy variables (`s3:prefix`).
-- Eliminação de chaves fixas no client-side.
-- Credenciais temporárias com tempo de vida limitado.
+### Segurança e Próximos Passos
+A versão atual já elimina chaves fixas no client-side através do uso de Pre-Signed URLs geradas pelo BFF.
+
+Próximos passos incluem:
+- Autenticação JWT integrada entre Blazor e API.
+- Validação robusta de tipos de arquivo na API.
 
 > **Importante:** O Bucket S3 deve ter políticas de **CORS** habilitadas para aceitar requisições `PUT`, `GET` e `DELETE` da origem da aplicação (localhost e domínio de produção).
 

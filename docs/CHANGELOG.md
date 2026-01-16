@@ -7,6 +7,19 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Não Lançado]
 
+### Adicionado - 2026-01-16
+
+#### 🔄 Integração com API BFF (Backend for Frontend)
+- **Refatoração de Upload S3**:
+  - Implementada comunicação com API BFF (`pwa-camera-poc-api`) para geração de Pre-Signed URLs.
+  - Substituído uso direto do AWS SDK (que causava erros em WASM) por chamadas HTTP padrão.
+  - Fluxo seguro: Credenciais AWS agora residem apenas no servidor (API), não mais no cliente.
+  
+- **Limpeza de Código**:
+  - Removidos pacotes NuGet do AWS SDK (`AWSSDK.S3`, `AWSSDK.CognitoIdentity`, etc.) do projeto Blazor.
+  - Removida lógica de autenticação Cognito legada/comentada do `AuthService`.
+  - Simplificado modelo `AwsConfig` para conter apenas configurações públicas.
+
 ### Análise Técnica & Roadmap de Correção - 2026-01-09
 
 > Consulte `docs/ANALYSIS_REPORT.md` para o relatório completo.

@@ -32,16 +32,24 @@
         </MudItem>
 
         <MudItem xs="12">
+            <div class="d-flex justify-center gap-4 my-6">
+                @if (unsyncedItems.Any())
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" 
+                               OnClick="SyncAll" Disabled="@isSyncing" Class="py-3 px-8 shadow-md"
+                               StartIcon="@(isSyncing ? null : Icons.Material.Filled.CloudUpload)">
+                    @(isSyncing ? "Sincronizando..." : "Sincronizar Tudo Agora")
+                    </MudButton>
+                }
+                
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Large" 
+                           OnClick="CreateTestItem" Disabled="@isSyncing" Class="py-3 px-6">
+                    Criar Item de Teste
+                </MudButton>
+            </div>
+
             @if (unsyncedItems.Any())
             {
-                    <div class="d-flex justify-center my-6">
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" 
-                                   OnClick="SyncAll" Disabled="@isSyncing" Class="py-3 px-8 shadow-md"
-                                   StartIcon="@(isSyncing ? null : Icons.Material.Filled.CloudUpload)">
-                        @(isSyncing ? "Sincronizando..." : "Sincronizar Tudo Agora")
-                        </MudButton>
-                    </div>
-
                     <MudCard Elevation="1" Class="rounded-lg">
                         <MudCardHeader>
                             <CardHeaderContent>
@@ -108,6 +116,36 @@
         appState.PendingSyncCount = unsyncedItems.Count;
     }
 
+    private async Task CreateTestItem()
+    {
+        var currentUser = await AuthService.GetCurrentUserAsync();
+        if (currentUser == null) 
+        {
+            Snackbar.Add("Você precisa estar logado para criar um item.", Severity.Warning);
+            return;
+        }
+
+        var testItem = new InventoryItem
+        {
+            Name = "Item de Teste " + DateTime.Now.ToString("HH:mm:ss"),
+            Code = "TEST-" + new Random().Next(1000, 9999),
+            Category = "Teste",
+            Location = "Laboratório",
+            Observations = "Item criado para teste de sincronização",
+            Status = "ativo",
+            Timestamp = DateTime.Now,
+            Synced = false,
+            UnitId = currentUser.CurrentUnitId,
+            CreatedBy = currentUser.Username,
+            // 1x1 pixel red jpeg
+            Photos = new List<string> { "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=" }
+        };
+
+        await DbService.AddAsync("items", testItem);
+        await LoadStats();
+        Snackbar.Add("Item de teste criado! Tente sincronizar agora.", Severity.Success);
+    }
+
     private async Task SyncAll()
     {
         if (isSyncing) return;
@@ -137,7 +175,7 @@
                     if (item.Photos.Any())
                     {
                         var base64 = item.Photos.First();
-                        var photoResult = await AwsService.UploadPhotoAsync(item.Id, base64);
+                        var photoResult = await AwsService.UploadPhotoAsync(item.Id, item.Code, base64);
 
                         if (!photoResult.Success)
                         {

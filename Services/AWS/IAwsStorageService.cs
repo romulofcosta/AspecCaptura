@@ -11,7 +11,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
         /// <summary>
         /// Faz upload de uma foto para o S3 no caminho capturas/{itemId}.jpg
         /// </summary>
-        Task<(bool Success, string? Url)> UploadPhotoAsync(string itemId, string base64Data);
+        Task<(bool Success, string? Url)> UploadPhotoAsync(string itemId, string itemCode, string base64Data);
 
         /// <summary>
         /// Faz upload dos metadados para o S3 no caminho capturas/{itemId}.json
