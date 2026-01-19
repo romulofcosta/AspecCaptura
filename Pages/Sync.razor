@@ -5,9 +5,8 @@
 @inject pwa_camera_poc_blazor.Services.ToastService ToastService
 @inject IJSRuntime JSRuntime
 @inject AppState appState
-@using pwa_camera_poc_blazor.Services.AWS
-@inject IAwsStorageService AwsService
 @inject ISnackbar Snackbar
+@inject IAwsStorageService AwsService
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Sincronização - ASPEC Capture</PageTitle>
@@ -155,12 +154,6 @@
         {
             var currentUser = await AuthService.GetCurrentUserAsync();
             if (currentUser == null) throw new Exception("Usuário não autenticado.");
-
-            // Inicializa serviço AWS com o token da sessão (se disponível)
-            if (!string.IsNullOrEmpty(AuthService.AwsIdToken))
-            {
-                AwsService.InitializeWithToken(AuthService.AwsIdToken);
-            }
 
             int total = unsyncedItems.Count;
             int successCount = 0;

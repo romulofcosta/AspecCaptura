@@ -12,7 +12,6 @@ namespace pwa_camera_poc_blazor.Services.Auth
         private readonly ILocalStorageService _localStorage;
         private readonly AuthenticationStateProvider _authStateProvider;
         private const string SESSION_KEY = "pwa-inventory-session";
-        public string? AwsIdToken { get; private set; }
 
         public AuthService(ILocalStorageService localStorage, AuthenticationStateProvider authStateProvider)
         {

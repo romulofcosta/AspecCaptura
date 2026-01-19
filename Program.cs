@@ -7,8 +7,6 @@ using pwa_camera_poc_blazor.Services;
 using pwa_camera_poc_blazor.Services.Auth;
 using pwa_camera_poc_blazor.Services.Camera;
 using pwa_camera_poc_blazor.Services.Storage;
-using pwa_camera_poc_blazor.Services.AWS;
-using pwa_camera_poc_blazor.Models;
 using MudBlazor.Services;
 using MudBlazor;
 
@@ -31,11 +29,6 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<CameraService>();
 builder.Services.AddScoped<pwa_camera_poc_blazor.Services.ToastService>();
 builder.Services.AddScoped<AppState>();
-// AWS Configuration from appsettings.json
-var awsSection = builder.Configuration.GetSection("Aws");
-var awsConfig = awsSection.Get<AwsConfig>() ?? new AwsConfig();
-builder.Services.AddSingleton(awsConfig);
-builder.Services.AddSingleton<IAwsStorageService, AwsStorageService>();
 
 // UI Component Library
 // MudBlazor: Material Design component library (free & open-source)

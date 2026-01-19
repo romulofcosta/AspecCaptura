@@ -8,8 +8,6 @@
 @inject IDialogService DialogService
 @using MudBlazor
 @inject AppState appState
-@using pwa_camera_poc_blazor.Services.AWS
-@inject IAwsStorageService AwsService
 @inject IAuthService AuthService
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
@@ -274,25 +272,10 @@
             // Determinar se é remota ou local
             if (index < item.RemoteUrls.Count)
             {
-                var remoteUrl = item.RemoteUrls[index];
-                // Extrair Key do S3 da URL
-                // URL: https://bucket.s3.region.amazonaws.com/uploads/...
-                var uri = new Uri(remoteUrl);
-                var key = uri.AbsolutePath.TrimStart('/'); // Remove a primeira /
-
-                // Inicializar AWS se necessário
-                if (!string.IsNullOrEmpty(AuthService.AwsIdToken))
-                    AwsService.InitializeWithToken(AuthService.AwsIdToken);
-
-                var success = await AwsService.DeleteObjectAsync(key);
-                if (success)
-                {
-                    item.RemoteUrls.RemoveAt(index);
-                }
+                item.RemoteUrls.RemoveAt(index);
             }
             else
             {
-                // Ajustar índice para lista local
                 var localIndex = index - item.RemoteUrls.Count;
                 item.Photos.RemoveAt(localIndex);
             }

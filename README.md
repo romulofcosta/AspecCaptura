@@ -42,11 +42,10 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 - **Ícones**: Material Icons (5 variantes: Filled, Outlined, Two Tone, Round, Sharp)
 - **Layout System**: Flexbox e CSS Grid com variáveis CSS para consistência e responsividade
 - **Linguagens**: C#, HTML, CSS, JavaScript
-- **Armazenamento**: IndexedDB (para inventário local), localStorage (para preferência de temas), **AWS S3** (armazenamento persistente na nuvem)
-- **Autenticação**: **AWS Cognito** (User Pools & Identity Pools) com credenciais temporárias IAM (STS)
+- **Armazenamento**: IndexedDB (inventário local), localStorage (sessão/tema), armazenamento remoto via API de integração (ex.: S3 usando URLs pré-assinadas)
+- **Autenticação**: Autenticação local baseada em armazenamento no navegador
 - **PWA**: Service Worker, Manifest JSON
 - **Interoperabilidade**: JavaScript interop para câmera e IndexedDB
-- **SDKs**: AWS SDK para .NET (S3, Cognito, STS)
 - **Build/Deploy**: .NET CLI, potencialmente Netlify ou similar
 
 ## Estrutura do Projeto

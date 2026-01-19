@@ -11,6 +11,5 @@ namespace pwa_camera_poc_blazor.Services.Auth
         Task LogoutAsync();
         Task<User?> GetCurrentUserAsync();
         Task UpdateUserAsync(User user);
-        string? AwsIdToken { get; }
     }
 }
