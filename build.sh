@@ -17,13 +17,14 @@ fi
 
 echo "Substituindo variáveis no appsettings.json..."
 
-sed -i "s|__AWS_REGION__|$AWS_REGION|g" wwwroot/appsettings.json
-sed -i "s|__AWS_USER_POOL_ID__|$AWS_USER_POOL_ID|g" wwwroot/appsettings.json
-sed -i "s|__AWS_APP_CLIENT_ID__|$AWS_APP_CLIENT_ID|g" wwwroot/appsettings.json
-sed -i "s|__AWS_IDENTITY_POOL_ID__|$AWS_IDENTITY_POOL_ID|g" wwwroot/appsettings.json
-sed -i "s|__AWS_BUCKET_NAME__|$AWS_BUCKET_NAME|g" wwwroot/appsettings.json
-sed -i "s|__AWS_ACCESS_KEY__|$AWS_ACCESS_KEY|g" wwwroot/appsettings.json
-sed -i "s|__AWS_SECRET_KEY__|$AWS_SECRET_KEY|g" wwwroot/appsettings.json
+# Se API_BASE_URL não estiver definida (ex: build local), usa localhost
+# Em produção (Render/Netlify), API_BASE_URL deve ser definida nas variáveis de ambiente
+if [ -z "$API_BASE_URL" ]; then
+    echo "Aviso: API_BASE_URL não definida. Usando padrão local: http://localhost:5069"
+    API_BASE_URL="http://localhost:5069"
+fi
+
+sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" wwwroot/appsettings.json
 
 echo "=== Plataforma detectada: $PLATFORM ==="
 
