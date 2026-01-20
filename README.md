@@ -8,13 +8,11 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 
 ## ⚠️ Status do Projeto & Limitações Conhecidas
 
-> **Nota Crítica (09/01/2026):** Uma análise técnica detalhada identificou bloqueios na validação de login e incompatibilidade do SDK da AWS com o ambiente WebAssembly puro para uploads S3.
-
-Para detalhes completos e soluções propostas, consulte o [Relatório de Análise Técnica](docs/ANALYSIS_REPORT.md).
+> **Status (16/01/2026):** A integração com a API BFF foi implementada com sucesso, resolvendo o problema de upload S3 via Pre-Signed URLs. O projeto agora requer a execução da API `pwa-camera-poc-api` em paralelo.
 
 **Principais Pontos de Atenção:**
 1.  **Login**: Validação de formato de e-mail impede uso de usuários de teste simples (ex: `admin`).
-2.  **Sincronização**: O upload direto via AWS SDK gera erros de plataforma (`PlatformNotSupportedException`). A solução recomendada é a implementação de **Pre-Signed URLs**.
+2.  **Sincronização**: Resolvida através da integração com a API BFF.
 
 ## Funcionalidades
 
@@ -32,6 +30,7 @@ Para detalhes completos e soluções propostas, consulte o [Relatório de Análi
 ## Stack Tecnológica
 
 - **Frontend**: Blazor WebAssembly (.NET 8)
+- **Backend**: ASP.NET Core Web API (BFF Pattern) - Projeto `pwa-camera-poc-api`
 - **UI Framework**: 
   - **MudBlazor 7.20.0** (MIT License) - Material Design components library
     - Componentes modernos e responsivos
@@ -193,31 +192,38 @@ O modelo `InventoryItem` (localizado em `Models/Item.cs`) representa um item de 
 - **Usuários:** Armazenados por username (ex: chave "admin" para User object)
 - **Limites:** ~5-10MB por origem, dependendo do navegador.
 
-#### Estratégia de Sincronização Serverless (Modo Atual)
-1. **Autenticação**: O usuário é validado localmente (LocalStorage).
-2. **Sincronização**: O cliente consome uma **API de integração** configurada em `appsettings.json` (`IntegracaoApiUrl`), que expõe endpoints para geração de **URLs pré-assinadas** e operações de armazenamento.
-3. **Upload Mídia**: Imagens em Base64 são convertidas para bytes e enviadas via `HttpClient` com um `PUT` direto para a URL pré-assinada.
-4. **Upload Metadata**: Um JSON de metadados é serializado e enviado via `HttpClient` para a URL pré-assinada correspondente.
-5. **Limpeza Local**: Após o sucesso, os dados Base64 são removidos do IndexedDB e substituídos por URLs remotas persistentes.
-6. **Legado**: O sistema Harbour (ou outro consumidor) lê os arquivos gerados no storage em nuvem através da própria API de integração ou de serviços de backend.
+#### Estratégia de Sincronização (Via BFF)
+O projeto utiliza uma arquitetura segura com API Backend for Frontend (BFF) para intermediar o acesso ao S3, eliminando a necessidade de credenciais no cliente.
+
+1. **Autenticação**: O usuário é validado localmente.
+2. **Sincronização**: O App solicita uma URL assinada (Pre-Signed URL) para a API BFF.
+3. **Upload Direto**: O App faz upload do binário da imagem/JSON diretamente para o S3 usando a URL assinada.
+4. **Segurança**: As credenciais AWS ficam protegidas no servidor (API).
+5. **Limpeza Local**: Após o sucesso, os dados Base64 são removidos do IndexedDB.
+6. **Legado**: O sistema Harbour consome os diretórios do S3 via API de listagem ou sincronização direta de arquivos.
 
 ## ⚙️ Configuração do Ambiente
 
-O projeto utiliza o arquivo `wwwroot/appsettings.json` para definir a URL da **API de integração** responsável por gerar URLs pré-assinadas e conversar com o storage em nuvem.
+O projeto utiliza o arquivo `wwwroot/appsettings.json` para configurar a conexão com a API BFF.
 
 ```json
 {
   "Aws": {
-    "IntegracaoApiUrl": "https://sua-api-de-integracao.example.com"
-  }
+    "Region": "us-east-1",
+    "BucketName": "pwa-inventory-uploads"
+  },
+  "ApiBaseUrl": "http://localhost:5069"
 }
 ```
 
-### Roadmap de Segurança
-Para a versão de produção, recomenda-se:
-- Manter todas as credenciais de storage apenas na API/Backend.
-- Utilizar URLs pré-assinadas com tempo de expiração curto.
-- Implementar controle de escopo por usuário no backend (por exemplo, via claims de usuário na API).
+### Segurança e Próximos Passos
+A versão atual já elimina chaves fixas no client-side através do uso de Pre-Signed URLs geradas pelo BFF.
+
+Próximos passos incluem:
+- Autenticação JWT integrada entre Blazor e API.
+- Validação robusta de tipos de arquivo na API.
+
+> **Importante:** O Bucket S3 deve ter políticas de **CORS** habilitadas para aceitar requisições `PUT`, `GET` e `DELETE` da origem da aplicação (localhost e domínio de produção).
 
 ### Gerenciamento de Imagens (Estado Atual)
 
@@ -229,7 +235,7 @@ Para a versão de produção, recomenda-se:
 
 ### Fluxo de Dados Atual
 
-### Fluxo de Dados Atual (Sincronização PWA → API de Integração → Storage/Desktop)
+### Fluxo de Dados Atual (Sincronização PWA → S3 → Desktop)
 
 1. **Navegação para Câmera:** Usuário acessa `/camera`.
 2. **Captura e Metadados:** Usuário tira fotos e preenche dados (Nome, Código e Localização).
@@ -241,11 +247,10 @@ Para a versão de produção, recomenda-se:
    - A lista é filtrada para mostrar apenas itens do usuário atual.
 5. **Sincronização (Sync):**
    - Usuário clica em "Sincronizar Tudo".
-   - A aplicação solicita URLs pré-assinadas à API de integração.
-   - **Upload Imagem:** Capa enviada via `HttpClient` para a URL pré-assinada (ex.: `capturas/{itemId}.jpg`).
-   - **Upload Metadados:** JSON enviado via `HttpClient` para a URL pré-assinada (ex.: `capturas/{itemId}.json`, inclui `usuarioEnvio`).
+   - **Upload Imagem:** Capa enviada para `capturas/{itemId}.jpg`.
+   - **Upload Metadados:** JSON enviado para `capturas/{itemId}.json` (inclui `usuarioEnvio`).
    - **Confirmação:** Se sucesso, status muda para `Synced = true` (**Nuvem Verde**) e fotos locais são removidas.
-6. **Consumo Desktop:** Aplicação Desktop ou serviços de backend leem os JSONs/JPGs do storage em nuvem.
+6. **Consumo Desktop:** Aplicação Desktop lê os JSONs/JPGs do bucket S3.
 9. **Páginas/Componentes Envolvidos:** Camera.razor, Home.razor, Stats.razor, Sync.razor, Footer.razor.
 10. **Serviços:** CameraService, IndexedDbService, AuthService, ToastService, AppState.
 

@@ -192,6 +192,7 @@ else
         {
             itemModel.Photos = capturedPhotos;
             itemModel.UnitId = currentUser?.CurrentUnitId;
+            itemModel.CreatedBy = currentUser?.Username ?? string.Empty; // Define o criador
             itemModel.Timestamp = DateTime.Now;
             itemModel.Synced = false;
             await DbService.AddAsync("items", itemModel);

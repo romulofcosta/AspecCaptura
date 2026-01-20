@@ -5,8 +5,8 @@
 @inject pwa_camera_poc_blazor.Services.ToastService ToastService
 @inject IJSRuntime JSRuntime
 @inject AppState appState
-@inject HttpClient Http
 @inject ISnackbar Snackbar
+@inject IAwsStorageService AwsService
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Sincronização - ASPEC Capture</PageTitle>
@@ -31,51 +31,59 @@
         </MudItem>
 
         <MudItem xs="12">
-            @if (unsyncedItems.Any())
-            {
-                <div class="d-flex justify-center my-6">
+            <div class="d-flex justify-center gap-4 my-6">
+                @if (unsyncedItems.Any())
+                {
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" 
                                OnClick="SyncAll" Disabled="@isSyncing" Class="py-3 px-8 shadow-md"
                                StartIcon="@(isSyncing ? null : Icons.Material.Filled.CloudUpload)">
-                        @(isSyncing ? "Sincronizando..." : "Sincronizar Tudo Agora")
+                    @(isSyncing ? "Sincronizando..." : "Sincronizar Tudo Agora")
                     </MudButton>
-                </div>
+                }
+                
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Large" 
+                           OnClick="CreateTestItem" Disabled="@isSyncing" Class="py-3 px-6">
+                    Criar Item de Teste
+                </MudButton>
+            </div>
 
-                <MudCard Elevation="1" Class="rounded-lg">
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            <MudText Typo="Typo.h6">Lista de Itens Pendentes</MudText>
-                        </CardHeaderContent>
-                    </MudCardHeader>
-                    <MudCardContent Class="pa-0">
-                        <MudList T="InventoryItem" Dense="true" ReadOnly="true">
+            @if (unsyncedItems.Any())
+            {
+                    <MudCard Elevation="1" Class="rounded-lg">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Lista de Itens Pendentes</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent Class="pa-0">
+                            <MudList T="InventoryItem" Dense="true" ReadOnly="true">
                             @foreach (var item in unsyncedItems)
                             {
-                                <MudListItem>
-                                    <div class="d-flex align-center justify-space-between py-2 px-4 width-100">
-                                        <div class="d-flex flex-column">
-                                            <MudText Typo="Typo.body1" Class="font-weight-medium">@item.Name</MudText>
-                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Code • @item.Category</MudText>
-                                        </div>
-                                        <div class="d-flex flex-column align-end">
-                                            <MudText Typo="Typo.caption">@item.Timestamp.ToString("dd/MM/yyyy HH:mm")</MudText>
-                                            <MudChip T="string" Color="Color.Warning" Size="Size.Small" Variant="Variant.Text" Class="mt-1">Pendente</MudChip>
-                                        </div>
-                                    </div>
-                                    <MudDivider />
-                                </MudListItem>
+                                        <MudListItem>
+                                            <div class="d-flex align-center justify-space-between py-2 px-4 width-100">
+                                                <div class="d-flex flex-column">
+                                                    <MudText Typo="Typo.body1" Class="font-weight-medium">@item.Name</MudText>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Code • @item.Category</MudText>
+                                                </div>
+                                                <div class="d-flex flex-column align-end">
+                                                    <MudText Typo="Typo.caption">@item.Timestamp.ToString("dd/MM/yyyy HH:mm")</MudText>
+                                                    <MudChip T="string" Color="Color.Warning" Size="Size.Small" Variant="Variant.Text" Class="mt-1">Pendente</MudChip>
+                                                </div>
+                                            </div>
+                                            <MudDivider />
+                                        </MudListItem>
                             }
-                        </MudList>
-                    </MudCardContent>
-                </MudCard>
+                            </MudList>
+                        </MudCardContent>
+                    </MudCard>
             }
             else
             {
-                <MudPaper Elevation="0" Class="pa-16 d-flex flex-column align-center rounded-lg mud-background-gray" Style="border: 2px dashed rgba(0,0,0,0.1);">
-                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" Style="font-size: 4rem;" />
-                    <MudText Typo="Typo.h5" Class="mt-4 font-weight-bold">Tudo em dia!</MudText>
-                    <MudText Typo="Typo.body1" Color="Color.Secondary">Todos os itens capturados já estão sincronizados com a nuvem.</MudText>
-                </MudPaper>
+                    <MudPaper Elevation="0" Class="pa-16 d-flex flex-column align-center rounded-lg mud-background-gray" Style="border: 2px dashed rgba(0,0,0,0.1);">
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" Style="font-size: 4rem;" />
+                        <MudText Typo="Typo.h5" Class="mt-4 font-weight-bold">Tudo em dia!</MudText>
+                        <MudText Typo="Typo.body1" Color="Color.Secondary">Todos os itens capturados já estão sincronizados com a nuvem.</MudText>
+                    </MudPaper>
             }
         </MudItem>
     </MudGrid>
@@ -86,12 +94,6 @@
     private int syncedCount = 0;
     private bool isSyncing = false;
 
-    protected override Task OnAfterRenderAsync(bool firstRender)
-    {
-        // Removido Task.Delay e checkOverflow para evitar ajuste de layout
-        return Task.CompletedTask;
-    }
-
     protected override async Task OnInitializedAsync()
     {
         await LoadStats();
@@ -99,10 +101,48 @@
 
     private async Task LoadStats()
     {
+        var currentUser = await AuthService.GetCurrentUserAsync();
+        if (currentUser == null) return;
+
+        // Carrega todos os itens do IndexedDB
         var allItems = await DbService.GetAllAsync<InventoryItem>("items");
-        unsyncedItems = allItems.Where(i => !i.Synced).OrderByDescending(i => i.Timestamp).ToList();
-        syncedCount = allItems.Count(i => i.Synced);
+
+        // Filtra apenas os itens criados pelo usuário atual
+        var userItems = allItems.Where(i => i.CreatedBy == currentUser.Username).ToList();
+
+        unsyncedItems = userItems.Where(i => !i.Synced).OrderByDescending(i => i.Timestamp).ToList();
+        syncedCount = userItems.Count(i => i.Synced);
         appState.PendingSyncCount = unsyncedItems.Count;
+    }
+
+    private async Task CreateTestItem()
+    {
+        var currentUser = await AuthService.GetCurrentUserAsync();
+        if (currentUser == null) 
+        {
+            Snackbar.Add("Você precisa estar logado para criar um item.", Severity.Warning);
+            return;
+        }
+
+        var testItem = new InventoryItem
+        {
+            Name = "Item de Teste " + DateTime.Now.ToString("HH:mm:ss"),
+            Code = "TEST-" + new Random().Next(1000, 9999),
+            Category = "Teste",
+            Location = "Laboratório",
+            Observations = "Item criado para teste de sincronização",
+            Status = "ativo",
+            Timestamp = DateTime.Now,
+            Synced = false,
+            UnitId = currentUser.CurrentUnitId,
+            CreatedBy = currentUser.Username,
+            // 1x1 pixel red jpeg
+            Photos = new List<string> { "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=" }
+        };
+
+        await DbService.AddAsync("items", testItem);
+        await LoadStats();
+        Snackbar.Add("Item de teste criado! Tente sincronizar agora.", Severity.Success);
     }
 
     private async Task SyncAll()
@@ -117,41 +157,65 @@
 
             int total = unsyncedItems.Count;
             int successCount = 0;
-            
+
             foreach (var (item, index) in unsyncedItems.Select((v, i) => (v, i)).ToList())
             {
-                var unitId = item.UnitId?.ToString() ?? "0";
-                var userId = currentUser.Username;
-                var itemId = item.Id;
-
                 Snackbar.Add($"Sincronizando item {index + 1} de {total}: {item.Name}", Severity.Info);
 
-                var payload = new
+                try
                 {
-                    UnitId = unitId,
-                    UserId = userId,
-                    ItemId = itemId,
-                    Item = item
-                };
+                    // 1. Upload da primeira foto (capa) como {itemId}.jpg
+                    if (item.Photos.Any())
+                    {
+                        var base64 = item.Photos.First();
+                        var photoResult = await AwsService.UploadPhotoAsync(item.Id, item.Code, base64);
 
-                var response = await Http.PostAsJsonAsync("api/sync/item", payload);
+                        if (!photoResult.Success)
+                        {
+                            Snackbar.Add($"Erro ao enviar foto de: {item.Name}", Severity.Error);
+                            continue;
+                        }
+                    }
 
-                if (response.IsSuccessStatusCode)
-                {
-                    item.Synced = true;
-                    await DbService.UpdateAsync("items", item);
-                    successCount++;
+                    // 2. Criar metadados compatíveis com Desktop
+                    var metadata = ItemMetadata.FromInventoryItem(item, currentUser.Username);
+
+                    // 3. Upload do Metadata como {itemId}.json
+                    var metadataResult = await AwsService.UploadMetadataAsync(item.Id, metadata);
+
+                    if (metadataResult.Success)
+                    {
+                        // 4. Marca como sincronizado e limpa fotos locais para economizar espaço
+                        item.Photos = new List<string>();
+                        item.Synced = true;
+
+                        await DbService.UpdateAsync("items", item);
+                        successCount++;
+                    }
+                    else
+                    {
+                        Snackbar.Add($"Erro ao enviar metadados de: {item.Name}", Severity.Error);
+                    }
                 }
-                
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Erro ao sincronizar item {item.Id}: {ex.Message}");
+                    Snackbar.Add($"Erro ao sincronizar: {item.Name}", Severity.Error);
+                }
+
                 await Task.Delay(200); // UI breathing room
             }
 
-            ToastService.ShowSuccess($"{successCount} itens sincronizados com sucesso!");
+            if (successCount > 0)
+            {
+                Snackbar.Add($"{successCount} itens sincronizados com sucesso!", Severity.Success);
+            }
+
             await LoadStats();
         }
         catch (Exception ex)
         {
-            ToastService.ShowError("Erro durante a sincronização: " + ex.Message);
+            Snackbar.Add("Erro durante a sincronização: " + ex.Message, Severity.Error);
             Console.WriteLine(ex);
         }
         finally

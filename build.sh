@@ -15,6 +15,17 @@ else
     OUTPUT_DIR="bin/Release/net8.0/publish/wwwroot"
 fi
 
+echo "Substituindo variáveis no appsettings.json..."
+
+# Se API_BASE_URL não estiver definida (ex: build local), usa localhost
+# Em produção (Render/Netlify), API_BASE_URL deve ser definida nas variáveis de ambiente
+if [ -z "$API_BASE_URL" ]; then
+    echo "Aviso: API_BASE_URL não definida. Usando padrão local: http://localhost:5069"
+    API_BASE_URL="http://localhost:5069"
+fi
+
+sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" wwwroot/appsettings.json
+
 echo "=== Plataforma detectada: $PLATFORM ==="
 
 # Instalar .NET se necessário
@@ -46,22 +57,7 @@ EOF
 
 elif [ "$PLATFORM" = "cloudflare" ] || [ "$PLATFORM" = "local" ]; then
     echo "=== Ajustando para Cloudflare Pages ==="
-    
-    # _redirects dentro de wwwroot
-    cat > bin/Release/net8.0/publish/wwwroot/_redirects << 'EOF'
-/*    /index.html   200
-EOF
-
-    # _headers dentro de wwwroot
-    cat > bin/Release/net8.0/publish/wwwroot/_headers << 'EOF'
-/*
-  X-Frame-Options: DENY
-  X-Content-Type-Options: nosniff
-/_framework/*
-  Cache-Control: public, max-age=31536000, immutable
-/service-worker.js
-  Cache-Control: no-cache
-EOF
+    # Arquivos estáticos (_redirects, _headers) já estão em wwwroot
 fi
 
 echo "=== Build concluído! Saída: $OUTPUT_DIR ==="

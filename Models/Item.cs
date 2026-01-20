@@ -26,6 +26,9 @@ namespace pwa_camera_poc_blazor.Models
         public bool Synced { get; set; } = false;
         public int? UnitId { get; set; }
 
+        // Username do usuário que criou o item localmente
+        public string CreatedBy { get; set; } = string.Empty;
+
         // Armazenamento de imagens (Base64 local ou URLs remotas)
         public List<string> Photos { get; set; } = new();
 

@@ -16,6 +16,13 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
+// Configuração do HttpClient para a API BFF
+builder.Services.AddHttpClient("BackendApi", client => 
+{
+    var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5069";
+    client.BaseAddress = new Uri(apiBaseUrl);
+});
+
 builder.Services.AddScoped<IIndexedDbService, IndexedDbService>();
 builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
