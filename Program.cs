@@ -7,6 +7,8 @@ using pwa_camera_poc_blazor.Services;
 using pwa_camera_poc_blazor.Services.Auth;
 using pwa_camera_poc_blazor.Services.Camera;
 using pwa_camera_poc_blazor.Services.Storage;
+using pwa_camera_poc_blazor.Services.AWS;
+using pwa_camera_poc_blazor.Models;
 using MudBlazor.Services;
 using MudBlazor;
 
@@ -17,7 +19,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
 // Configuração do HttpClient para a API BFF
-builder.Services.AddHttpClient("BackendApi", client => 
+builder.Services.AddHttpClient("BackendApi", client =>
 {
     var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5069";
     client.BaseAddress = new Uri(apiBaseUrl);
@@ -27,6 +29,8 @@ builder.Services.AddScoped<IIndexedDbService, IndexedDbService>();
 builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<CameraService>();
+builder.Services.AddScoped<AwsConfig>();
+builder.Services.AddScoped<IAwsStorageService, AwsStorageService>();
 builder.Services.AddScoped<pwa_camera_poc_blazor.Services.ToastService>();
 builder.Services.AddScoped<AppState>();
 

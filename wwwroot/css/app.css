@@ -281,3 +281,7 @@ body {
     opacity: 1;
     visibility: visible;
 }
+
+.full-screen-center {
+    height: 100vh;
+}

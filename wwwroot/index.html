@@ -8,6 +8,9 @@
     <meta name="theme-color" content="#0066CC" />
     <title>ASPEC Camera Inventory</title>
     <base href="/" />
+    <!-- CSP: Allow inline styles for MudBlazor and WASM, plus http: for local dev API -->
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: http:; font-src 'self' https: http: data:; img-src 'self' data: https: http: blob:; style-src 'self' 'unsafe-inline' https: http:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http: blob:; connect-src 'self' https: http: ws: wss:;">
 
     <!-- Theme initialization -->
     <script>
