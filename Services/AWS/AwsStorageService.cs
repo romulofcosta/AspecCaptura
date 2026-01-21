@@ -39,7 +39,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 // 2. Solicitar URL Assinada
                 var request = new PresignedUrlRequest(fileName, contentType, itemId, itemCode);
                 var response = await _httpClient.PostAsJsonAsync("/api/storage/presigned-url", request);
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
                     Console.WriteLine($"Erro ao obter URL assinada: {response.ReasonPhrase}");
@@ -55,7 +55,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
 
                 // Usamos um cliente novo ou o padrão para o PUT direto, pois o _httpClient tem BaseUrl da API
                 using var s3Client = new HttpClient();
-                
+
                 // IMPORTANTE: Se a URL foi assinada com metadata, o header deve ser enviado no PUT
                 if (!string.IsNullOrEmpty(itemCode))
                 {
@@ -74,7 +74,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
                     // Vamos tentar extrair a URL base da URL assinada (removendo query string)
                     var uri = new Uri(presignedData.Url);
                     var cleanUrl = $"{uri.Scheme}://{uri.Host}{uri.AbsolutePath}";
-                    
+
                     Console.WriteLine($"✓ Upload concluído: {presignedData.Key}");
                     return (true, cleanUrl);
                 }
@@ -97,16 +97,16 @@ namespace pwa_camera_poc_blazor.Services.AWS
             {
                 var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
                 var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(metadata, options);
-                
+
                 var fileName = $"{itemId}.json";
                 var contentType = "application/json";
 
                 // 1. Obter URL
                 var request = new PresignedUrlRequest(fileName, contentType, itemId, metadata.Codigo);
                 var response = await _httpClient.PostAsJsonAsync("/api/storage/presigned-url", request);
-                
+
                 if (!response.IsSuccessStatusCode) return (false, null);
-                
+
                 var presignedData = await response.Content.ReadFromJsonAsync<PresignedUrlResponse>();
                 if (presignedData == null) return (false, null);
 
@@ -115,7 +115,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 uploadContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
 
                 using var s3Client = new HttpClient();
-                
+
                 // IMPORTANTE: Se a URL foi assinada com metadata, o header deve ser enviado no PUT
                 if (!string.IsNullOrEmpty(metadata.Codigo))
                 {
@@ -130,7 +130,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
                     var cleanUrl = $"{uri.Scheme}://{uri.Host}{uri.AbsolutePath}";
                     return (true, cleanUrl);
                 }
-                
+
                 return (false, null);
             }
             catch (Exception ex)
@@ -149,9 +149,23 @@ namespace pwa_camera_poc_blazor.Services.AWS
 
         public async Task<bool> ItemExistsInS3Async(string itemId)
         {
-            // Não suportado via API atual
-            await Task.CompletedTask;
-            return false;
+            try
+            {
+                // We check for the metadata file ({itemId}/{itemId}.json) as it confirms the sync is complete
+                // Note: The API expects the full key locally, so we construct it.
+                // Assuming standard structure: itemId/itemId.json
+                var key = $"{itemId}/{itemId}.json";
+                // Encode the key for the URL
+                var encodedKey = System.Net.WebUtility.UrlEncode(key);
+
+                var response = await _httpClient.GetAsync($"/api/storage/exists/{encodedKey}");
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error checking item existence: {ex.Message}");
+                return false;
+            }
         }
 
         public async Task<bool> DeleteObjectAsync(string key)

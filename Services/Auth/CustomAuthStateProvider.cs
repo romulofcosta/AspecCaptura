@@ -1,3 +1,4 @@
+using System; // Required for Exception and Console
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -18,21 +19,29 @@ namespace pwa_camera_poc_blazor.Services.Auth
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var session = await _localStorage.GetItemAsync<UserSession>(SESSION_KEY);
-
-            if (session == null)
+            try
             {
+                var session = await _localStorage.GetItemAsync<UserSession>(SESSION_KEY);
+
+                if (session == null)
+                {
+                    return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+                }
+
+                var claims = new[]
+                {
+                    new Claim(ClaimTypes.Name, session.Username),
+                    new Claim("UnitId", session.UnitId.ToString())
+                };
+
+                var identity = new ClaimsIdentity(claims, "Custom Auth");
+                return new AuthenticationState(new ClaimsPrincipal(identity));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CustomAuthStateProvider: {ex.Message}");
                 return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
             }
-
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.Name, session.Username),
-                new Claim("UnitId", session.UnitId.ToString())
-            };
-
-            var identity = new ClaimsIdentity(claims, "Custom Auth");
-            return new AuthenticationState(new ClaimsPrincipal(identity));
         }
 
         public void NotifyAuthenticationStateChanged()
