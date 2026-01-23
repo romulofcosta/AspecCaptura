@@ -178,9 +178,9 @@
             var user = await AuthService.GetCurrentUserAsync();
             var username = user?.Username ?? "unknown";
 
-            // CORREÇÃO: Buscar itens diretamente do banco de dados para garantir que temos os mais recentes
-            // e não depender apenas da lista 'items' que pode estar filtrada ou desatualizada na memória.
-            var allDbItems = await DbService.GetItemsByUnitAsync(user?.CurrentUnitId ?? 0);
+            // CORREÇÃO: Buscar itens diretamente do banco de dados (todos) e filtrar no C#
+            // Isso evita problemas com índices JS (getItemsByUnit) que podem não estar retornando itens novos da câmera
+            var allDbItems = await DbService.GetAllAsync<InventoryItem>("items");
             
             // Filtra apenas itens pendentes (Synced = false) criados pelo usuário atual
             var pendingItems = allDbItems.Where(i => !i.Synced && i.CreatedBy == username).ToList();
@@ -319,6 +319,8 @@
             var user = await AuthService.GetCurrentUserAsync();
             if (user?.CurrentUnitId != null)
             {
+                // Aqui podemos manter GetItemsByUnitAsync para exibição inicial, 
+                // pois se falhar, apenas não exibe, mas não bloqueia a sync que agora usa GetAllAsync
                 var allItems = await DbService.GetItemsByUnitAsync(user.CurrentUnitId.Value);
                 
                 // Filtra apenas os itens criados pelo usuário atual
