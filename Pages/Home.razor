@@ -27,6 +27,9 @@
                     <MudIconButton Icon="@Icons.Material.Filled.FilterList"
                         Color="@(showFilters ? Color.Primary : Color.Default)" OnClick="ToggleFilters" title="Filtros" />
 
+                    <MudIconButton Icon="@Icons.Material.Filled.Sync"
+                        Color="Color.Primary" OnClick="CheckRemoteSyncStatus" title="Sincronizar" />
+
                     <MudIconButton
                         Icon="@(viewMode == "grid" ? Icons.Material.Filled.GridView : Icons.Material.Filled.ViewList)"
                         Color="@(viewMode == "grid" ? Color.Primary : Color.Default)" OnClick="ToggleViewMode"
@@ -185,7 +188,7 @@
                 }
 
                 item.Synced = true;
-                item.Photos = new List<string>(); // Limpa fotos locais para economizar espaço
+                // item.Photos = new List<string>(); // MANTÉM fotos locais para evitar desaparecimento
                 await DbService.UpdateAsync("items", item);
                 stateChanged = true;
             }
