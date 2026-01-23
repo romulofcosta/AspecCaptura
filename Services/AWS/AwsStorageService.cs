@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -26,7 +26,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
 
         public void InitializeWithToken(string idToken)
         {
-            // NÃ£o necessÃ¡rio com BFF
+            // Não necessário com BFF
         }
 
         private string SanitizeKey(string? input)
@@ -97,7 +97,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 var uploadContent = new ByteArrayContent(bytes);
                 uploadContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
 
-                // Usamos um cliente novo ou o padrÃ£o para o PUT direto, pois o _httpClient tem BaseUrl da API
+                // Usamos um cliente novo ou o padrão para o PUT direto, pois o _httpClient tem BaseUrl da API
                 using var s3Client = new HttpClient();
 
                 // IMPORTANTE: Se a URL foi assinada com metadata, o header deve ser enviado no PUT
@@ -113,7 +113,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
                     var uri = new Uri(presignedData.Url);
                     var cleanUrl = $"{uri.Scheme}://{uri.Host}{uri.AbsolutePath}";
 
-                    Console.WriteLine($" Upload concluÃ­do: {presignedData.Key}");
+                    Console.WriteLine($" Upload concluído: {presignedData.Key}");
                     return (true, cleanUrl);
                 }
                 else
@@ -124,7 +124,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ExceÃ§Ã£o no upload: {ex.Message}");
+                Console.WriteLine($"Exceção no upload: {ex.Message}");
                 return (false, null);
             }
         }
@@ -195,7 +195,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
 
         public async Task<List<string>> ListObjectsAsync(string prefix)
         {
-            // NÃ£o suportado via API atual
+            // Não suportado via API atual
             await Task.CompletedTask;
             return new List<string>();
         }
@@ -274,7 +274,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
 
         public async Task<bool> DeleteObjectAsync(string key)
         {
-            // NÃ£o suportado via API atual
+            // Não suportado via API atual
             await Task.CompletedTask;
             return false;
         }
