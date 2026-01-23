@@ -1,4 +1,4 @@
-@page "/home"
+﻿@page "/home"
 @using pwa_camera_poc_blazor.Models
 @inject IAuthService AuthService
 @inject IIndexedDbService DbService
@@ -28,7 +28,10 @@
                         Color="@(showFilters ? Color.Primary : Color.Default)" OnClick="ToggleFilters" title="Filtros" />
 
                     <MudIconButton Icon="@Icons.Material.Filled.Sync"
-                        Color="Color.Primary" OnClick="CheckRemoteSyncStatus" title="Sincronizar" />
+                        Color="@(isSyncing ? Color.Warning : Color.Primary)" 
+                        OnClick="@(() => SyncPendingItems(false))" 
+                        Disabled="@isSyncing"
+                        title="@(isSyncing ? "Sincronizando..." : "Sincronizar")" />
 
                     <MudIconButton
                         Icon="@(viewMode == "grid" ? Icons.Material.Filled.GridView : Icons.Material.Filled.ViewList)"
@@ -120,6 +123,7 @@
     private string viewMode = "list";
     private bool showFilters = false;
     private bool isLoading = true;
+    private bool isSyncing = false;
 
     // Pagination
     private int currentPage = 1;
@@ -151,63 +155,145 @@
                 await Task.Delay(500);
                 await JSRuntime.InvokeVoidAsync("appInterop.checkOverflow", "#home-container");
                 
-                // Verifica status de sincronização em background
-                _ = CheckRemoteSyncStatus();
+                // Tenta sincronizar automaticamente ao carregar (mas sem bloquear UI ou forçar re-upload agressivo)
+                _ = SyncPendingItems(autoSync: true);
             }
             catch { /* Log or handle JS interop errors if necessary */ }
         }
     }
 
-    private async Task CheckRemoteSyncStatus()
+    private async Task SyncPendingItems(bool autoSync = false)
     {
-        // Verifica apenas itens pendentes (Synced = false) para economizar requisições
-        var pendingItems = items.Where(i => !i.Synced).ToList();
-        if (!pendingItems.Any()) return;
+        if (isSyncing) return;
         
-        // Verifica conexão básica antes de tentar (opcional, aqui assumimos que AwsService lida com falhas)
-        bool stateChanged = false;
-
-        foreach (var item in pendingItems)
+        // Se for autoSync, não bloqueamos UI com loading global, apenas processamos
+        if (!autoSync) 
         {
-            // Verifica se o arquivo .json existe no S3
-            bool exists = await AwsService.ItemExistsInS3Async(item.Id);
+            isSyncing = true;
+            await InvokeAsync(StateHasChanged);
+        }
+
+        try
+        {
+            var user = await AuthService.GetCurrentUserAsync();
+            var username = user?.Username ?? "unknown";
+
+            // Verifica apenas itens pendentes (Synced = false)
+            var pendingItems = items.Where(i => !i.Synced).ToList();
             
-            if (exists)
+            if (!pendingItems.Any()) 
             {
-                // Se existe no S3 mas estava localmente como não sincronizado, atualiza
+                if (!autoSync) isSyncing = false;
+                return;
+            }
+            
+            bool stateChanged = false;
+
+            foreach (var item in pendingItems)
+            {
+                bool itemSyncSuccess = false;
+
+                // 1. Verifica se já existe no S3 (evita re-upload desnecessário)
+                bool exists = await AwsService.ItemExistsInS3Async(item.Id);
                 
-                // Tenta obter a URL da imagem para garantir que ela será exibida
-                var imageUrl = await AwsService.GetItemImageUrlAsync(item);
-                if (!string.IsNullOrEmpty(imageUrl))
+                if (exists)
                 {
-                    if (item.RemoteUrls == null) item.RemoteUrls = new List<string>();
-                    if (!item.RemoteUrls.Contains(imageUrl))
+                    itemSyncSuccess = true;
+                }
+                else
+                {
+                    // 2. Se não existe, tenta fazer o upload
+                    
+                    // A. Upload da Foto (se houver)
+                    bool photoSuccess = true;
+                    if (item.Photos != null && item.Photos.Any())
                     {
-                        item.RemoteUrls.Add(imageUrl);
+                        var firstPhoto = item.Photos.FirstOrDefault();
+                        if (!string.IsNullOrEmpty(firstPhoto))
+                        {
+                            var (success, url) = await AwsService.UploadPhotoAsync(item.Id, item.Code, firstPhoto);
+                            if (success && !string.IsNullOrEmpty(url))
+                            {
+                                if (item.RemoteUrls == null) item.RemoteUrls = new List<string>();
+                                if (!item.RemoteUrls.Contains(url))
+                                {
+                                    item.RemoteUrls.Add(url);
+                                }
+                            }
+                            else
+                            {
+                                photoSuccess = false;
+                                Console.WriteLine($"Falha ao enviar foto do item {item.Name}");
+                            }
+                        }
+                    }
+
+                    // B. Upload dos Metadados (apenas se foto ok ou se não tiver foto)
+                    if (photoSuccess)
+                    {
+                        var metadata = ItemMetadata.FromInventoryItem(item, username);
+                        var (metaSuccess, _) = await AwsService.UploadMetadataAsync(item.Id, metadata);
+                        
+                        if (metaSuccess)
+                        {
+                            itemSyncSuccess = true;
+                        }
+                        else
+                        {
+                             Console.WriteLine($"Falha ao enviar metadados do item {item.Name}");
+                        }
                     }
                 }
 
-                item.Synced = true;
-                // item.Photos = new List<string>(); // MANTÉM fotos locais para evitar desaparecimento
-                await DbService.UpdateAsync("items", item);
-                stateChanged = true;
+                // 3. Atualiza estado local se sucesso (seja por já existir ou por upload novo)
+                if (itemSyncSuccess)
+                {
+                    // Tenta garantir que temos a URL remota para exibição
+                    var imageUrl = await AwsService.GetItemImageUrlAsync(item);
+                    if (!string.IsNullOrEmpty(imageUrl))
+                    {
+                        if (item.RemoteUrls == null) item.RemoteUrls = new List<string>();
+                        if (!item.RemoteUrls.Contains(imageUrl))
+                        {
+                            item.RemoteUrls.Add(imageUrl);
+                        }
+                    }
+
+                    item.Synced = true;
+                    // item.Photos = new List<string>(); // MANTÉM fotos locais conforme solicitado
+                    await DbService.UpdateAsync("items", item);
+                    stateChanged = true;
+                }
+            }
+
+            if (stateChanged)
+            {
+                // Atualiza contadores globais
+                if (user != null)
+                {
+                    var allItems = await DbService.GetItemsByUnitAsync(user.CurrentUnitId ?? 0);
+                    var userItems = allItems.Where(i => i.CreatedBy == user.Username).ToList();
+                    appState.PendingSyncCount = userItems.Count(i => !i.Synced);
+                }
+                
+                // Recarrega lista para refletir status
+                await LoadItems(); 
+                await InvokeAsync(StateHasChanged);
             }
         }
-
-        if (stateChanged)
+        catch (Exception ex)
         {
-            // Atualiza UI e contadores
-            var user = await AuthService.GetCurrentUserAsync();
-            if (user != null)
-            {
-                var allItems = await DbService.GetItemsByUnitAsync(user.CurrentUnitId ?? 0);
-                var userItems = allItems.Where(i => i.CreatedBy == user.Username).ToList();
-                appState.PendingSyncCount = userItems.Count(i => !i.Synced);
-            }
-            
+            Console.WriteLine($"Erro na sincronização: {ex.Message}");
+        }
+        finally
+        {
+            isSyncing = false;
             await InvokeAsync(StateHasChanged);
         }
     }
+
+    // Mantendo compatibilidade com o nome antigo caso algum outro componente chame, mas redirecionando
+    private async Task CheckRemoteSyncStatus() => await SyncPendingItems();
 
     protected override async Task OnInitializedAsync()
     {
