@@ -61,6 +61,16 @@ namespace pwa_camera_poc_blazor.Services.Storage
             return await _jsRuntime.InvokeAsync<List<T>>("dbInterop.getAllFromIndex", storeName, indexName, value);
         }
 
+        public async Task<List<TKey>> GetAllKeysFromIndexAsync<TKey>(string storeName, string indexName, object value)
+        {
+             return await _jsRuntime.InvokeAsync<List<TKey>>("dbInterop.getAllKeysFromIndex", storeName, indexName, value);
+        }
+
+        public async Task<List<TKey>> GetAllKeysAsync<TKey>(string storeName)
+        {
+            return await _jsRuntime.InvokeAsync<List<TKey>>("dbInterop.getAllKeys", storeName);
+        }
+
         public async Task<List<T>> GetAllAsync<T>(string storeName)
         {
             try

@@ -1,7 +1,7 @@
-window.dbInterop = {
+﻿window.dbInterop = {
     db: null,
     dbName: 'PwaInventoryDB',
-    dbVersion: 2,
+    dbVersion: 3,
 
     init: async function () {
         return new Promise((resolve, reject) => {
@@ -57,14 +57,25 @@ window.dbInterop = {
                 }
 
                 // 3. Items Store (Inventory)
+                let itemsStore;
                 if (!db.objectStoreNames.contains('items')) {
                     // keyPath 'id' to support String GUIDs from C#
-                    const itemsStore = db.createObjectStore('items', { keyPath: 'id' });
+                    itemsStore = db.createObjectStore('items', { keyPath: 'id' });
                     itemsStore.createIndex('name', 'name', { unique: false });
                     itemsStore.createIndex('code', 'code', { unique: false });
                     itemsStore.createIndex('category', 'category', { unique: false });
                     itemsStore.createIndex('timestamp', 'timestamp', { unique: false });
                     itemsStore.createIndex('unitId', 'unitId', { unique: false });
+                    itemsStore.createIndex('synced', 'synced', { unique: false });
+                    itemsStore.createIndex('createdBy', 'createdBy', { unique: false });
+                } else {
+                    itemsStore = transaction.objectStore('items');
+                    if (!itemsStore.indexNames.contains('synced')) {
+                        itemsStore.createIndex('synced', 'synced', { unique: false });
+                    }
+                    if (!itemsStore.indexNames.contains('createdBy')) {
+                        itemsStore.createIndex('createdBy', 'createdBy', { unique: false });
+                    }
                 }
             };
 
@@ -99,6 +110,20 @@ window.dbInterop = {
             const transaction = this.db.transaction([storeName], 'readonly');
             const store = transaction.objectStore(storeName);
             const request = store.getAll();
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    },
+
+    getAllKeys: async function (storeName) {
+        return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized. Call init first.'));
+                return;
+            }
+            const transaction = this.db.transaction([storeName], 'readonly');
+            const store = transaction.objectStore(storeName);
+            const request = store.getAllKeys();
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
         });
@@ -169,6 +194,21 @@ window.dbInterop = {
             const store = transaction.objectStore(storeName);
             const index = store.index(indexName);
             const request = index.getAll(value);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    },
+
+    getAllKeysFromIndex: async function (storeName, indexName, value) {
+        return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized. Call init first.'));
+                return;
+            }
+            const transaction = this.db.transaction([storeName], 'readonly');
+            const store = transaction.objectStore(storeName);
+            const index = store.index(indexName);
+            const request = index.getAllKeys(value);
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
         });
