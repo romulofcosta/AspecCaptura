@@ -109,8 +109,6 @@
     </MudGrid>
 </MudContainer>
 
-
-
 @code {
     private List<InventoryItem> items = new();
     private string searchQuery = "";
@@ -174,6 +172,18 @@
             if (exists)
             {
                 // Se existe no S3 mas estava localmente como não sincronizado, atualiza
+                
+                // Tenta obter a URL da imagem para garantir que ela será exibida
+                var imageUrl = await AwsService.GetItemImageUrlAsync(item);
+                if (!string.IsNullOrEmpty(imageUrl))
+                {
+                    if (item.RemoteUrls == null) item.RemoteUrls = new List<string>();
+                    if (!item.RemoteUrls.Contains(imageUrl))
+                    {
+                        item.RemoteUrls.Add(imageUrl);
+                    }
+                }
+
                 item.Synced = true;
                 item.Photos = new List<string>(); // Limpa fotos locais para economizar espaço
                 await DbService.UpdateAsync("items", item);

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -29,6 +29,29 @@ namespace pwa_camera_poc_blazor.Services.AWS
             // Não necessário com BFF
         }
 
+        private string SanitizeKey(string? input)
+        {
+            if (string.IsNullOrEmpty(input)) return "";
+            
+            // Normalize to FormD to split accents
+            var normalizedString = input.Normalize(System.Text.NormalizationForm.FormD);
+            var stringBuilder = new System.Text.StringBuilder();
+
+            foreach (var c in normalizedString)
+            {
+                var unicodeCategory = System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != System.Globalization.UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            return stringBuilder.ToString().Normalize(System.Text.NormalizationForm.FormC)
+                                .Replace(" ", "-")
+                                .Replace("/", "-")
+                                .Replace("\\", "-");
+        }
+
         public async Task<(bool Success, string? Url)> UploadPhotoAsync(string itemId, string itemCode, string base64Data)
         {
             try
@@ -38,9 +61,14 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 var base64Clean = base64Data.Contains(",") ? base64Data.Split(',')[1] : base64Data;
                 var bytes = Convert.FromBase64String(base64Clean);
                 var item = await _dbService.GetAsync<InventoryItem>("items", itemId);
-                var safeItemName = (item?.Name ?? itemId).Replace("/", "-").Replace("\\", "-");
+                
+                // Use the new SanitizeKey to match API behavior
+                var safeItemName = SanitizeKey(item?.Name ?? itemId);
                 var fileName = $"{safeItemName}.jpg";
                 var contentType = "image/jpeg";
+
+                // Sanitize itemCode for header/signature
+                var safeItemCode = SanitizeKey(itemCode);
 
                 // 2. Solicitar URL Assinada
                 var user = await _authService.GetCurrentUserAsync();
@@ -53,7 +81,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
                     unitName = unit?.Name ?? unitName;
                 }
                 var folderPrefix = $"{username}/{unitName}";
-                var request = new PresignedUrlRequest(fileName, contentType, folderPrefix, itemCode, username, unitName);
+                var request = new PresignedUrlRequest(fileName, contentType, folderPrefix, safeItemCode, username, unitName);
                 var response = await _httpClient.PostAsJsonAsync("/api/storage/presigned-url", request);
 
                 if (!response.IsSuccessStatusCode)
@@ -73,25 +101,19 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 using var s3Client = new HttpClient();
 
                 // IMPORTANTE: Se a URL foi assinada com metadata, o header deve ser enviado no PUT
-                if (!string.IsNullOrEmpty(itemCode))
+                if (!string.IsNullOrEmpty(safeItemCode))
                 {
-                    s3Client.DefaultRequestHeaders.Add("x-amz-meta-asset-code", itemCode);
+                    s3Client.DefaultRequestHeaders.Add("x-amz-meta-asset-code", safeItemCode);
                 }
 
                 var uploadResponse = await s3Client.PutAsync(presignedData.Url, uploadContent);
 
                 if (uploadResponse.IsSuccessStatusCode)
                 {
-                    // URL final pública (sem query params de assinatura)
-                    // A URL assinada contém a URL base + query params. 
-                    // Podemos reconstruir a URL limpa ou usar a URL assinada se for privada (mas ela expira).
-                    // Para acesso público (se o bucket permitir) ou uso imediato, retornamos a chave.
-                    // O app espera uma URL para salvar/exibir.
-                    // Vamos tentar extrair a URL base da URL assinada (removendo query string)
                     var uri = new Uri(presignedData.Url);
                     var cleanUrl = $"{uri.Scheme}://{uri.Host}{uri.AbsolutePath}";
 
-                    Console.WriteLine($"✓ Upload concluído: {presignedData.Key}");
+                    Console.WriteLine($" Upload concluído: {presignedData.Key}");
                     return (true, cleanUrl);
                 }
                 else
@@ -115,9 +137,12 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(metadata, options);
 
                 var itemMetaItem = await _dbService.GetAsync<InventoryItem>("items", itemId);
-                var safeMetaItemName = (itemMetaItem?.Name ?? itemId).Replace("/", "-").Replace("\\", "-");
+                var safeMetaItemName = SanitizeKey(itemMetaItem?.Name ?? itemId);
                 var fileName = $"{safeMetaItemName}.json";
                 var contentType = "application/json";
+
+                // Sanitize itemCode
+                var safeItemCode = SanitizeKey(metadata.Codigo);
 
                 // 1. Obter URL
                 var user = await _authService.GetCurrentUserAsync();
@@ -130,7 +155,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
                     unitName = unit?.Name ?? unitName;
                 }
                 var folderPrefix = $"{username}/{unitName}";
-                var request = new PresignedUrlRequest(fileName, contentType, folderPrefix, metadata.Codigo, username, unitName);
+                var request = new PresignedUrlRequest(fileName, contentType, folderPrefix, safeItemCode, username, unitName);
                 var response = await _httpClient.PostAsJsonAsync("/api/storage/presigned-url", request);
 
                 if (!response.IsSuccessStatusCode) return (false, null);
@@ -145,9 +170,9 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 using var s3Client = new HttpClient();
 
                 // IMPORTANTE: Se a URL foi assinada com metadata, o header deve ser enviado no PUT
-                if (!string.IsNullOrEmpty(metadata.Codigo))
+                if (!string.IsNullOrEmpty(safeItemCode))
                 {
-                    s3Client.DefaultRequestHeaders.Add("x-amz-meta-asset-code", metadata.Codigo);
+                    s3Client.DefaultRequestHeaders.Add("x-amz-meta-asset-code", safeItemCode);
                 }
 
                 var uploadResponse = await s3Client.PutAsync(presignedData.Url, uploadContent);
@@ -180,8 +205,6 @@ namespace pwa_camera_poc_blazor.Services.AWS
             try
             {
                 // We check for the metadata file ({itemId}/{itemId}.json) as it confirms the sync is complete
-                // Note: The API expects the full key locally, so we construct it.
-                // Assuming standard structure: itemId/itemId.json
                 var user = await _authService.GetCurrentUserAsync();
                 var fullName = $"{user?.FirstName} {user?.LastName}".Trim();
                 var username = string.IsNullOrWhiteSpace(fullName) ? (user?.Username ?? "usuario") : fullName;
@@ -192,10 +215,16 @@ namespace pwa_camera_poc_blazor.Services.AWS
                     unitName = unit?.Name ?? unitName;
                 }
                 var itemRecord = await _dbService.GetAsync<InventoryItem>("items", itemId);
-                var safeItemName = (itemRecord?.Name ?? itemId).Replace("/", "-").Replace("\\", "-");
-                var key = $"{username}/{unitName}/{safeItemName}.json";
-                // Encode the key for the URL
-                var encodedKey = System.Net.WebUtility.UrlEncode(key);
+                
+                // Sanitize ALL parts of the path to match API logic
+                var safeUsername = SanitizeKey(username);
+                var safeUnitName = SanitizeKey(unitName);
+                var safeItemName = SanitizeKey(itemRecord?.Name ?? itemId);
+                
+                var key = $"{safeUsername}/{safeUnitName}/{safeItemName}.json";
+                
+                // Encode the key for the URL (path segments)
+                var encodedKey = Uri.EscapeDataString(key);
 
                 var response = await _httpClient.GetAsync($"/api/storage/exists/{encodedKey}");
                 return response.IsSuccessStatusCode;
@@ -207,11 +236,54 @@ namespace pwa_camera_poc_blazor.Services.AWS
             }
         }
 
+        public async Task<string?> GetItemImageUrlAsync(InventoryItem item)
+        {
+            try
+            {
+                var user = await _authService.GetCurrentUserAsync();
+                var fullName = $"{user?.FirstName} {user?.LastName}".Trim();
+                var username = string.IsNullOrWhiteSpace(fullName) ? (user?.Username ?? "usuario") : fullName;
+                var unitName = "unidade";
+                if (user?.CurrentUnitId != null)
+                {
+                    var unit = await _dbService.GetAsync<Unit>("units", user.CurrentUnitId.Value);
+                    unitName = unit?.Name ?? unitName;
+                }
+                
+                // Sanitize ALL parts of the path to match API logic
+                var safeUsername = SanitizeKey(username);
+                var safeUnitName = SanitizeKey(unitName);
+                var safeItemName = SanitizeKey(item.Name ?? item.Id);
+                
+                var key = $"{safeUsername}/{safeUnitName}/{safeItemName}.jpg";
+                var encodedKey = Uri.EscapeDataString(key);
+
+                var response = await _httpClient.GetFromJsonAsync<ExistResponse>($"/api/storage/exists/{encodedKey}");
+                if (response != null && response.Exists)
+                {
+                    return response.Url;
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting item image URL: {ex.Message}");
+                return null;
+            }
+        }
+
         public async Task<bool> DeleteObjectAsync(string key)
         {
             // Não suportado via API atual
             await Task.CompletedTask;
             return false;
+        }
+
+        private class ExistResponse
+        {
+            public bool Exists { get; set; }
+            public string Key { get; set; } = "";
+            public string Url { get; set; } = "";
         }
     }
 }
