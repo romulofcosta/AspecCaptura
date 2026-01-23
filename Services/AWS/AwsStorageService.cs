@@ -49,7 +49,8 @@ namespace pwa_camera_poc_blazor.Services.AWS
             return stringBuilder.ToString().Normalize(System.Text.NormalizationForm.FormC)
                                 .Replace(" ", "-")
                                 .Replace("/", "-")
-                                .Replace("\\", "-");
+                                .Replace("\\", "-")
+                                .ToLowerInvariant(); // Ensure lowercase
         }
 
         public async Task<(bool Success, string? Url)> UploadPhotoAsync(string itemId, string itemCode, string base64Data)
@@ -57,17 +58,14 @@ namespace pwa_camera_poc_blazor.Services.AWS
             try
             {
                 // 1. Preparar dados
-                // Remove prefixo data:image/jpeg;base64, se existir
                 var base64Clean = base64Data.Contains(",") ? base64Data.Split(',')[1] : base64Data;
                 var bytes = Convert.FromBase64String(base64Clean);
                 var item = await _dbService.GetAsync<InventoryItem>("items", itemId);
                 
-                // Use the new SanitizeKey to match API behavior
                 var safeItemName = SanitizeKey(item?.Name ?? itemId);
                 var fileName = $"{safeItemName}.jpg";
                 var contentType = "image/jpeg";
 
-                // Sanitize itemCode for header/signature
                 var safeItemCode = SanitizeKey(itemCode);
 
                 // 2. Solicitar URL Assinada
@@ -80,8 +78,13 @@ namespace pwa_camera_poc_blazor.Services.AWS
                     var unit = await _dbService.GetAsync<Unit>("units", user.CurrentUnitId.Value);
                     unitName = unit?.Name ?? unitName;
                 }
-                var folderPrefix = $"{username}/{unitName}";
-                var request = new PresignedUrlRequest(fileName, contentType, folderPrefix, safeItemCode, username, unitName);
+                
+                // FIX: Sanitize components for folder path
+                var safeUsername = SanitizeKey(username);
+                var safeUnitName = SanitizeKey(unitName);
+                var folderPrefix = $"{safeUsername}/{safeUnitName}";
+                
+                var request = new PresignedUrlRequest(fileName, contentType, folderPrefix, safeItemCode, safeUsername, safeUnitName);
                 var response = await _httpClient.PostAsJsonAsync("/api/storage/presigned-url", request);
 
                 if (!response.IsSuccessStatusCode)
@@ -97,10 +100,8 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 var uploadContent = new ByteArrayContent(bytes);
                 uploadContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
 
-                // Usamos um cliente novo ou o padrão para o PUT direto, pois o _httpClient tem BaseUrl da API
                 using var s3Client = new HttpClient();
 
-                // IMPORTANTE: Se a URL foi assinada com metadata, o header deve ser enviado no PUT
                 if (!string.IsNullOrEmpty(safeItemCode))
                 {
                     s3Client.DefaultRequestHeaders.Add("x-amz-meta-asset-code", safeItemCode);
@@ -141,7 +142,6 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 var fileName = $"{safeMetaItemName}.json";
                 var contentType = "application/json";
 
-                // Sanitize itemCode
                 var safeItemCode = SanitizeKey(metadata.Codigo);
 
                 // 1. Obter URL
@@ -154,8 +154,13 @@ namespace pwa_camera_poc_blazor.Services.AWS
                     var unit = await _dbService.GetAsync<Unit>("units", user.CurrentUnitId.Value);
                     unitName = unit?.Name ?? unitName;
                 }
-                var folderPrefix = $"{username}/{unitName}";
-                var request = new PresignedUrlRequest(fileName, contentType, folderPrefix, safeItemCode, username, unitName);
+                
+                // FIX: Sanitize components for folder path
+                var safeUsername = SanitizeKey(username);
+                var safeUnitName = SanitizeKey(unitName);
+                var folderPrefix = $"{safeUsername}/{safeUnitName}";
+                
+                var request = new PresignedUrlRequest(fileName, contentType, folderPrefix, safeItemCode, safeUsername, safeUnitName);
                 var response = await _httpClient.PostAsJsonAsync("/api/storage/presigned-url", request);
 
                 if (!response.IsSuccessStatusCode) return (false, null);
@@ -169,7 +174,6 @@ namespace pwa_camera_poc_blazor.Services.AWS
 
                 using var s3Client = new HttpClient();
 
-                // IMPORTANTE: Se a URL foi assinada com metadata, o header deve ser enviado no PUT
                 if (!string.IsNullOrEmpty(safeItemCode))
                 {
                     s3Client.DefaultRequestHeaders.Add("x-amz-meta-asset-code", safeItemCode);
@@ -195,7 +199,6 @@ namespace pwa_camera_poc_blazor.Services.AWS
 
         public async Task<List<string>> ListObjectsAsync(string prefix)
         {
-            // Não suportado via API atual
             await Task.CompletedTask;
             return new List<string>();
         }
@@ -204,7 +207,6 @@ namespace pwa_camera_poc_blazor.Services.AWS
         {
             try
             {
-                // We check for the metadata file ({itemId}/{itemId}.json) as it confirms the sync is complete
                 var user = await _authService.GetCurrentUserAsync();
                 var fullName = $"{user?.FirstName} {user?.LastName}".Trim();
                 var username = string.IsNullOrWhiteSpace(fullName) ? (user?.Username ?? "usuario") : fullName;
@@ -216,14 +218,12 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 }
                 var itemRecord = await _dbService.GetAsync<InventoryItem>("items", itemId);
                 
-                // Sanitize ALL parts of the path to match API logic
                 var safeUsername = SanitizeKey(username);
                 var safeUnitName = SanitizeKey(unitName);
                 var safeItemName = SanitizeKey(itemRecord?.Name ?? itemId);
                 
                 var key = $"{safeUsername}/{safeUnitName}/{safeItemName}.json";
                 
-                // Encode the key for the URL (path segments)
                 var encodedKey = Uri.EscapeDataString(key);
 
                 var response = await _httpClient.GetAsync($"/api/storage/exists/{encodedKey}");
@@ -250,7 +250,6 @@ namespace pwa_camera_poc_blazor.Services.AWS
                     unitName = unit?.Name ?? unitName;
                 }
                 
-                // Sanitize ALL parts of the path to match API logic
                 var safeUsername = SanitizeKey(username);
                 var safeUnitName = SanitizeKey(unitName);
                 var safeItemName = SanitizeKey(item.Name ?? item.Id);
@@ -274,7 +273,6 @@ namespace pwa_camera_poc_blazor.Services.AWS
 
         public async Task<bool> DeleteObjectAsync(string key)
         {
-            // Não suportado via API atual
             await Task.CompletedTask;
             return false;
         }

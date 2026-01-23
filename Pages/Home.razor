@@ -178,14 +178,21 @@
             var user = await AuthService.GetCurrentUserAsync();
             var username = user?.Username ?? "unknown";
 
-            // CORREÇÃO: Buscar itens diretamente do banco de dados (todos) e filtrar no C#
-            // Isso evita problemas com índices JS (getItemsByUnit) que podem não estar retornando itens novos da câmera
-            var allDbItems = await DbService.GetAllAsync<InventoryItem>("items");
-            
-            // Filtra apenas itens pendentes (Synced = false) criados pelo usuário atual
-            var pendingItems = allDbItems.Where(i => !i.Synced && i.CreatedBy == username).ToList();
-            
-            if (!pendingItems.Any()) 
+            // CORREÇÃO OTIMIZADA: Buscar apenas IDs dos itens pendentes para evitar carregar fotos pesadas
+            // Usa índice 'synced' (false = 0)
+            List<string> pendingIds = new();
+            try {
+                pendingIds = await DbService.GetAllKeysFromIndexAsync<string>("items", "synced", 0);
+            }
+            catch {
+                 // Fallback: se índice não existir
+                 Console.WriteLine("Fallback sync: buscando todos os itens (lento)");
+                 var allItems = await DbService.GetAllAsync<InventoryItem>("items");
+                 if (allItems != null)
+                    pendingIds = allItems.Where(i => !i.Synced).Select(i => i.Id).ToList();
+            }
+
+            if (!pendingIds.Any()) 
             {
                 if (!autoSync) isSyncing = false;
                 await InvokeAsync(StateHasChanged);
@@ -194,8 +201,16 @@
             
             bool stateChanged = false;
 
-            foreach (var item in pendingItems)
+            // Processa um por um para economizar memória
+            foreach (var id in pendingIds)
             {
+                // Carrega o item completo (com fotos)
+                var item = await DbService.GetAsync<InventoryItem>("items", id);
+                
+                // Filtra usuário
+                if (item == null || item.CreatedBy != username) continue;
+                if (item.Synced) continue;
+
                 bool itemSyncSuccess = false;
 
                 // 1. Verifica se já existe no S3 (evita re-upload desnecessário)
@@ -265,7 +280,8 @@
                     }
 
                     item.Synced = true;
-                    // item.Photos = new List<string>(); // MANTÉM fotos locais conforme solicitado
+                    // item.Photos = new List<string>(); // MANTÉM fotos locais
+                    
                     await DbService.UpdateAsync("items", item);
                     stateChanged = true;
                 }
@@ -276,9 +292,8 @@
                 // Atualiza contadores globais
                 if (user != null)
                 {
-                    var allItems = await DbService.GetItemsByUnitAsync(user.CurrentUnitId ?? 0);
-                    var userItems = allItems.Where(i => i.CreatedBy == user.Username).ToList();
-                    appState.PendingSyncCount = userItems.Count(i => !i.Synced);
+                    // Como não temos 'synced' E 'createdBy' juntos, é difícil contar pendentes sem carregar.
+                    // Ignora contagem precisa por enquanto para evitar lentidão
                 }
                 
                 // Recarrega lista para refletir status
@@ -319,8 +334,8 @@
             var user = await AuthService.GetCurrentUserAsync();
             if (user?.CurrentUnitId != null)
             {
-                // Aqui podemos manter GetItemsByUnitAsync para exibição inicial, 
-                // pois se falhar, apenas não exibe, mas não bloqueia a sync que agora usa GetAllAsync
+                // Aqui ainda usamos GetItemsByUnitAsync que carrega tudo.
+                // Se o usuário tiver muitos itens, isso será lento.
                 var allItems = await DbService.GetItemsByUnitAsync(user.CurrentUnitId.Value);
                 
                 // Filtra apenas os itens criados pelo usuário atual
