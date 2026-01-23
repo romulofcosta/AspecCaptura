@@ -13,11 +13,15 @@ namespace pwa_camera_poc_blazor.Services.AWS
     {
         private readonly HttpClient _httpClient;
         private readonly AwsConfig _config;
+        private readonly pwa_camera_poc_blazor.Services.Auth.IAuthService _authService;
+        private readonly pwa_camera_poc_blazor.Services.Storage.IIndexedDbService _dbService;
 
-        public AwsStorageService(IHttpClientFactory httpClientFactory, AwsConfig config)
+        public AwsStorageService(IHttpClientFactory httpClientFactory, AwsConfig config, pwa_camera_poc_blazor.Services.Auth.IAuthService authService, pwa_camera_poc_blazor.Services.Storage.IIndexedDbService dbService)
         {
             _httpClient = httpClientFactory.CreateClient("BackendApi");
             _config = config;
+            _authService = authService;
+            _dbService = dbService;
         }
 
         public void InitializeWithToken(string idToken)
@@ -33,11 +37,23 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 // Remove prefixo data:image/jpeg;base64, se existir
                 var base64Clean = base64Data.Contains(",") ? base64Data.Split(',')[1] : base64Data;
                 var bytes = Convert.FromBase64String(base64Clean);
-                var fileName = $"{itemId}.jpg"; // A API vai colocar na pasta do assetId
+                var item = await _dbService.GetAsync<InventoryItem>("items", itemId);
+                var safeItemName = (item?.Name ?? itemId).Replace("/", "-").Replace("\\", "-");
+                var fileName = $"{safeItemName}.jpg";
                 var contentType = "image/jpeg";
 
                 // 2. Solicitar URL Assinada
-                var request = new PresignedUrlRequest(fileName, contentType, itemId, itemCode);
+                var user = await _authService.GetCurrentUserAsync();
+                var fullName = $"{user?.FirstName} {user?.LastName}".Trim();
+                var username = string.IsNullOrWhiteSpace(fullName) ? (user?.Username ?? "usuario") : fullName;
+                var unitName = "unidade";
+                if (user?.CurrentUnitId != null)
+                {
+                    var unit = await _dbService.GetAsync<Unit>("units", user.CurrentUnitId.Value);
+                    unitName = unit?.Name ?? unitName;
+                }
+                var folderPrefix = $"{username}/{unitName}";
+                var request = new PresignedUrlRequest(fileName, contentType, folderPrefix, itemCode, username, unitName);
                 var response = await _httpClient.PostAsJsonAsync("/api/storage/presigned-url", request);
 
                 if (!response.IsSuccessStatusCode)
@@ -98,11 +114,23 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
                 var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(metadata, options);
 
-                var fileName = $"{itemId}.json";
+                var itemMetaItem = await _dbService.GetAsync<InventoryItem>("items", itemId);
+                var safeMetaItemName = (itemMetaItem?.Name ?? itemId).Replace("/", "-").Replace("\\", "-");
+                var fileName = $"{safeMetaItemName}.json";
                 var contentType = "application/json";
 
                 // 1. Obter URL
-                var request = new PresignedUrlRequest(fileName, contentType, itemId, metadata.Codigo);
+                var user = await _authService.GetCurrentUserAsync();
+                var fullNameMeta = $"{user?.FirstName} {user?.LastName}".Trim();
+                var username = string.IsNullOrWhiteSpace(fullNameMeta) ? (user?.Username ?? "usuario") : fullNameMeta;
+                var unitName = "unidade";
+                if (user?.CurrentUnitId != null)
+                {
+                    var unit = await _dbService.GetAsync<Unit>("units", user.CurrentUnitId.Value);
+                    unitName = unit?.Name ?? unitName;
+                }
+                var folderPrefix = $"{username}/{unitName}";
+                var request = new PresignedUrlRequest(fileName, contentType, folderPrefix, metadata.Codigo, username, unitName);
                 var response = await _httpClient.PostAsJsonAsync("/api/storage/presigned-url", request);
 
                 if (!response.IsSuccessStatusCode) return (false, null);
@@ -154,7 +182,18 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 // We check for the metadata file ({itemId}/{itemId}.json) as it confirms the sync is complete
                 // Note: The API expects the full key locally, so we construct it.
                 // Assuming standard structure: itemId/itemId.json
-                var key = $"{itemId}/{itemId}.json";
+                var user = await _authService.GetCurrentUserAsync();
+                var fullName = $"{user?.FirstName} {user?.LastName}".Trim();
+                var username = string.IsNullOrWhiteSpace(fullName) ? (user?.Username ?? "usuario") : fullName;
+                var unitName = "unidade";
+                if (user?.CurrentUnitId != null)
+                {
+                    var unit = await _dbService.GetAsync<Unit>("units", user.CurrentUnitId.Value);
+                    unitName = unit?.Name ?? unitName;
+                }
+                var itemRecord = await _dbService.GetAsync<InventoryItem>("items", itemId);
+                var safeItemName = (itemRecord?.Name ?? itemId).Replace("/", "-").Replace("\\", "-");
+                var key = $"{username}/{unitName}/{safeItemName}.json";
                 // Encode the key for the URL
                 var encodedKey = System.Net.WebUtility.UrlEncode(key);
 

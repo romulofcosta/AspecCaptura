@@ -59,7 +59,7 @@
                             <MudList T="InventoryItem" Dense="true" ReadOnly="true">
                             @foreach (var item in unsyncedItems)
                             {
-                                        <MudListItem>
+                                        <MudListItem @key="item.Id">
                                             <div class="d-flex align-center justify-space-between py-2 px-4 width-100">
                                                 <div class="d-flex flex-column">
                                                     <MudText Typo="Typo.body1" Class="font-weight-medium">@item.Name</MudText>
@@ -175,6 +175,13 @@
                             Snackbar.Add($"Erro ao enviar foto de: {item.Name}", Severity.Error);
                             continue;
                         }
+                        // Guarda URL remota para continuar exibindo a imagem após limpar base64
+                        if (!string.IsNullOrEmpty(photoResult.Url))
+                        {
+                            if (item.RemoteUrls == null) item.RemoteUrls = new List<string>();
+                            if (!item.RemoteUrls.Contains(photoResult.Url))
+                                item.RemoteUrls.Add(photoResult.Url);
+                        }
                     }
 
                     // 2. Criar metadados compatíveis com Desktop
@@ -190,7 +197,13 @@
                         item.Synced = true;
 
                         await DbService.UpdateAsync("items", item);
-                        successCount++;
+                    successCount++;
+                    // Atualiza UI imediatamente: remove da lista pendente e incrementa contador
+                    unsyncedItems = unsyncedItems.Where(i => i.Id != item.Id).ToList();
+                    syncedCount++;
+                    appState.PendingSyncCount = unsyncedItems.Count;
+                    Snackbar.Add($"Item sincronizado: {item.Name}", Severity.Success);
+                    await InvokeAsync(StateHasChanged);
                     }
                     else
                     {
@@ -212,6 +225,7 @@
             }
 
             await LoadStats();
+            await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
         {
@@ -221,6 +235,7 @@
         finally
         {
             isSyncing = false;
+            await InvokeAsync(StateHasChanged);
         }
     }
 }
