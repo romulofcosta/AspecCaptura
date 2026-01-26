@@ -4,6 +4,8 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 @inject AppState appState
+@using System.ComponentModel.DataAnnotations
+@using System.Collections.Generic
 
 <PageTitle>Login - ASPEC Inventory</PageTitle>
 
@@ -36,10 +38,10 @@
 
             <MudGrid Spacing="1">
                 <MudItem xs="12" Class="pb-4">
-                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">E-mail</MudText>
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">E-mail ou Usuário</MudText>
                     <MudTextField @bind-Value="loginModel.Username" Placeholder="Digite seu e-mail"
-                        Variant="Variant.Outlined" InputType="InputType.Email" Adornment="Adornment.Start"
-                        AdornmentIcon="@Icons.Material.Filled.Email" For="@(() => loginModel.Username)"
+                        Variant="Variant.Outlined" InputType="InputType.Text" Adornment="Adornment.Start"
+                        AdornmentIcon="@Icons.Material.Filled.Person" For="@(() => loginModel.Username)"
                         FullWidth="true" Class="mb-2" />
                 </MudItem>
 
@@ -75,7 +77,7 @@
     </MudPaper>
 
     <div class="d-flex justify-center mt-4">
-        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="version-indicator">Versão: v0.1.11 (Protótipo - Fix Sync Imagens)</MudText>
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="version-indicator">Versão: v0.1.12 (Protótipo - Admin Login)</MudText>
     </div>
 </MudContainer>
 
@@ -159,13 +161,25 @@
         }
     }
 
-    public class LoginModel
+    public class LoginModel : IValidatableObject
     {
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
-        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Formato de e-mail inválido")]
         public string Username { get; set; } = string.Empty;
 
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
         public string Password { get; set; } = string.Empty;
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            var cleanUsername = Username?.Trim().ToLower();
+            if (!string.IsNullOrEmpty(cleanUsername) && cleanUsername != "admin")
+            {
+                var emailAttribute = new System.ComponentModel.DataAnnotations.EmailAddressAttribute();
+                if (!emailAttribute.IsValid(Username))
+                {
+                    yield return new ValidationResult("Formato de e-mail inválido", new[] { nameof(Username) });
+                }
+            }
+        }
     }
 }
