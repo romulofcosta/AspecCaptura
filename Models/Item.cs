@@ -35,8 +35,8 @@ namespace pwa_camera_poc_blazor.Models
         // URLs remotas do S3 após sincronização
         public List<string> RemoteUrls { get; set; } = new();
 
-        // Propriedade auxiliar para capa (prioriza local se não sincronizado, ou remota se disponível)
-        public string? CoverImage => RemoteUrls.Any() ? RemoteUrls.FirstOrDefault() : Photos.FirstOrDefault();
+        // Propriedade auxiliar para capa (prioriza local para garantir exibição, ou remota se não houver local)
+        public string? CoverImage => Photos.Any() ? Photos.FirstOrDefault() : RemoteUrls.FirstOrDefault();
 
         // Extra property for 'EntityId' migration support?
         // public int? EntityId { get; set; }
