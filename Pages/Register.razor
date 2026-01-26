@@ -85,14 +85,15 @@
                     <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">
                         Estado
                     </MudText>
-                    <MudSelect T="string" Value="@selectedStateId" ValueChanged="OnStateChanged"
+                    <MudSelect T="string" @bind-Value="SelectedStateId"
                                Variant="Variant.Outlined" Adornment="Adornment.Start"
                                AdornmentIcon="@Icons.Material.Filled.Public"
+                               AnchorOrigin="Origin.BottomCenter"
                                FullWidth="true" Class="mb-2" Placeholder="Selecione o estado"
                                Disabled="@(isLoading || !statesLoaded)">
                         @if (!statesLoaded)
                         {
-                            <MudSelectItem Value="@selectedStateId">Carregando estados...</MudSelectItem>
+                            <MudSelectItem Value="@string.Empty">Carregando estados...</MudSelectItem>
                         }
                         else
                         {
@@ -108,12 +109,13 @@
                     <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">
                         Município
                     </MudText>
-                    <MudSelect T="int" Value="@selectedCityId" ValueChanged="OnCityChanged"
+                    <MudSelect T="int" @bind-Value="SelectedCityId"
                                Variant="Variant.Outlined" Adornment="Adornment.Start"
                                AdornmentIcon="@Icons.Material.Filled.LocationCity"
+                               AnchorOrigin="Origin.BottomCenter"
                                FullWidth="true" Class="mb-2" Placeholder="Selecione o município"
-                               Disabled="@(isLoading || !citiesLoaded || string.IsNullOrEmpty(selectedStateId))">
-                        @if (!citiesLoaded || string.IsNullOrEmpty(selectedStateId))
+                               Disabled="@(isLoading || !citiesLoaded || string.IsNullOrEmpty(SelectedStateId))">
+                        @if (!citiesLoaded || string.IsNullOrEmpty(SelectedStateId))
                         {
                             <MudSelectItem Value="0">Selecione um estado primeiro</MudSelectItem>
                         }
@@ -127,18 +129,22 @@
                     </MudSelect>
                 </MudItem>
 
+                <!-- ... (Unit Item remains similar but uses FilteredUnits updated by property) ... -->
+                
                 <MudItem xs="12" Class="pb-2">
-                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">
+                     <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">
                         Unidades gestoras
                     </MudText>
-
-                    <div class="d-flex flex-column">
+                     
+                     <div class="d-flex flex-column">
                         <MudSelect T="int" @bind-Value="selectedUnitIdForAdd"
                                    Variant="Variant.Outlined" Adornment="Adornment.Start"
                                    AdornmentIcon="@Icons.Material.Filled.Business"
+                                   AnchorOrigin="Origin.BottomCenter"
                                    FullWidth="true" Class="mb-1" Placeholder="Selecione uma unidade"
-                                   Disabled="@(isLoading || !unitsLoaded || selectedCityId == 0)">
-                            @if (!unitsLoaded || selectedCityId == 0)
+                                   Disabled="@(isLoading || !unitsLoaded || SelectedCityId == 0)">
+                             <!-- ... options ... -->
+                            @if (!unitsLoaded || SelectedCityId == 0)
                             {
                                 <MudSelectItem Value="0">Selecione um município primeiro</MudSelectItem>
                             }
@@ -150,11 +156,12 @@
                                 }
                             }
                         </MudSelect>
-
-                        <div class="d-flex align-center mb-1">
+                        
+                        <!-- ... buttons/chips ... -->
+                                                <div class="d-flex align-center mb-1">
                             <MudButton Variant="Variant.Outlined"
                                        Color="Color.Primary"
-                                       Disabled="@(isLoading || !unitsLoaded || selectedCityId == 0)"
+                                       Disabled="@(isLoading || !unitsLoaded || SelectedCityId == 0)"
                                        OnClick="AddUnit"
                                        StartIcon="@Icons.Material.Filled.Add">
                                 Adicionar unidade
@@ -182,9 +189,10 @@
                         {
                             <MudText Typo="Typo.caption" Color="Color.Error">@unitSelectionError</MudText>
                         }
-                    </div>
+                     </div>
                 </MudItem>
-
+                
+                <!-- ... submit button ... -->
                 <MudItem xs="12" Class="pt-2">
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
                         FullWidth="true" Disabled="@isLoading" Size="Size.Large" Class="mt-2 py-3 shadow-md">
@@ -201,7 +209,7 @@
                 </MudItem>
             </MudGrid>
         </EditForm>
-
+        
         <div class="d-flex justify-center mt-6">
             <MudText Typo="Typo.body2" Class="mr-2">Já tem conta?</MudText>
             <MudLink Href="/login" Underline="Underline.Hover">Entrar</MudLink>
@@ -220,8 +228,58 @@
     private bool citiesLoaded = false;
     private bool unitsLoaded = false;
 
-    private string selectedStateId = string.Empty;
-    private int selectedCityId;
+    // Backing fields
+    private string _selectedStateId = string.Empty;
+    private int _selectedCityId;
+    
+    // Properties with logic
+    public string SelectedStateId 
+    { 
+        get => _selectedStateId; 
+        set 
+        {
+            if (_selectedStateId != value)
+            {
+                _selectedStateId = value;
+                // Logic cascading
+                _selectedCityId = 0;
+                if (!string.IsNullOrEmpty(_selectedStateId))
+                {
+                    filteredCities = cities.Where(c => c.StateId == _selectedStateId).ToList();
+                }
+                else
+                {
+                    filteredCities = new List<City>();
+                }
+                filteredUnits = new List<Unit>();
+                registerModel.UnitIds.Clear();
+                StateHasChanged(); // Force UI update
+            }
+        } 
+    }
+
+    public int SelectedCityId 
+    { 
+        get => _selectedCityId; 
+        set 
+        { 
+            if (_selectedCityId != value)
+            {
+                _selectedCityId = value;
+                if (_selectedCityId > 0)
+                {
+                    filteredUnits = units.Where(u => u.CityId == _selectedCityId).ToList();
+                }
+                else
+                {
+                    filteredUnits = new List<Unit>();
+                }
+                registerModel.UnitIds.Clear();
+                StateHasChanged();
+            }
+        }
+    }
+
     private int selectedUnitIdForAdd;
     private string? unitSelectionError;
 
@@ -244,6 +302,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+       // ... (Load data logic remains same) ...
         try
         {
             var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
@@ -259,7 +318,7 @@
             {
                 Console.WriteLine("AVISO: Nenhum estado encontrado no IndexedDB.");
                 
-                // Tenta carregar mocks APENAS se estiver vazio, para evitar UI quebrada
+                // Tenta carregar mocks APENAS se estiver vazio
                 states = new List<State> { 
                     new State { Id = "CE", Name = "Ceará" }, 
                     new State { Id = "SP", Name = "São Paulo" } 
@@ -294,33 +353,19 @@
             unitsLoaded = false;
         }
     }
-
-    private void OnStateChanged(string value)
-    {
-        selectedStateId = value;
-        selectedCityId = 0;
-        filteredCities = cities.Where(c => c.StateId == selectedStateId).ToList();
-        filteredUnits = new List<Unit>();
-        registerModel.UnitIds.Clear();
-    }
-
-    private void OnCityChanged(int value)
-    {
-        selectedCityId = value;
-        filteredUnits = units.Where(u => u.CityId == selectedCityId).ToList();
-        registerModel.UnitIds.Clear();
-    }
+    
+    // REMOVED OnStateChanged and OnCityChanged events as they are now in properties setters
 
     private void AddUnit()
     {
         unitSelectionError = null;
 
-        if (!unitsLoaded || selectedCityId == 0)
+        if (!unitsLoaded || SelectedCityId == 0) // Use Property
         {
             unitSelectionError = "Selecione um município antes de adicionar unidades.";
             return;
         }
-
+        // ... rest of AddUnit remains ...
         if (selectedUnitIdForAdd == 0)
         {
             unitSelectionError = "Selecione uma unidade gestora.";
@@ -336,18 +381,20 @@
         registerModel.UnitIds.Add(selectedUnitIdForAdd);
     }
 
+    // ... RemoveUnit ...
     private void RemoveUnit(int unitId)
     {
         unitSelectionError = null;
         registerModel.UnitIds.Remove(unitId);
     }
-
+    
+    // ... GetUnitName, HandleRegister ...
     private string GetUnitName(int unitId)
     {
         var unit = filteredUnits.FirstOrDefault(u => u.Id == unitId) ?? units.FirstOrDefault(u => u.Id == unitId);
         return unit?.Name ?? $"Unidade {unitId}";
     }
-
+    
     private async Task HandleRegister()
     {
         alertMessage = null;
@@ -361,7 +408,7 @@
             isLoading = false;
             return;
         }
-
+        
         try
         {
             await AuthService.RegisterAsync(
