@@ -7,6 +7,17 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Não Lançado]
 
+### Corrigido - 2026-01-26
+
+#### 🐛 Correções de Menu e Layout (v0.1.10)
+- **Menu Lateral (Drawer)**:
+  - Resolvido conflito de z-index onde o rodapé bloqueava o menu em dispositivos móveis.
+  - Forçado z-index do Drawer para 1300 e reduzido Footer para 100.
+  - Removida regra CSS que bloqueava interações com overlays.
+- **Interatividade**:
+  - Corrigida ordem de eventos nos botões "Sair" e "Alternar Tema" para garantir execução antes do fechamento do menu.
+  - Atualizada versão na tela de Login para `v0.1.10`.
+
 ### Adicionado - 2026-01-16
 
 #### 🔄 Integração com API BFF (Backend for Frontend)

@@ -305,10 +305,10 @@ body {
 }
 
 /* Ensure MudOverlay and modals are always above the footer */
-.mud-overlay {
+/* .mud-overlay {
     z-index: 9999 !important;
 }
 
 .mud-overlay .mud-paper {
     z-index: 10000 !important;
-}
+} */

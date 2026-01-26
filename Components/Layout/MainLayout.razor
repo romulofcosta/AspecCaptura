@@ -23,7 +23,7 @@
         <MudSpacer />
     </MudAppBar>
 
-    <MudDrawer @bind-Open="isMenuOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Variant="DrawerVariant.Responsive">
+    <MudDrawer @bind-Open="isMenuOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Variant="DrawerVariant.Responsive" Style="z-index: 10001;">
         <NavMenu OnThemeToggle="ToggleTheme" OnUnitSelected="HandleUnitSelected" OnMenuItemClick="@(() => isMenuOpen = false)" />
     </MudDrawer>
 

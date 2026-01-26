@@ -170,14 +170,14 @@
 
     private async Task ToggleTheme()
     {
-        await OnMenuItemClick.InvokeAsync();
         await OnThemeToggle.InvokeAsync();
+        await OnMenuItemClick.InvokeAsync();
     }
 
     private async Task HandleLogout()
     {
-        await OnMenuItemClick.InvokeAsync();
         await AuthService.LogoutAsync();
+        await OnMenuItemClick.InvokeAsync();
         Navigation.NavigateTo("/login");
     }
 
