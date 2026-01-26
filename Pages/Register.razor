@@ -81,84 +81,92 @@
                         FullWidth="true" Class="mb-2" />
                 </MudItem>
 
+                <!-- ESTADO NATIVE SELECT -->
                 <MudItem xs="12" Class="pb-2">
                     <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">
                         Estado
                     </MudText>
-                    <MudSelect T="string" @bind-Value="SelectedStateId"
-                               Variant="Variant.Outlined" Adornment="Adornment.Start"
-                               AdornmentIcon="@Icons.Material.Filled.Public"
-                               AnchorOrigin="Origin.BottomCenter"
-                               FullWidth="true" Class="mb-2" Placeholder="Selecione o estado"
-                               Disabled="@(isLoading || !statesLoaded)">
-                        @if (!statesLoaded)
-                        {
-                            <MudSelectItem Value="@string.Empty">Carregando estados...</MudSelectItem>
-                        }
-                        else
-                        {
-                            @foreach (var state in states)
-                            {
-                                <MudSelectItem Value="@state.Id">@state.Name</MudSelectItem>
-                            }
-                        }
-                    </MudSelect>
+                    <div class="mud-input-control mud-input-input-control">
+                        <div class="mud-input-control-input-container">
+                            <div class="mud-input mud-input-outlined" style="position: relative;">
+                                <select @bind="SelectedStateId" class="mud-input-slot mud-input-root mud-input-root-outlined" 
+                                        style="height: 56px; padding: 10px 14px; width: 100%; -webkit-appearance: none; appearance: none; background: transparent; z-index: 10; border: none; outline: none; font-size: 1rem; color: var(--mud-palette-text-primary);">
+                                    <option value="">Selecione o estado</option>
+                                    @if (statesLoaded)
+                                    {
+                                        @foreach (var state in states)
+                                        {
+                                            <option value="@state.Id">@state.Name</option>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <option disabled>Carregando...</option>
+                                    }
+                                </select>
+                                <div class="mud-input-outlined-border"></div>
+                                <div style="position: absolute; right: 14px; top: 16px; pointer-events: none;">
+                                    <MudIcon Icon="@Icons.Material.Filled.ArrowDropDown" Color="Color.Secondary" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </MudItem>
 
+                <!-- CIDADE NATIVE SELECT -->
                 <MudItem xs="12" Class="pb-2">
                     <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">
                         Município
                     </MudText>
-                    <MudSelect T="int" @bind-Value="SelectedCityId"
-                               Variant="Variant.Outlined" Adornment="Adornment.Start"
-                               AdornmentIcon="@Icons.Material.Filled.LocationCity"
-                               AnchorOrigin="Origin.BottomCenter"
-                               FullWidth="true" Class="mb-2" Placeholder="Selecione o município"
-                               Disabled="@(isLoading || !citiesLoaded || string.IsNullOrEmpty(SelectedStateId))">
-                        @if (!citiesLoaded || string.IsNullOrEmpty(SelectedStateId))
-                        {
-                            <MudSelectItem Value="0">Selecione um estado primeiro</MudSelectItem>
-                        }
-                        else
-                        {
-                            @foreach (var city in filteredCities)
-                            {
-                                <MudSelectItem Value="@city.Id">@city.Name</MudSelectItem>
-                            }
-                        }
-                    </MudSelect>
+                     <div class="mud-input-control mud-input-input-control">
+                        <div class="mud-input-control-input-container">
+                            <div class="mud-input mud-input-outlined" style="position: relative;">
+                                <select @bind="SelectedCityId" class="mud-input-slot mud-input-root mud-input-root-outlined" 
+                                        style="height: 56px; padding: 10px 14px; width: 100%; -webkit-appearance: none; appearance: none; background: transparent; z-index: 10; border: none; outline: none; font-size: 1rem; color: var(--mud-palette-text-primary);"
+                                        disabled="@(isLoading || !citiesLoaded || string.IsNullOrEmpty(SelectedStateId))">
+                                    <option value="0">@(string.IsNullOrEmpty(SelectedStateId) ? "Selecione um estado primeiro" : "Selecione o município")</option>
+                                    @foreach (var city in filteredCities)
+                                    {
+                                        <option value="@city.Id">@city.Name</option>
+                                    }
+                                </select>
+                                <div class="mud-input-outlined-border"></div>
+                                <div style="position: absolute; right: 14px; top: 16px; pointer-events: none;">
+                                    <MudIcon Icon="@Icons.Material.Filled.ArrowDropDown" Color="Color.Secondary" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </MudItem>
 
-                <!-- ... (Unit Item remains similar but uses FilteredUnits updated by property) ... -->
-                
+                <!-- UNIDADE NATIVE SELECT -->
                 <MudItem xs="12" Class="pb-2">
                      <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">
                         Unidades gestoras
                     </MudText>
                      
                      <div class="d-flex flex-column">
-                        <MudSelect T="int" @bind-Value="selectedUnitIdForAdd"
-                                   Variant="Variant.Outlined" Adornment="Adornment.Start"
-                                   AdornmentIcon="@Icons.Material.Filled.Business"
-                                   AnchorOrigin="Origin.BottomCenter"
-                                   FullWidth="true" Class="mb-1" Placeholder="Selecione uma unidade"
-                                   Disabled="@(isLoading || !unitsLoaded || SelectedCityId == 0)">
-                             <!-- ... options ... -->
-                            @if (!unitsLoaded || SelectedCityId == 0)
-                            {
-                                <MudSelectItem Value="0">Selecione um município primeiro</MudSelectItem>
-                            }
-                            else
-                            {
-                                @foreach (var unit in filteredUnits)
-                                {
-                                    <MudSelectItem Value="@unit.Id">@unit.Name</MudSelectItem>
-                                }
-                            }
-                        </MudSelect>
+                        <div class="mud-input-control mud-input-input-control mb-1">
+                            <div class="mud-input-control-input-container">
+                                <div class="mud-input mud-input-outlined" style="position: relative;">
+                                    <select @bind="selectedUnitIdForAdd" class="mud-input-slot mud-input-root mud-input-root-outlined" 
+                                            style="height: 56px; padding: 10px 14px; width: 100%; -webkit-appearance: none; appearance: none; background: transparent; z-index: 10; border: none; outline: none; font-size: 1rem; color: var(--mud-palette-text-primary);"
+                                            disabled="@(isLoading || !unitsLoaded || SelectedCityId == 0)">
+                                        <option value="0">@(SelectedCityId == 0 ? "Selecione um município primeiro" : "Selecione uma unidade")</option>
+                                        @foreach (var unit in filteredUnits)
+                                        {
+                                            <option value="@unit.Id">@unit.Name</option>
+                                        }
+                                    </select>
+                                    <div class="mud-input-outlined-border"></div>
+                                    <div style="position: absolute; right: 14px; top: 16px; pointer-events: none;">
+                                        <MudIcon Icon="@Icons.Material.Filled.ArrowDropDown" Color="Color.Secondary" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         
-                        <!-- ... buttons/chips ... -->
-                                                <div class="d-flex align-center mb-1">
+                        <div class="d-flex align-center mb-1">
                             <MudButton Variant="Variant.Outlined"
                                        Color="Color.Primary"
                                        Disabled="@(isLoading || !unitsLoaded || SelectedCityId == 0)"
@@ -191,8 +199,7 @@
                         }
                      </div>
                 </MudItem>
-                
-                <!-- ... submit button ... -->
+
                 <MudItem xs="12" Class="pt-2">
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
                         FullWidth="true" Disabled="@isLoading" Size="Size.Large" Class="mt-2 py-3 shadow-md">
@@ -209,7 +216,7 @@
                 </MudItem>
             </MudGrid>
         </EditForm>
-        
+
         <div class="d-flex justify-center mt-6">
             <MudText Typo="Typo.body2" Class="mr-2">Já tem conta?</MudText>
             <MudLink Href="/login" Underline="Underline.Hover">Entrar</MudLink>
@@ -302,7 +309,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-       // ... (Load data logic remains same) ...
         try
         {
             var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
@@ -317,7 +323,6 @@
             if (states == null || !states.Any()) 
             {
                 Console.WriteLine("AVISO: Nenhum estado encontrado no IndexedDB.");
-                
                 // Tenta carregar mocks APENAS se estiver vazio
                 states = new List<State> { 
                     new State { Id = "CE", Name = "Ceará" }, 
@@ -353,19 +358,17 @@
             unitsLoaded = false;
         }
     }
-    
-    // REMOVED OnStateChanged and OnCityChanged events as they are now in properties setters
 
     private void AddUnit()
     {
         unitSelectionError = null;
 
-        if (!unitsLoaded || SelectedCityId == 0) // Use Property
+        if (!unitsLoaded || SelectedCityId == 0)
         {
             unitSelectionError = "Selecione um município antes de adicionar unidades.";
             return;
         }
-        // ... rest of AddUnit remains ...
+
         if (selectedUnitIdForAdd == 0)
         {
             unitSelectionError = "Selecione uma unidade gestora.";
@@ -381,20 +384,18 @@
         registerModel.UnitIds.Add(selectedUnitIdForAdd);
     }
 
-    // ... RemoveUnit ...
     private void RemoveUnit(int unitId)
     {
         unitSelectionError = null;
         registerModel.UnitIds.Remove(unitId);
     }
-    
-    // ... GetUnitName, HandleRegister ...
+
     private string GetUnitName(int unitId)
     {
         var unit = filteredUnits.FirstOrDefault(u => u.Id == unitId) ?? units.FirstOrDefault(u => u.Id == unitId);
         return unit?.Name ?? $"Unidade {unitId}";
     }
-    
+
     private async Task HandleRegister()
     {
         alertMessage = null;
@@ -408,7 +409,7 @@
             isLoading = false;
             return;
         }
-        
+
         try
         {
             await AuthService.RegisterAsync(
