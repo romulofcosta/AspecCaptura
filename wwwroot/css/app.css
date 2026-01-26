@@ -4,7 +4,8 @@
 html,
 body {
     height: 100%;
-    /* MudLayout handles scrolling */
+    overflow: hidden;
+    /* Prevent external scroll */
     font-family: 'Roboto', sans-serif;
     scroll-behavior: smooth;
 }
@@ -284,4 +285,30 @@ body {
 
 .full-screen-center {
     height: 100vh;
+}
+
+/* Bottom Navigation Bar Spacing */
+/* The footer has a fixed height of 64px, so we need to account for it */
+.safe-bottom-padding {
+    padding-bottom: 80px !important;
+    /* 64px footer + 16px extra space */
+}
+
+.safe-bottom-margin {
+    margin-bottom: 80px !important;
+}
+
+/* For modals and overlays that should not extend behind the bottom nav */
+.modal-safe-height {
+    max-height: calc(100vh - 100px) !important;
+    overflow-y: auto !important;
+}
+
+/* Ensure MudOverlay and modals are always above the footer */
+.mud-overlay {
+    z-index: 9999 !important;
+}
+
+.mud-overlay .mud-paper {
+    z-index: 10000 !important;
 }

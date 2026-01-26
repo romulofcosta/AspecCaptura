@@ -13,86 +13,92 @@
 
 @if (isFormVisible)
 {
-    <MudContainer MaxWidth="MaxWidth.Medium" Class="pa-4" Style="height: 100vh; overflow-y: auto;">
-        <MudCard Elevation="4">
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Adicionar Informações</MudText>
-                </CardHeaderContent>
-                <CardHeaderActions>
-                    <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Default" OnClick="CancelForm" />
-                </CardHeaderActions>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudPaper Class="mb-4 d-flex justify-center align-center grey lighten-3" Elevation="0"
-                    Style="height: 250px; overflow: hidden; position: relative;">
-                    @if (capturedPhotos.Any())
-                    {
-                        <MudImage Src="@capturedPhotos[currentPreviewIndex]" ObjectFit="ObjectFit.Cover"
-                            Style="width:100%; height:100%;" />
-                    }
-                </MudPaper>
+    <div class="d-flex flex-column" style="height: 100%; position: relative;">
+        <!-- Scrollable Content Area -->
+        <div class="flex-grow-1 overflow-y-auto pa-4" style="padding-bottom: 120px !important;">
+            <MudCard Elevation="4" Class="mb-4">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Adicionar Informações</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Default" OnClick="CancelForm" />
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudPaper Class="mb-4 d-flex justify-center align-center grey lighten-3" Elevation="0"
+                        Style="height: 250px; overflow: hidden; position: relative;">
+                        @if (capturedPhotos.Any())
+                        {
+                            <MudImage Src="@capturedPhotos[currentPreviewIndex]" ObjectFit="ObjectFit.Cover"
+                                Style="width:100%; height:100%;" />
+                        }
+                    </MudPaper>
 
-                <div class="d-flex gap-2 mb-4 overflow-x-auto">
-                    <MudIconButton Icon="@Icons.Material.Filled.AddAPhoto" Color="Color.Primary" OnClick="AddMorePhoto"
-                        Variant="Variant.Outlined" Class="pa-4" />
-                    @for (int i = 0; i < capturedPhotos.Count; i++)
-                    {
-                        int index = i;
-                        <div style="position: relative; width: 60px; height: 60px; flex-shrink: 0; cursor: pointer;"
-                        @onclick="() => currentPreviewIndex = index">
-                            <MudImage Src="@capturedPhotos[index]" ObjectFit="ObjectFit.Cover"
-                                Style="@($"width:100%; height:100%; border-radius: 4px; border: {(currentPreviewIndex == index ? "2px solid var(--mud-palette-primary)" : "none")}")" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Error"
-                                Style="position: absolute; top: -5px; right: -5px; background: white;"
-                                OnClick="@((e) => RemovePhoto(index))" />
-                        </div>
-                    }
-                </div>
+                    <div class="d-flex gap-2 mb-4 overflow-x-auto">
+                        <MudIconButton Icon="@Icons.Material.Filled.AddAPhoto" Color="Color.Primary" OnClick="AddMorePhoto"
+                            Variant="Variant.Outlined" Class="pa-4" />
+                        @for (int i = 0; i < capturedPhotos.Count; i++)
+                        {
+                            int index = i;
+                            <div style="position: relative; width: 60px; height: 60px; flex-shrink: 0; cursor: pointer;"
+                            @onclick="() => currentPreviewIndex = index">
+                                <MudImage Src="@capturedPhotos[index]" ObjectFit="ObjectFit.Cover"
+                                    Style="@($"width:100%; height:100%; border-radius: 4px; border: {(currentPreviewIndex == index ? "2px solid var(--mud-palette-primary)" : "none")}")" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Error"
+                                    Style="position: absolute; top: -5px; right: -5px; background: white;"
+                                    OnClick="@((e) => RemovePhoto(index))" />
+                            </div>
+                        }
+                    </div>
 
-                <EditForm Model="@itemModel" OnValidSubmit="HandleSave">
-                    <DataAnnotationsValidator />
-                    <MudGrid>
-                        <MudItem xs="12">
-                            <MudTextField @bind-Value="itemModel.Name" Label="Nome do Item *" Variant="Variant.Outlined"
-                                For="@(() => itemModel.Name)" />
-                        </MudItem>
-                        <MudItem xs="12">
-                            <MudTextField @bind-Value="itemModel.Code" Label="Código/ID *" Variant="Variant.Outlined"
-                                For="@(() => itemModel.Code)" />
-                        </MudItem>
-                        <MudItem xs="12">
-                            <MudSelect @bind-Value="itemModel.Category" Label="Categoria *" Variant="Variant.Outlined"
-                                AnchorOrigin="Origin.BottomCenter" For="@(() => itemModel.Category)">
-                                <MudSelectItem Value="@("Móveis")">Móveis</MudSelectItem>
-                                <MudSelectItem Value="@("Eletrônicos")">Eletrônicos</MudSelectItem>
-                                <MudSelectItem Value="@("Equipamentos")">Equipamentos</MudSelectItem>
-                                <MudSelectItem Value="@("Ferramentas")">Ferramentas</MudSelectItem>
-                                <MudSelectItem Value="@("Materiais")">Materiais</MudSelectItem>
-                                <MudSelectItem Value="@("Outros")">Outros</MudSelectItem>
-                            </MudSelect>
-                        </MudItem>
-                        <MudItem xs="12">
-                            <MudTextField @bind-Value="itemModel.Location" Label="Localização *" Variant="Variant.Outlined"
-                                For="@(() => itemModel.Location)" />
-                        </MudItem>
-                        <MudItem xs="12">
-                            <MudTextField @bind-Value="itemModel.Observations" Label="Observações"
-                                Variant="Variant.Outlined" Lines="3" For="@(() => itemModel.Observations)" />
-                        </MudItem>
-                        <MudItem xs="12" Class="d-flex justify-end gap-2 mt-4">
-                            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CancelForm">Cancelar
-                            </MudButton>
-                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
-                                Disabled="@isSaving" StartIcon="@Icons.Material.Filled.Save">
-                                @(isSaving ? "Salvando..." : "Salvar")
-                            </MudButton>
-                        </MudItem>
-                    </MudGrid>
-                </EditForm>
-            </MudCardContent>
-        </MudCard>
-    </MudContainer>
+                    <EditForm EditContext="@editContext" OnValidSubmit="HandleSave" id="camera-form">
+                        <DataAnnotationsValidator />
+                        <MudGrid>
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="itemModel.Name" Label="Nome do Item *" Variant="Variant.Outlined"
+                                    For="@(() => itemModel.Name)" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="itemModel.Code" Label="Código/ID *" Variant="Variant.Outlined"
+                                    For="@(() => itemModel.Code)" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudSelect @bind-Value="itemModel.Category" Label="Categoria *" Variant="Variant.Outlined"
+                                    AnchorOrigin="Origin.BottomCenter" For="@(() => itemModel.Category)">
+                                    <MudSelectItem Value="@("Móveis")">Móveis</MudSelectItem>
+                                    <MudSelectItem Value="@("Eletrônicos")">Eletrônicos</MudSelectItem>
+                                    <MudSelectItem Value="@("Equipamentos")">Equipamentos</MudSelectItem>
+                                    <MudSelectItem Value="@("Ferramentas")">Ferramentas</MudSelectItem>
+                                    <MudSelectItem Value="@("Materiais")">Materiais</MudSelectItem>
+                                    <MudSelectItem Value="@("Outros")">Outros</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="itemModel.Location" Label="Localização *" Variant="Variant.Outlined"
+                                    For="@(() => itemModel.Location)" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="itemModel.Observations" Label="Observações"
+                                    Variant="Variant.Outlined" Lines="3" For="@(() => itemModel.Observations)" />
+                            </MudItem>
+                            <MudItem xs="12" Class="d-flex justify-end gap-2 mt-4">
+                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CancelForm">Cancelar
+                                </MudButton>
+                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                                    Disabled="@isSaving" StartIcon="@Icons.Material.Filled.Save">
+                                    @(isSaving ? "Salvando..." : "Salvar")
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    </EditForm>
+                </MudCardContent>
+            </MudCard>
+        </div>
+
+        <!-- Fixed Action Bar at Bottom -->
+        <!-- Fixed Action Bar at Bottom Removed -->
+    </div>
 }
 else
 {
@@ -123,6 +129,7 @@ else
     private InventoryItem itemModel = new();
     private bool isSaving = false;
     private User? currentUser;
+    private EditContext? editContext;
 
     protected override async Task OnInitializedAsync()
     {
@@ -166,6 +173,10 @@ else
             capturedPhotos.Add(photoData);
             currentPreviewIndex = capturedPhotos.Count - 1;
             await CameraService.StopCameraAsync("camera-feed");
+            
+            // Initialize EditContext
+            editContext = new EditContext(itemModel);
+            
             isFormVisible = true;
         }
     }
@@ -222,7 +233,7 @@ else
     {
         Navigation.NavigateTo("/home");
     }
-
+    
     public async ValueTask DisposeAsync()
     {
         await CameraService.StopCameraAsync("camera-feed");
