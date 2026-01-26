@@ -21,8 +21,9 @@ namespace pwa_camera_poc_blazor.Services.Auth
 
         public async Task<User?> LoginAsync(string username, string password)
         {
+            var cleanUsername = username?.ToLower().Trim();
             // Default admin user for testing
-            if (username.ToLower().Trim() == "admin" && password == "admin")
+            if (cleanUsername == "admin" && password == "admin")
             {
                 var user = await _localStorage.GetItemAsync<User>("admin");
                 if (user == null)
@@ -53,7 +54,7 @@ namespace pwa_camera_poc_blazor.Services.Auth
                 return user;
             }
 
-            var user2 = await _localStorage.GetItemAsync<User>(username.ToLower().Trim());
+            var user2 = await _localStorage.GetItemAsync<User>(cleanUsername);
             if (user2 == null) return null;
 
             var inputHash = HashPassword(password);
