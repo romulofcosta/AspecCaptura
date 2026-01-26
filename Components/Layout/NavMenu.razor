@@ -33,14 +33,16 @@
     }
 
     <MudDivider Class="my-2" />
+    
+    <div class="mud-nav-link mud-ripple py-3 px-4 d-flex align-center cursor-pointer" @onclick="ToggleTheme">
+        <MudIcon Icon="@Icons.Material.Filled.BrightnessMedium" Color="Color.Default" Class="mr-3" />
+        <MudText>Alternar Tema</MudText>
+    </div>
 
-    <MudNavLink OnClick="ToggleTheme" Icon="@Icons.Material.Filled.BrightnessMedium" IconColor="Color.Default">
-        Alternar Tema
-    </MudNavLink>
-
-    <MudNavLink OnClick="HandleLogout" Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error">
-        Sair
-    </MudNavLink>
+    <div class="mud-nav-link mud-ripple py-3 px-4 d-flex align-center cursor-pointer" @onclick="HandleLogout">
+        <MudIcon Icon="@Icons.Material.Filled.Logout" Color="Color.Error" Class="mr-3" />
+        <MudText>Sair</MudText>
+    </div>
 </MudNavMenu>
 
 @code {

@@ -64,15 +64,27 @@
                                     For="@(() => itemModel.Code)" />
                             </MudItem>
                             <MudItem xs="12">
-                                <MudSelect @bind-Value="itemModel.Category" Label="Categoria *" Variant="Variant.Outlined"
-                                    AnchorOrigin="Origin.BottomCenter" For="@(() => itemModel.Category)">
-                                    <MudSelectItem Value="@("Móveis")">Móveis</MudSelectItem>
-                                    <MudSelectItem Value="@("Eletrônicos")">Eletrônicos</MudSelectItem>
-                                    <MudSelectItem Value="@("Equipamentos")">Equipamentos</MudSelectItem>
-                                    <MudSelectItem Value="@("Ferramentas")">Ferramentas</MudSelectItem>
-                                    <MudSelectItem Value="@("Materiais")">Materiais</MudSelectItem>
-                                    <MudSelectItem Value="@("Outros")">Outros</MudSelectItem>
-                                </MudSelect>
+                                <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Categoria *</MudText>
+                                <div class="mud-input-control mud-input-input-control">
+                                    <div class="mud-input-control-input-container">
+                                        <div class="mud-input mud-input-outlined" style="position: relative;">
+                                            <select @bind="itemModel.Category" class="mud-input-slot mud-input-root mud-input-root-outlined" 
+                                                    style="height: 56px; padding: 18.5px 14px; width: 100%; -webkit-appearance: none; appearance: none; background: transparent; z-index: 10; font-size: 1rem; color: var(--mud-palette-text-primary);">
+                                                <option value="">Selecione a categoria</option>
+                                                <option value="Móveis">Móveis</option>
+                                                <option value="Eletrônicos">Eletrônicos</option>
+                                                <option value="Equipamentos">Equipamentos</option>
+                                                <option value="Ferramentas">Ferramentas</option>
+                                                <option value="Materiais">Materiais</option>
+                                                <option value="Outros">Outros</option>
+                                            </select>
+                                            <div class="mud-input-outlined-border"></div>
+                                            <div style="position: absolute; right: 14px; top: 16px; pointer-events: none;">
+                                                <MudIcon Icon="@Icons.Material.Filled.ArrowDropDown" Color="Color.Secondary" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </MudItem>
                             <MudItem xs="12">
                                 <MudTextField @bind-Value="itemModel.Location" Label="Localização *" Variant="Variant.Outlined"
