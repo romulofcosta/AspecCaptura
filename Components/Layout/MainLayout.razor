@@ -27,7 +27,7 @@
         <NavMenu OnThemeToggle="ToggleTheme" OnUnitSelected="HandleUnitSelected" OnMenuItemClick="@(() => isMenuOpen = false)" />
     </MudDrawer>
 
-    <MudMainContent Class="mud-width-full" Style="display: flex; flex-direction: column;">
+    <MudMainContent Class="mud-width-full" Style="display: flex; flex-direction: column; height: calc(100vh - 64px - 64px); overflow: hidden;">
         @Body
     </MudMainContent>
 
