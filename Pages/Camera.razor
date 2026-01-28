@@ -115,17 +115,19 @@
 else
 {
     <div
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: black; z-index: 2000; display: flex; flex-direction: column;">
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: black; z-index: 2000; display: flex; flex-direction: column;">
         <video id="camera-feed" autoplay playsinline style="width: 100%; flex: 1; object-fit: cover;"></video>
 
         <MudPaper Class="d-flex justify-space-between align-center px-8 py-6"
-            Style="background: rgba(0,0,0,0.5); position: absolute; bottom: 0; left: 0; right: 0;">
+            Style="background: rgba(0,0,0,0.8); width: 100%; padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;">
             <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Surface" Size="Size.Large"
                 OnClick="CloseCamera" />
 
-            <MudIconButton Icon="@Icons.Material.Filled.Camera" Color="Color.Surface" Size="Size.Large"
-                Style="width: 80px; height: 80px; border: 4px solid white; border-radius: 50%; padding: 0;"
-                OnClick="CapturePhoto" />
+            <div class="d-flex justify-center align-center" style="flex: 1;">
+                <MudIconButton Icon="@Icons.Material.Filled.Camera" Color="Color.Surface"
+                    Style="width: 72px; height: 72px; border: 4px solid white; border-radius: 50%; padding: 0;"
+                    OnClick="CapturePhoto" />
+            </div>
 
             <MudIconButton Icon="@Icons.Material.Filled.FlipCameraIos" Color="Color.Surface" Size="Size.Large"
                 OnClick="SwitchCamera" />
