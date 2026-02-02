@@ -32,7 +32,7 @@
     </MudMainContent>
 
     <Footer ActiveTab="@activeTab" PendingSyncCount="@appState.PendingSyncCount" OnTabChanged="HandleTabChanged"
-        OnCaptureClick="HandleCaptureClick" OnExportClick="HandleExportClick" IsHidden="@appState.IsCameraActive" />
+        OnCaptureClick="HandleCaptureClick" IsHidden="@appState.IsCameraActive" />
 </MudLayout>
 
 @code {
@@ -165,7 +165,6 @@
     {
         var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri).ToLower();
         if (string.IsNullOrEmpty(relativePath) || relativePath == "home") activeTab = "home";
-        else if (relativePath == "stats") activeTab = "stats";
         else if (relativePath == "sync") activeTab = "sync";
         else activeTab = ""; 
 
@@ -221,7 +220,6 @@
     {
         activeTab = tab;
         if (tab == "home") Navigation.NavigateTo("/home");
-        else if (tab == "stats") Navigation.NavigateTo("/stats");
         else if (tab == "sync") Navigation.NavigateTo("/sync");
     }
 
@@ -230,48 +228,9 @@
         Navigation.NavigateTo("/camera?mode=photo");
     }
 
-    private async Task HandleExportClick()
-    {
-        await ExportDataAsync();
-    }
-
     private void HandleUnitSelected(int unitId)
     {
         appState.CurrentUnitId = unitId;
-    }
-
-    private async Task ExportDataAsync()
-    {
-        try
-        {
-            var items = await DbService.GetAllAsync<InventoryItem>("items");
-            var csv = GenerateCsv(items);
-            await DownloadCsv(csv, "inventory_export.csv");
-            ShowSnackbar("Dados exportados com sucesso!", "success");
-        }
-        catch (Exception ex)
-        {
-            ShowSnackbar($"Erro ao exportar dados: {ex.Message}", "error");
-        }
-    }
-
-    private string GenerateCsv(IEnumerable<InventoryItem> items)
-    {
-        var csv = new StringBuilder();
-        csv.AppendLine("ID,Nome,Código,Categoria,Localização,Observações,Data de Criação,Sincronizado,Unidade");
-
-        foreach (var item in items)
-        {
-            csv.AppendLine($"{item.Id},{item.Name},{item.Code},{item.Category},{item.Location},{item.Observations},{item.Timestamp:yyyy-MM-dd HH:mm:ss},{item.Synced},{item.UnitId}");
-        }
-
-        return csv.ToString();
-    }
-
-    private async Task DownloadCsv(string csvContent, string fileName)
-    {
-        var bytes = Encoding.UTF8.GetBytes(csvContent);
-        await JSRuntime.InvokeVoidAsync("appInterop.downloadFile", fileName, Convert.ToBase64String(bytes));
     }
 
     public void Dispose()

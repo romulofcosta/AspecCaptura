@@ -1,32 +1,33 @@
 <MudPaper Elevation="4" Class="@($"d-flex justify-space-around align-center width-100 {(IsHidden ? "d-none" : "")}")"
-    Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; height: 60px; background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05);">
-    <MudIconButton Icon="@Icons.Material.Filled.Home" 
-        Color="@(ActiveTab == "home" ? Color.Primary : Color.Default)"
-        Style="@(ActiveTab == "home" ? "opacity: 1;" : "opacity: 0.5;")"
-        OnClick='() => OnTabChanged.InvokeAsync("home")' Size="Size.Medium" />
+    Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; height: 70px; background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-top: 1px solid rgba(0,0,0,0.08); padding-bottom: env(safe-area-inset-bottom);">
     
-    <MudIconButton Icon="@Icons.Material.Filled.BarChart" 
-        Color="@(ActiveTab == "stats" ? Color.Primary : Color.Default)"
-        Style="@(ActiveTab == "stats" ? "opacity: 1;" : "opacity: 0.5;")"
-        OnClick='() => OnTabChanged.InvokeAsync("stats")' Size="Size.Medium" />
+    <div class="d-flex flex-column align-center justify-center" style="width: 80px;">
+        <MudIconButton Icon="@Icons.Material.Outlined.Home" 
+            Color="@(ActiveTab == "home" ? Color.Primary : Color.Default)"
+            Style="@(ActiveTab == "home" ? "opacity: 1;" : "opacity: 0.4;")"
+            OnClick='() => OnTabChanged.InvokeAsync("home")' Size="Size.Medium" />
+        <MudText Typo="Typo.caption" Color="@(ActiveTab == "home" ? Color.Primary : Color.Default)" 
+            Style="@(ActiveTab == "home" ? "font-weight: 600; font-size: 0.7rem; margin-top: -8px;" : "opacity: 0.4; font-size: 0.7rem; margin-top: -8px;")">Início</MudText>
+    </div>
 
-    <MudIconButton Icon="@Icons.Material.Filled.PhotoCamera" 
-        Color="Color.Primary"
-        Style="background-color: var(--mud-palette-primary-lighten); border-radius: 12px; padding: 12px;"
-        OnClick="OnCaptureClick" Size="Size.Medium" />
+    <div class="d-flex align-center justify-center" style="margin-top: -10px;">
+        <MudIconButton Icon="@Icons.Material.Filled.AddAPhoto" 
+            Color="Color.Surface"
+            Style="background-color: var(--mud-palette-primary); border-radius: 16px; padding: 16px; box-shadow: 0 4px 10px rgba(0,102,204,0.3);"
+            OnClick="OnCaptureClick" Size="Size.Large" />
+    </div>
 
-    <MudBadge Content="@PendingSyncCount" Overlap="true" Bordered="true" Color="Color.Error"
-        Visible="@(PendingSyncCount > 0)" Class="mt-1">
-        <MudIconButton Icon="@Icons.Material.Filled.Sync" 
-            Color="@(ActiveTab == "sync" ? Color.Primary : Color.Default)"
-            Style="@(ActiveTab == "sync" ? "opacity: 1;" : "opacity: 0.5;")"
-            OnClick='() => OnTabChanged.InvokeAsync("sync")' Size="Size.Medium" />
-    </MudBadge>
-
-    <MudIconButton Icon="@Icons.Material.Filled.UploadFile" 
-        Color="Color.Default"
-        Style="opacity: 0.5;"
-        OnClick="OnExportClick" Size="Size.Medium" />
+    <div class="d-flex flex-column align-center justify-center" style="width: 80px;">
+        <MudBadge Content="@PendingSyncCount" Overlap="true" Bordered="true" Color="Color.Error"
+            Visible="@(PendingSyncCount > 0)" Class="mt-1">
+            <MudIconButton Icon="@Icons.Material.Outlined.CloudSync" 
+                Color="@(ActiveTab == "sync" ? Color.Primary : Color.Default)"
+                Style="@(ActiveTab == "sync" ? "opacity: 1;" : "opacity: 0.4;")"
+                OnClick='() => OnTabChanged.InvokeAsync("sync")' Size="Size.Medium" />
+        </MudBadge>
+        <MudText Typo="Typo.caption" Color="@(ActiveTab == "sync" ? Color.Primary : Color.Default)" 
+            Style="@(ActiveTab == "sync" ? "font-weight: 600; font-size: 0.7rem; margin-top: -8px;" : "opacity: 0.4; font-size: 0.7rem; margin-top: -8px;")">Sincronizar</MudText>
+    </div>
 </MudPaper>
 
 @code {
@@ -34,6 +35,5 @@
     [Parameter] public int PendingSyncCount { get; set; } = 0;
     [Parameter] public EventCallback<string> OnTabChanged { get; set; }
     [Parameter] public EventCallback OnCaptureClick { get; set; }
-    [Parameter] public EventCallback OnExportClick { get; set; }
     [Parameter] public bool IsHidden { get; set; }
 }
