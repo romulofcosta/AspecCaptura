@@ -1,7 +1,9 @@
 @page "/camera"
 @using pwa_camera_poc_blazor.Models
 @using pwa_camera_poc_blazor.Services.Camera
+@using pwa_camera_poc_blazor.Services.Ocr
 @inject CameraService CameraService
+@inject OcrService OcrService
 @inject IIndexedDbService DbService
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
@@ -116,7 +118,32 @@ else
 {
     <div
         style="position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: black; z-index: 2000; display: flex; flex-direction: column;">
-        <video id="camera-feed" autoplay playsinline style="width: 100%; flex: 1; object-fit: cover;"></video>
+        <div style="position: relative; flex: 1; overflow: hidden;">
+            <video id="camera-feed" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+            
+            <!-- Scanner ROI Guide -->
+            <div class="scanner-guide" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 150px; border: 2px solid #00c853; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); pointer-events: none;">
+                <div style="position: absolute; top: -30px; left: 0; width: 100%; text-align: center;">
+                    <MudText Typo="Typo.caption" Style="color: #00c853; font-weight: bold; text-transform: uppercase;">Posicione a placa aqui</MudText>
+                </div>
+                <div class="scanner-line" style="position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #00c853; opacity: 0.5; animation: scan 2s infinite ease-in-out;"></div>
+            </div>
+
+            @if (isScanning)
+            {
+                <div style="position: absolute; bottom: 20px; left: 0; width: 100%; text-align: center;">
+                    <MudChip T="string" Color="Color.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Search">Buscando patrimônio...</MudChip>
+                </div>
+            }
+        </div>
+
+        <style>
+            @@keyframes scan {
+                0% { top: 0; }
+                50% { top: 100%; }
+                100% { top: 0; }
+            }
+        </style>
 
         <MudPaper Class="d-flex justify-space-between align-center px-8 py-6"
             Style="background: rgba(0,0,0,0.8); width: 100%; padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;">
@@ -144,11 +171,14 @@ else
     private bool isSaving = false;
     private User? currentUser;
     private EditContext? editContext;
+    private bool isScanning = false;
+    private System.Threading.CancellationTokenSource? scanCts;
 
     protected override async Task OnInitializedAsync()
     {
         appState.IsCameraActive = true;
         currentUser = await AuthService.GetCurrentUserAsync();
+        await OcrService.InitializeAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -156,7 +186,87 @@ else
         if (firstRender && !isFormVisible)
         {
             await StartCamera();
+            StartScanning();
         }
+    }
+
+    private void StartScanning()
+    {
+        if (isScanning) return;
+        isScanning = true;
+        scanCts = new System.Threading.CancellationTokenSource();
+        _ = ScanLoop(scanCts.Token);
+    }
+
+    private async Task ScanLoop(System.Threading.CancellationToken token)
+    {
+        while (!token.IsCancellationRequested && !isFormVisible)
+        {
+            try
+            {
+                // ROI centralizada (80% largura, 150px altura aproximada em percentual)
+                var roi = new { x = 0.1, y = 0.4, width = 0.8, height = 0.2 };
+                var frame = await CameraService.CaptureFrameForOcrAsync("camera-feed", roi);
+                
+                if (!string.IsNullOrEmpty(frame))
+                {
+                    var result = await OcrService.RecognizeAsync(frame);
+                    if (result.Confidence > 60)
+                    {
+                        var cleanedCode = NormalizeCode(result.Text);
+                        if (!string.IsNullOrEmpty(cleanedCode))
+                        {
+                            await ProcessFoundCode(cleanedCode);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro no ScanLoop: {ex.Message}");
+            }
+            
+            await Task.Delay(1500, token); // Intervalo entre leituras
+        }
+    }
+
+    private string NormalizeCode(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return string.Empty;
+        // Regex para extrair apenas números e caracteres permitidos
+        var match = System.Text.RegularExpressions.Regex.Match(text, @"[0-9A-Z\-\.\/]{4,}");
+        return match.Success ? match.Value : string.Empty;
+    }
+
+    private async Task ProcessFoundCode(string code)
+    {
+        // Busca no IndexedDB
+        var items = await DbService.GetAllAsync<InventoryItem>("items");
+        var existingItem = items.FirstOrDefault(i => i.Code == code);
+
+        if (existingItem != null)
+        {
+            itemModel = existingItem;
+            ToastService.ShowSuccess($"Patrimônio {code} encontrado!");
+        }
+        else
+        {
+            itemModel.Code = code;
+            ToastService.ShowInfo($"Novo patrimônio detectado: {code}");
+        }
+
+        await StopScanningAndShowForm();
+    }
+
+    private async Task StopScanningAndShowForm()
+    {
+        isScanning = false;
+        scanCts?.Cancel();
+        await CameraService.StopCameraAsync("camera-feed");
+        
+        editContext = new EditContext(itemModel);
+        isFormVisible = true;
+        StateHasChanged();
     }
 
     private async Task StartCamera()
@@ -250,6 +360,7 @@ else
     
     public async ValueTask DisposeAsync()
     {
+        scanCts?.Cancel();
         await CameraService.StopCameraAsync("camera-feed");
         appState.IsCameraActive = false;
     }

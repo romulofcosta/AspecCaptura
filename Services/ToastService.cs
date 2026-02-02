@@ -13,5 +13,6 @@ namespace pwa_camera_poc_blazor.Services
 
         public void ShowSuccess(string message) => Show(message, "success");
         public void ShowError(string message) => Show(message, "error");
+        public void ShowInfo(string message) => Show(message, "info");
     }
 }

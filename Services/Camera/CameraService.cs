@@ -22,6 +22,11 @@ namespace pwa_camera_poc_blazor.Services.Camera
             return await _jsRuntime.InvokeAsync<string>("cameraInterop.takePhoto", videoElementId);
         }
 
+        public async Task<string> CaptureFrameForOcrAsync(string videoElementId, object roi)
+        {
+            return await _jsRuntime.InvokeAsync<string>("cameraInterop.captureFrameForOcr", videoElementId, roi);
+        }
+
         public async Task StopCameraAsync(string videoElementId)
         {
             await _jsRuntime.InvokeVoidAsync("cameraInterop.stopCamera", videoElementId);

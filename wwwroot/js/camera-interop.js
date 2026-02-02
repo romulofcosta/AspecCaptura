@@ -39,6 +39,44 @@ window.cameraInterop = {
         canvas.getContext('2d').drawImage(video, 0, 0);
         return canvas.toDataURL('image/jpeg', 0.9);
     },
+    captureFrameForOcr: (videoElementId, roi) => {
+        const video = document.getElementById(videoElementId);
+        if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) return null;
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+        // Se ROI não for fornecido, usa o vídeo inteiro
+        const sourceX = roi ? roi.x * video.videoWidth : 0;
+        const sourceY = roi ? roi.y * video.videoHeight : 0;
+        const sourceWidth = roi ? roi.width * video.videoWidth : video.videoWidth;
+        const sourceHeight = roi ? roi.height * video.videoHeight : video.videoHeight;
+
+        canvas.width = sourceWidth;
+        canvas.height = sourceHeight;
+
+        ctx.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, sourceWidth, sourceHeight);
+
+        // Pipeline de Processamento (Grayscale + Thresholding)
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+            // Grayscale (Luminance)
+            const avg = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+            
+            // Thresholding Simples (Binarização)
+            // Ideal para placas metálicas com fundo reflexivo
+            const val = avg > 128 ? 255 : 0;
+            
+            data[i] = val;     // R
+            data[i + 1] = val; // G
+            data[i + 2] = val; // B
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+        return canvas.toDataURL('image/png');
+    },
     stopCamera: (videoElementId) => {
         const video = document.getElementById(videoElementId);
         if (video && video.srcObject) {
