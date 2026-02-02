@@ -146,9 +146,11 @@ else
         style="position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: black; z-index: 2000; display: flex; flex-direction: column;">
         
         <!-- Header for Scanning -->
-         <div class="d-flex align-center pa-4" style="background: rgba(0,0,0,0.8); z-index: 2001;">
-             <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Surface" OnClick="CloseCamera" />
-             <MudText Typo="Typo.h6" Color="Color.Surface" Class="ml-2">@(mode == "photo" ? "Capturar Foto do Item" : "Escanear Placa")</MudText>
+         <div class="d-flex align-center pa-4" style="background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); z-index: 2001; position: absolute; top: 0; left: 0; right: 0; height: 80px;">
+             <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Surface" 
+                Style="background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2);"
+                OnClick="CloseCamera" />
+             <MudText Typo="Typo.h6" Color="Color.Surface" Class="ml-4 font-weight-bold" Style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">@(mode == "photo" ? "Capturar Foto" : "Escanear Placa")</MudText>
          </div>
 
          <div style="position: relative; flex: 1; overflow: hidden;">
@@ -185,24 +187,24 @@ else
             }
         </style>
 
-        <MudPaper Class="d-flex justify-space-between align-center px-8 py-6"
-            Style="background: rgba(0,0,0,0.8); width: 100%; padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;">
-            <div style="width: 48px;"></div> <!-- Placeholder to balance the layout -->
-
-            <div class="d-flex justify-center align-center" style="flex: 1;">
+        <MudPaper Class="d-flex justify-center align-center"
+            Style="background: rgba(0,0,0,0.85); width: 100%; height: 160px; padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
+            <div class="d-flex justify-center align-center" style="width: 100%;">
                 @if (mode == "photo")
                 {
-                    <MudIconButton Icon="@Icons.Material.Filled.Camera" Color="Color.Surface"
-                        Style="width: 72px; height: 72px; border: 4px solid white; border-radius: 50%; padding: 0;"
-                        OnClick="CapturePhoto" />
+                    <div style="border: 4px solid white; border-radius: 50%; padding: 4px; box-shadow: 0 0 15px rgba(0,0,0,0.5);">
+                        <MudIconButton Icon="@Icons.Material.Filled.Camera" Color="Color.Surface"
+                            Style="width: 76px; height: 76px; background-color: white; color: black !important; border: 3px solid #000; border-radius: 50%;"
+                            OnClick="CapturePhoto" />
+                    </div>
                 }
                 else
                 {
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" 
-                        Style="width: 80%; height: 56px; border-radius: 28px; font-weight: bold; font-size: 1.1rem;"
+                        Style="width: 85%; height: 60px; border-radius: 30px; font-weight: 800; font-size: 1.2rem; border: 2.5px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.4);"
                         StartIcon="@Icons.Material.Filled.QrCodeScanner"
                         OnClick="ManualScanTrigger">
-                        ESCANEAR PLACA
+                        ESCANEAR AGORA
                     </MudButton>
                 }
             </div>
