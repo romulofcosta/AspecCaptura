@@ -146,11 +146,11 @@ else
         style="position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: black; z-index: 2000; display: flex; flex-direction: column;">
         
         <!-- Header for Scanning -->
-         <div class="d-flex align-center pa-4" style="background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); z-index: 2001; position: absolute; top: 0; left: 0; right: 0; height: 80px;">
+         <div class="d-flex align-center pa-4" style="background: linear-gradient(to bottom, #01315c, transparent); z-index: 2001; position: absolute; top: 0; left: 0; right: 0; height: 100px;">
              <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Surface" 
-                Style="background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2);"
+                Style="background-color: rgba(255,255,255,0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3);"
                 OnClick="CloseCamera" />
-             <MudText Typo="Typo.h6" Color="Color.Surface" Class="ml-4 font-weight-bold" Style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">@(mode == "photo" ? "Capturar Foto" : "Escanear Placa")</MudText>
+             <MudText Typo="Typo.h5" Color="Color.Surface" Class="ml-4 font-weight-black" Style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">@(mode == "photo" ? "FOTO DO ITEM" : "ESCANEAR AGORA")</MudText>
          </div>
 
          <div style="position: relative; flex: 1; overflow: hidden;">
@@ -192,16 +192,16 @@ else
             <div class="d-flex justify-center align-center" style="width: 100%;">
                 @if (mode == "photo")
                 {
-                    <div style="border: 4px solid white; border-radius: 50%; padding: 4px; box-shadow: 0 0 15px rgba(0,0,0,0.5);">
+                    <div style="border: 5px solid white; border-radius: 50%; padding: 6px; box-shadow: 0 0 25px rgba(1,49,92,0.6);">
                         <MudIconButton Icon="@Icons.Material.Filled.Camera" Color="Color.Surface"
-                            Style="width: 76px; height: 76px; background-color: white; color: black !important; border: 3px solid #000; border-radius: 50%;"
+                            Style="width: 84px; height: 84px; background-color: #01315c; color: white !important; border: 3px solid #fff; border-radius: 50%;"
                             OnClick="CapturePhoto" />
                     </div>
                 }
                 else
                 {
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" 
-                        Style="width: 85%; height: 60px; border-radius: 30px; font-weight: 800; font-size: 1.2rem; border: 2.5px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.4);"
+                        Style="width: 90%; height: 72px; border-radius: 36px; font-weight: 900; font-size: 1.4rem; border: 2.5px solid rgba(255,255,255,0.2); box-shadow: 0 6px 15px rgba(0,0,0,0.5);"
                         StartIcon="@Icons.Material.Filled.QrCodeScanner"
                         OnClick="ManualScanTrigger">
                         ESCANEAR AGORA
