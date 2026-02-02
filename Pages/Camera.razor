@@ -120,6 +120,13 @@ else
 {
     <div
         style="position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: black; z-index: 2000; display: flex; flex-direction: column;">
+        
+        <!-- Header for Scanning -->
+        <div class="d-flex align-center pa-4" style="background: rgba(0,0,0,0.8); z-index: 2001;">
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Surface" OnClick="CloseCamera" />
+            <MudText Typo="Typo.h6" Color="Color.Surface" Class="ml-2">Escanear Placa</MudText>
+        </div>
+
         <div style="position: relative; flex: 1; overflow: hidden;">
             <video id="camera-feed" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
             
@@ -153,8 +160,7 @@ else
 
         <MudPaper Class="d-flex justify-space-between align-center px-8 py-6"
             Style="background: rgba(0,0,0,0.8); width: 100%; padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;">
-            <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Surface" Size="Size.Large"
-                OnClick="CloseCamera" />
+            <div style="width: 48px;"></div> <!-- Placeholder to balance the layout -->
 
             <div class="d-flex justify-center align-center" style="flex: 1;">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" 
@@ -171,18 +177,17 @@ else
     </div>
 }
 
-<MudDialog @bind-IsVisible="isPhotoModalOpen" Options="dialogOptions">
-    <TitleContent>
-        <MudText Typo="Typo.h6">Adicionar Fotos</MudText>
-    </TitleContent>
-    <DialogContent>
-        <div class="d-flex flex-column gap-4 pa-4">
+<MudOverlay @bind-Visible="isPhotoModalOpen" DarkBackground="true" ZIndex="2500" AutoClose="true">
+    <MudPaper Class="pa-6 rounded-lg" Style="width: 320px; max-width: 90vw;">
+        <MudText Typo="Typo.h6" Class="mb-4">Adicionar Fotos</MudText>
+        
+        <div class="d-flex flex-column gap-4">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Camera"
                 FullWidth="true" OnClick="TakePhotoFromModal" Style="height: 56px;">
                 Tirar Foto
             </MudButton>
             
-            <div style="position: relative;">
+            <div style="position: relative; width: 100%;">
                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileUpload"
                     FullWidth="true" Style="height: 56px;">
                     Fazer Upload
@@ -190,12 +195,13 @@ else
                 <InputFile OnChange="HandleFileUpload" 
                     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" />
             </div>
+
+            <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="ClosePhotoModal" FullWidth="true" Class="mt-2">
+                Cancelar
+            </MudButton>
         </div>
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="ClosePhotoModal">Fechar</MudButton>
-    </DialogActions>
-</MudDialog>
+    </MudPaper>
+</MudOverlay>
 
 @if (isCameraInModalActive)
 {
@@ -212,6 +218,7 @@ else
 }
 
 @code {
+    [Parameter, SupplyParameterFromQuery] public string? mode { get; set; }
     private bool isFormVisible = false;
     private bool useFrontCamera = false;
     private List<string> capturedPhotos = new();
@@ -229,13 +236,18 @@ else
     private bool isManualScanTriggered = false;
     private bool isPhotoModalOpen = false;
     private bool isCameraInModalActive = false;
-    private DialogOptions dialogOptions = new() { MaxWidth = MaxWidth.Small, FullWidth = true };
 
     protected override async Task OnInitializedAsync()
     {
         appState.IsCameraActive = true;
         currentUser = await AuthService.GetCurrentUserAsync();
         await OcrService.InitializeAsync();
+
+        if (mode == "manual")
+        {
+            isFormVisible = true;
+            editContext = new EditContext(itemModel);
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

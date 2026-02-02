@@ -32,12 +32,39 @@
     </MudMainContent>
 
     <Footer ActiveTab="@activeTab" PendingSyncCount="@appState.PendingSyncCount" OnTabChanged="HandleTabChanged"
-        OnCaptureClick="HandleCaptureClick" OnExportClick="HandleExportClick" IsHidden="@appState.IsCameraActive" />
+        OnCaptureClick="OpenCaptureOptions" OnExportClick="HandleExportClick" IsHidden="@appState.IsCameraActive" />
 </MudLayout>
+
+<MudOverlay @bind-Visible="showCaptureOptions" DarkBackground="true" AutoClose="true" ZIndex="1100">
+    <MudPaper Class="pa-6 rounded-t-xl" Style="position: fixed; bottom: 0; left: 0; right: 0; max-height: 40vh;">
+        <div class="d-flex justify-space-between align-center mb-6">
+            <MudText Typo="Typo.h6">O que deseja fazer?</MudText>
+            <MudIconButton Icon="@Icons.Material.Filled.Close" OnClick="@(() => showCaptureOptions = false)" />
+        </div>
+        
+        <MudGrid Spacing="3">
+            <MudItem xs="6">
+                <MudPaper Elevation="4" Class="pa-4 d-flex flex-column align-center justify-center rounded-lg logo-hover" 
+                    @onclick="StartScanFlow" Style="cursor: pointer; height: 120px; background-color: var(--mud-palette-primary); color: white;">
+                    <MudIcon Icon="@Icons.Material.Filled.QrCodeScanner" Size="Size.Large" Class="mb-2" />
+                    <MudText Typo="Typo.button" Align="Align.Center">Escanear Placa</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6">
+                <MudPaper Elevation="4" Class="pa-4 d-flex flex-column align-center justify-center rounded-lg logo-hover" 
+                    @onclick="StartManualFlow" Style="cursor: pointer; height: 120px; border: 2px solid var(--mud-palette-primary);">
+                    <MudIcon Icon="@Icons.Material.Filled.EditNote" Size="Size.Large" Color="Color.Primary" Class="mb-2" />
+                    <MudText Typo="Typo.button" Align="Align.Center" Color="Color.Primary">Novo Item Manual</MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+</MudOverlay>
 
 @code {
     private bool isMenuOpen = false;
     private string activeTab = "home";
+    private bool showCaptureOptions = false;
 
     // ASPEC Identity Theme Configuration
     private MudTheme currentTheme = new MudTheme()
@@ -225,9 +252,26 @@
         else if (tab == "sync") Navigation.NavigateTo("/sync");
     }
 
+    private void OpenCaptureOptions()
+    {
+        showCaptureOptions = true;
+    }
+
+    private void StartScanFlow()
+    {
+        showCaptureOptions = false;
+        Navigation.NavigateTo("/camera");
+    }
+
+    private void StartManualFlow()
+    {
+        showCaptureOptions = false;
+        Navigation.NavigateTo("/camera?mode=manual");
+    }
+
     private void HandleCaptureClick()
     {
-        Navigation.NavigateTo("/camera");
+        OpenCaptureOptions();
     }
 
     private async Task HandleExportClick()

@@ -22,6 +22,8 @@ namespace pwa_camera_poc_blazor.Services.Auth
         public async Task<User?> LoginAsync(string username, string password)
         {
             var cleanUsername = username?.ToLower().Trim();
+            if (string.IsNullOrEmpty(cleanUsername)) return null;
+
             // Default admin user for testing
             if (cleanUsername == "admin" && password == "admin")
             {
