@@ -4,9 +4,6 @@
         OnClick='() => OnTabChanged.InvokeAsync("home")' Size="Size.Large" />
     <MudIconButton Icon="@Icons.Material.Filled.BarChart" Color="@(ActiveTab == "stats" ? Color.Primary : Color.Default)"
         OnClick='() => OnTabChanged.InvokeAsync("stats")' Size="Size.Large" />
-    
-    <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OnCaptureClick" 
-        Style="margin-top: -40px; width: 64px; height: 64px; border: 4px solid white;" />
 
     <MudBadge Content="@PendingSyncCount" Overlap="true" Bordered="true" Color="Color.Error"
         Visible="@(PendingSyncCount > 0)">

@@ -15,6 +15,26 @@
 
 <MudContainer id="home-container" MaxWidth="MaxWidth.Large" Class="mt-4 pb-20" Style="overflow-y: auto; height: 100%;">
     <MudGrid Spacing="2">
+        <!-- Quick Actions -->
+        <MudItem xs="12">
+            <MudGrid Spacing="2">
+                <MudItem xs="6">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" 
+                        StartIcon="@Icons.Material.Filled.QrCodeScanner" OnClick="@(() => Navigation.NavigateTo("/camera"))"
+                        Style="height: 64px; font-weight: bold; border-radius: 12px; font-size: 0.9rem;">
+                        ESCANEAR PLACA
+                    </MudButton>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true" 
+                        StartIcon="@Icons.Material.Filled.EditNote" OnClick="@(() => Navigation.NavigateTo("/camera?mode=manual"))"
+                        Style="height: 64px; font-weight: bold; border-radius: 12px; background-color: white; font-size: 0.9rem;">
+                        NOVO MANUAL
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+
         <!-- Search and Filter Bar -->
         <MudItem xs="12">
             <MudPaper Elevation="0" Class="d-flex gap-2 align-center pa-2 mud-background-gray rounded-lg">
@@ -90,8 +110,8 @@
                 </div>
                 <MudText Typo="Typo.h5" Class="font-weight-bold" Align="Align.Center">Nada por aqui ainda</MudText>
                 <MudText Typo="Typo.body1" Color="Color.Secondary" Align="Align.Center" Class="mb-8">Tente ajustar seus filtros ou comece a cadastrar novos patrimônios.</MudText>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" 
-                    OnClick="OpenCaptureOptions" Size="Size.Large" Style="border-radius: 24px; padding-left: 32px; padding-right: 32px;">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.QrCodeScanner" 
+                    OnClick="@(() => Navigation.NavigateTo("/camera"))" Size="Size.Large" Style="border-radius: 24px; padding-left: 32px; padding-right: 32px;">
                     Começar Inventário
                 </MudButton>
             </MudItem>
