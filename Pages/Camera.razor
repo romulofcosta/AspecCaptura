@@ -150,7 +150,7 @@ else
              <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Surface" 
                 Style="background-color: rgba(255,255,255,0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3);"
                 OnClick="CloseCamera" />
-             <MudText Typo="Typo.h5" Color="Color.Surface" Class="ml-4 font-weight-black" Style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">@(mode == "photo" ? "FOTO DO ITEM" : "ESCANEAR AGORA")</MudText>
+             <MudText Typo="Typo.h5" Color="Color.Surface" Class="ml-4 font-weight-black" Style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">@(mode == "photo" ? "FOTO DO ITEM" : "ESCANEAR PLACA")</MudText>
          </div>
 
          <div style="position: relative; flex: 1; overflow: hidden;">
@@ -204,7 +204,7 @@ else
                         Style="width: 90%; height: 72px; border-radius: 36px; font-weight: 900; font-size: 1.4rem; border: 2.5px solid rgba(255,255,255,0.2); box-shadow: 0 6px 15px rgba(0,0,0,0.5);"
                         StartIcon="@Icons.Material.Filled.QrCodeScanner"
                         OnClick="ManualScanTrigger">
-                        ESCANEAR AGORA
+                        ESCANEAR PLACA
                     </MudButton>
                 }
             </div>
