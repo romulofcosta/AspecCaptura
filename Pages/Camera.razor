@@ -146,33 +146,36 @@ else
         style="position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: black; z-index: 2000; display: flex; flex-direction: column;">
         
         <!-- Header for Scanning -->
-        <div class="d-flex align-center pa-4" style="background: rgba(0,0,0,0.8); z-index: 2001;">
-            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Surface" OnClick="CloseCamera" />
-            <MudText Typo="Typo.h6" Color="Color.Surface" Class="ml-2">Escanear Placa</MudText>
-        </div>
+         <div class="d-flex align-center pa-4" style="background: rgba(0,0,0,0.8); z-index: 2001;">
+             <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Surface" OnClick="CloseCamera" />
+             <MudText Typo="Typo.h6" Color="Color.Surface" Class="ml-2">@(mode == "photo" ? "Capturar Foto do Item" : "Escanear Placa")</MudText>
+         </div>
 
-        <div style="position: relative; flex: 1; overflow: hidden;">
-            <video id="camera-feed" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
-            
-            <!-- Scanner ROI Guide -->
-            <div class="scanner-guide" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 150px; border: 2px solid #00c853; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); pointer-events: none;">
-                <div style="position: absolute; top: -30px; left: 0; width: 100%; text-align: center;">
-                    <MudText Typo="Typo.caption" Style="color: #00c853; font-weight: bold; text-transform: uppercase;">Posicione a placa aqui</MudText>
+         <div style="position: relative; flex: 1; overflow: hidden;">
+             <video id="camera-feed" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+             
+             @if (mode != "photo")
+             {
+                <!-- Scanner ROI Guide -->
+                <div class="scanner-guide" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 150px; border: 2px solid #00c853; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); pointer-events: none;">
+                    <div style="position: absolute; top: -30px; left: 0; width: 100%; text-align: center;">
+                        <MudText Typo="Typo.caption" Style="color: #00c853; font-weight: bold; text-transform: uppercase;">Posicione a placa aqui</MudText>
+                    </div>
+                    <div class="scanner-line" style="position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #00c853; opacity: 0.5; animation: scan 2s infinite ease-in-out;"></div>
                 </div>
-                <div class="scanner-line" style="position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #00c853; opacity: 0.5; animation: scan 2s infinite ease-in-out;"></div>
-            </div>
 
-            @if (isScanning)
-            {
-                <div style="position: absolute; bottom: 20px; left: 0; width: 100%; text-align: center; display: flex; flex-direction: column; align-center; gap: 8px;">
-                    <MudChip T="string" Color="@scanStatusColor" Variant="Variant.Filled" Icon="@scanStatusIcon">@scanStatusText</MudChip>
-                    @if (!string.IsNullOrEmpty(lastDetectedCode))
-                    {
-                        <MudText Typo="Typo.h6" Style="color: white; text-shadow: 1px 1px 2px black;">Última leitura: @lastDetectedCode</MudText>
-                    }
-                </div>
-            }
-        </div>
+                @if (isScanning)
+                {
+                    <div style="position: absolute; bottom: 20px; left: 0; width: 100%; text-align: center; display: flex; flex-direction: column; align-center; gap: 8px;">
+                        <MudChip T="string" Color="@scanStatusColor" Variant="Variant.Filled" Icon="@scanStatusIcon">@scanStatusText</MudChip>
+                        @if (!string.IsNullOrEmpty(lastDetectedCode))
+                        {
+                            <MudText Typo="Typo.h6" Style="color: white; text-shadow: 1px 1px 2px black;">Última leitura: @lastDetectedCode</MudText>
+                        }
+                    </div>
+                }
+             }
+         </div>
 
         <style>
             @@keyframes scan {
@@ -187,12 +190,21 @@ else
             <div style="width: 48px;"></div> <!-- Placeholder to balance the layout -->
 
             <div class="d-flex justify-center align-center" style="flex: 1;">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" 
-                    Style="width: 80%; height: 56px; border-radius: 28px; font-weight: bold; font-size: 1.1rem;"
-                    StartIcon="@Icons.Material.Filled.QrCodeScanner"
-                    OnClick="ManualScanTrigger">
-                    ESCANEAR PLACA
-                </MudButton>
+                @if (mode == "photo")
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Camera" Color="Color.Surface"
+                        Style="width: 72px; height: 72px; border: 4px solid white; border-radius: 50%; padding: 0;"
+                        OnClick="CapturePhoto" />
+                }
+                else
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" 
+                        Style="width: 80%; height: 56px; border-radius: 28px; font-weight: bold; font-size: 1.1rem;"
+                        StartIcon="@Icons.Material.Filled.QrCodeScanner"
+                        OnClick="ManualScanTrigger">
+                        ESCANEAR PLACA
+                    </MudButton>
+                }
             </div>
 
             <MudIconButton Icon="@Icons.Material.Filled.FlipCameraIos" Color="Color.Surface" Size="Size.Large"
@@ -267,10 +279,18 @@ else
         currentUser = await AuthService.GetCurrentUserAsync();
         await OcrService.InitializeAsync();
 
+        // Reset item for new capture
+        itemModel = new InventoryItem();
+        capturedPhotos.Clear();
+
         if (mode == "manual")
         {
             isFormVisible = true;
             editContext = new EditContext(itemModel);
+        }
+        else if (mode == "photo")
+        {
+            isFormVisible = false;
         }
     }
 
@@ -279,7 +299,10 @@ else
         if (firstRender && !isFormVisible)
         {
             await StartCamera();
-            StartScanning();
+            if (mode != "photo")
+            {
+                StartScanning();
+            }
         }
     }
 

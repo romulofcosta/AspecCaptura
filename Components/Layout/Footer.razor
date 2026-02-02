@@ -1,17 +1,32 @@
-<MudPaper Elevation="8" Class="@($"d-flex justify-space-around align-center py-1 width-100 {(IsHidden ? "d-none" : "")}")"
-    Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; height: 64px;">
-    <MudIconButton Icon="@Icons.Material.Filled.Home" Color="@(ActiveTab == "home" ? Color.Primary : Color.Default)"
-        OnClick='() => OnTabChanged.InvokeAsync("home")' Size="Size.Large" />
-    <MudIconButton Icon="@Icons.Material.Filled.BarChart" Color="@(ActiveTab == "stats" ? Color.Primary : Color.Default)"
-        OnClick='() => OnTabChanged.InvokeAsync("stats")' Size="Size.Large" />
+<MudPaper Elevation="4" Class="@($"d-flex justify-space-around align-center width-100 {(IsHidden ? "d-none" : "")}")"
+    Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; height: 60px; background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05);">
+    <MudIconButton Icon="@Icons.Material.Filled.Home" 
+        Color="@(ActiveTab == "home" ? Color.Primary : Color.Default)"
+        Style="@(ActiveTab == "home" ? "opacity: 1;" : "opacity: 0.5;")"
+        OnClick='() => OnTabChanged.InvokeAsync("home")' Size="Size.Medium" />
+    
+    <MudIconButton Icon="@Icons.Material.Filled.BarChart" 
+        Color="@(ActiveTab == "stats" ? Color.Primary : Color.Default)"
+        Style="@(ActiveTab == "stats" ? "opacity: 1;" : "opacity: 0.5;")"
+        OnClick='() => OnTabChanged.InvokeAsync("stats")' Size="Size.Medium" />
+
+    <MudIconButton Icon="@Icons.Material.Filled.PhotoCamera" 
+        Color="Color.Primary"
+        Style="background-color: var(--mud-palette-primary-lighten); border-radius: 12px; padding: 12px;"
+        OnClick="OnCaptureClick" Size="Size.Medium" />
 
     <MudBadge Content="@PendingSyncCount" Overlap="true" Bordered="true" Color="Color.Error"
-        Visible="@(PendingSyncCount > 0)">
-        <MudIconButton Icon="@Icons.Material.Filled.Sync" Color="@(ActiveTab == "sync" ? Color.Primary : Color.Default)"
-            OnClick='() => OnTabChanged.InvokeAsync("sync")' Size="Size.Large" />
+        Visible="@(PendingSyncCount > 0)" Class="mt-1">
+        <MudIconButton Icon="@Icons.Material.Filled.Sync" 
+            Color="@(ActiveTab == "sync" ? Color.Primary : Color.Default)"
+            Style="@(ActiveTab == "sync" ? "opacity: 1;" : "opacity: 0.5;")"
+            OnClick='() => OnTabChanged.InvokeAsync("sync")' Size="Size.Medium" />
     </MudBadge>
-    <MudIconButton Icon="@Icons.Material.Filled.UploadFile" Color="Color.Default"
-        OnClick="OnExportClick" Size="Size.Large" />
+
+    <MudIconButton Icon="@Icons.Material.Filled.UploadFile" 
+        Color="Color.Default"
+        Style="opacity: 0.5;"
+        OnClick="OnExportClick" Size="Size.Medium" />
 </MudPaper>
 
 @code {

@@ -17,22 +17,11 @@
     <MudGrid Spacing="2">
         <!-- Quick Actions -->
         <MudItem xs="12">
-            <MudGrid Spacing="2">
-                <MudItem xs="6">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" 
-                        StartIcon="@Icons.Material.Filled.QrCodeScanner" OnClick="@(() => Navigation.NavigateTo("/camera"))"
-                        Style="height: 64px; font-weight: bold; border-radius: 12px; font-size: 0.9rem;">
-                        ESCANEAR PLACA
-                    </MudButton>
-                </MudItem>
-                <MudItem xs="6">
-                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true" 
-                        StartIcon="@Icons.Material.Filled.EditNote" OnClick="@(() => Navigation.NavigateTo("/camera?mode=manual"))"
-                        Style="height: 64px; font-weight: bold; border-radius: 12px; background-color: white; font-size: 0.9rem;">
-                        ADICIONAR ITEM
-                    </MudButton>
-                </MudItem>
-            </MudGrid>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" 
+                StartIcon="@Icons.Material.Filled.QrCodeScanner" OnClick="@(() => Navigation.NavigateTo("/camera"))"
+                Style="height: 64px; font-weight: bold; border-radius: 12px; font-size: 1rem; box-shadow: 0 4px 12px rgba(0,102,204,0.2);">
+                ESCANEAR PLACA
+            </MudButton>
         </MudItem>
 
         <!-- Search and Filter Bar -->
