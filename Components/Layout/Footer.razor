@@ -1,26 +1,51 @@
 <MudPaper Elevation="0" Class="@($"d-flex justify-space-around align-center width-100 {(IsHidden ? "d-none" : "")}")"
-    Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; height: 110px; background-color: rgba(255, 255, 255, 0.98); backdrop-filter: blur(25px); border-top: 2px solid rgba(27, 79, 114, 0.15); padding-bottom: env(safe-area-inset-bottom);">
+    Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; height: 75px; background-color: #ffffff; border-top: 1px solid rgba(0,0,0,0.05); padding-bottom: env(safe-area-inset-bottom);">
     
-    <MudIconButton Icon="@Icons.Material.Outlined.Home" 
-        Color="@(ActiveTab == "home" ? Color.Primary : Color.Default)"
-        Style="@(ActiveTab == "home" ? "opacity: 1; font-size: 4.0rem;" : "opacity: 0.3; font-size: 4.0rem;")"
-        OnClick='() => OnTabChanged.InvokeAsync("home")' />
+    <!-- Início -->
+    <div class="d-flex flex-column align-center justify-center" style="width: 20%; height: 100%; cursor: pointer; background-color: #EEF2FF; border-radius: 12px; margin: 8px 4px;"
+        @onclick='() => OnTabChanged.InvokeAsync("home")'>
+        <MudIcon Icon="@Icons.Material.Filled.Home" 
+            Style="@($"font-size: 1.8rem; color: {(ActiveTab == "home" ? "#3F51B5" : "#9E9E9E")};")" />
+        <MudText Typo="Typo.caption" 
+            Style="@($"font-weight: 600; font-size: 0.75rem; color: {(ActiveTab == "home" ? "#3F51B5" : "#9E9E9E")};")">Início</MudText>
+    </div>
 
-    <div class="d-flex align-center justify-center" style="height: 100%;">
-        <MudIconButton Icon="@Icons.Material.Outlined.AddAPhoto" 
-            Color="Color.Primary"
-            Style="font-size: 6.0rem; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(-10px);"
-            Class="logo-hover"
+    <!-- Relatórios -->
+    <div class="d-flex flex-column align-center justify-center" style="width: 20%; height: 100%; cursor: pointer;"
+        @onclick='() => OnTabChanged.InvokeAsync("reports")'>
+        <MudIcon Icon="@Icons.Material.Filled.BarChart" 
+            Style="@($"font-size: 1.8rem; color: {(ActiveTab == "reports" ? "#3F51B5" : "#9E9E9E")};")" />
+        <MudText Typo="Typo.caption" 
+            Style="@($"font-weight: 600; font-size: 0.75rem; color: {(ActiveTab == "reports" ? "#3F51B5" : "#9E9E9E")};")">Relatórios</MudText>
+    </div>
+
+    <!-- Central Capture FAB -->
+    <div class="d-flex align-center justify-center" style="width: 20%; height: 100%; position: relative;">
+        <MudIconButton Icon="@Icons.Material.Filled.CameraAlt" 
+            Color="Color.Surface"
+            Style="background-color: #3F51B5; border-radius: 50%; width: 56px; height: 56px; box-shadow: 0 4px 12px rgba(63,81,181,0.4); z-index: 10; transform: translateY(-15px);"
             OnClick="OnCaptureClick" />
     </div>
 
-    <MudBadge Content="@PendingSyncCount" Overlap="true" Bordered="true" Color="Color.Error"
-        Visible="@(PendingSyncCount > 0)" Style="transform: scale(1.5);">
-        <MudIconButton Icon="@Icons.Material.Outlined.CloudSync" 
-            Color="@(ActiveTab == "sync" ? Color.Primary : Color.Default)"
-            Style="@(ActiveTab == "sync" ? "opacity: 1; font-size: 4.0rem;" : "opacity: 0.3; font-size: 4.0rem;")"
-            OnClick='() => OnTabChanged.InvokeAsync("sync")' />
-    </MudBadge>
+    <!-- Histórico -->
+    <div class="d-flex flex-column align-center justify-center" style="width: 20%; height: 100%; cursor: pointer;"
+        @onclick='() => OnTabChanged.InvokeAsync("sync")'>
+        <MudBadge Content="@PendingSyncCount" Overlap="true" Bordered="true" Color="Color.Error" Visible="@(PendingSyncCount > 0)">
+            <MudIcon Icon="@Icons.Material.Filled.History" 
+                Style="@($"font-size: 1.8rem; color: {(ActiveTab == "sync" ? "#3F51B5" : "#9E9E9E")};")" />
+        </MudBadge>
+        <MudText Typo="Typo.caption" 
+            Style="@($"font-weight: 600; font-size: 0.75rem; color: {(ActiveTab == "sync" ? "#3F51B5" : "#9E9E9E")};")">Histórico</MudText>
+    </div>
+
+    <!-- Docs -->
+    <div class="d-flex flex-column align-center justify-center" style="width: 20%; height: 100%; cursor: pointer;"
+        @onclick='() => OnTabChanged.InvokeAsync("docs")'>
+        <MudIcon Icon="@Icons.Material.Filled.Description" 
+            Style="@($"font-size: 1.8rem; color: {(ActiveTab == "docs" ? "#3F51B5" : "#9E9E9E")};")" />
+        <MudText Typo="Typo.caption" 
+            Style="@($"font-weight: 600; font-size: 0.75rem; color: {(ActiveTab == "docs" ? "#3F51B5" : "#9E9E9E")};")">Docs</MudText>
+    </div>
 </MudPaper>
 
 @code {

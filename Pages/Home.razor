@@ -13,77 +13,89 @@
 
 <PageTitle>Inventário - ASPEC Capture</PageTitle>
 
-<MudContainer id="home-container" MaxWidth="MaxWidth.Large" Class="mt-4 pb-20" Style="overflow-y: auto; height: 100%;">
-    <MudGrid Spacing="2">
-        <!-- Quick Actions -->
-        <MudItem xs="12">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" 
-                StartIcon="@Icons.Material.Filled.QrCodeScanner" OnClick="@(() => Navigation.NavigateTo("/camera"))"
-                Style="height: 80px; font-weight: 900; border-radius: 16px; font-size: 1.4rem; box-shadow: 0 6px 15px rgba(27,79,114,0.3);">
-                ESCANEAR PLACA
-            </MudButton>
-        </MudItem>
+<MudContainer id="home-container" MaxWidth="MaxWidth.False" Class="pa-0 pb-20" Style="overflow-y: auto; height: 100dvh;">
+    <!-- Header Section -->
+    <div style="background-color: var(--mud-palette-primary); padding: 24px 16px 40px 16px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; position: relative;">
+        <div class="d-flex align-center justify-space-between mb-4">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Surface" Edge="Edge.Start" />
+            <div class="d-flex align-center gap-2">
+                <MudIcon Icon="@Icons.Material.Filled.Description" Color="Color.Surface" Size="Size.Medium" />
+                <MudText Typo="Typo.h6" Color="Color.Surface" Class="font-weight-bold">Inventário Patrimonial</MudText>
+            </div>
+            <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="Color.Surface" OnClick="ToggleFilters" />
+        </div>
 
-        <!-- Search and Filter Bar -->
-        <MudItem xs="12">
-            <MudPaper Elevation="0" Class="d-flex gap-2 align-center pa-2 mud-background-gray rounded-lg">
-                <MudTextField @bind-Value="searchQuery" Placeholder="Buscar por nome, código ou categoria..."
-                    Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined"
-                    Class="flex-grow-1" Clearable="true" OnClearButtonClick="ClearSearch" Margin="Margin.Dense"
-                    UserAttributes="@(new Dictionary<string, object> { { "id", "search-input" } })" />
-
-                <div class="d-flex gap-2">
-                    <MudIconButton Icon="@Icons.Material.Filled.FilterList"
-                        Color="@(showFilters ? Color.Primary : Color.Default)" OnClick="ToggleFilters" title="Filtros" />
-
-                    <MudIconButton Icon="@Icons.Material.Filled.Sync"
-                        Color="@(isSyncing ? Color.Warning : Color.Primary)" 
-                        OnClick="@(() => SyncPendingItems(false))" 
-                        Disabled="@isSyncing"
-                        title="@(isSyncing ? "Sincronizando..." : "Sincronizar")" />
-
-                    <MudIconButton
-                        Icon="@(viewMode == "grid" ? Icons.Material.Filled.GridView : Icons.Material.Filled.ViewList)"
-                        Color="@(viewMode == "grid" ? Color.Primary : Color.Default)" OnClick="ToggleViewMode"
-                        title="Alternar Visualização" />
-                </div>
+        <!-- Search Bar Overlapping -->
+        <div style="position: absolute; bottom: -28px; left: 16px; right: 16px; z-index: 10;">
+            <MudPaper Elevation="4" Class="pa-1 rounded-pill d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Search" Class="ml-4" Color="Color.Default" />
+                <MudTextField @bind-Value="searchQuery" Placeholder="Buscar por nome, código ou local..." 
+                    Variant="Variant.Text" DisableUnderLine="true" Class="flex-grow-1 mx-2" Margin="Margin.Dense" />
             </MudPaper>
-        </MudItem>
+        </div>
+    </div>
 
-        <!-- Filter Panel -->
-        @if (showFilters)
-        {
+    <div class="px-4 mt-12">
+        <MudGrid Spacing="3">
+            <!-- Action Buttons (Novo Item | Escanear Placa) -->
             <MudItem xs="12">
-                <MudPaper Class="pa-4" Elevation="1">
-                    <MudGrid Spacing="2">
-                        <MudItem xs="12" md="8">
-                            <MudText Typo="Typo.subtitle2" Class="mb-2">Categoria</MudText>
-                            <div class="d-flex gap-2 flex-wrap">
-                                @foreach (var category in categories)
-                                {
-                                    <MudChip T="string" Color="@(selectedCategory == category ? Color.Primary : Color.Default)"
-                                        OnClick="() => SelectCategory(category)"
-                                        Variant="@(selectedCategory == category ? Variant.Filled : Variant.Outlined)">
-                                        @category
-                                    </MudChip>
-                                }
-                            </div>
-                        </MudItem>
-                        <MudItem xs="12" md="4">
-                            <MudSelect T="string" @bind-Value="SortOrderProperty" Label="Ordenar por" Variant="Variant.Outlined"
-                                AnchorOrigin="Origin.BottomCenter" Margin="Margin.Dense" Dense="true"
-                                UserAttributes="@(new Dictionary<string, object> { { "id", "sort-select" } })">
-                                <MudSelectItem Value="@("newest")">Mais recentes</MudSelectItem>
-                                <MudSelectItem Value="@("oldest")">Mais antigos</MudSelectItem>
-                                <MudSelectItem Value="@("name-asc")">Nome (A-Z)</MudSelectItem>
-                                <MudSelectItem Value="@("name-desc")">Nome (Z-A)</MudSelectItem>
-                                <MudSelectItem Value="@("code-asc")">Código (A-Z)</MudSelectItem>
-                            </MudSelect>
-                        </MudItem>
-                    </MudGrid>
+                <MudPaper Elevation="0" Class="d-flex overflow-hidden rounded-lg" Style="background-color: var(--mud-palette-primary); height: 56px;">
+                    <MudButton Variant="Variant.Text" Color="Color.Surface" FullWidth="true" 
+                        StartIcon="@Icons.Material.Filled.Add" OnClick='() => Navigation.NavigateTo("/camera?mode=manual")'
+                        Style="font-weight: 600; font-size: 0.95rem; border-right: 1px solid rgba(255,255,255,0.2); border-radius: 0;">
+                        Novo Item
+                    </MudButton>
+                    <MudButton Variant="Variant.Text" Color="Color.Surface" FullWidth="true" 
+                        StartIcon="@Icons.Material.Filled.QrCodeScanner" OnClick='() => Navigation.NavigateTo("/camera")'
+                        Style="font-weight: 600; font-size: 0.95rem; border-radius: 0;">
+                        Escanear Placa
+                    </MudButton>
                 </MudPaper>
             </MudItem>
-        }
+
+            <!-- List Header -->
+            <MudItem xs="12" Class="d-flex align-center justify-space-between mt-2">
+                <MudText Typo="Typo.h6" Class="font-weight-bold">Ativos Registrados <span style="font-weight: normal; font-size: 1rem; color: var(--mud-palette-text-secondary);">(@filteredItems.Count())</span></MudText>
+                <MudLink Underline="Underline.None" Color="Color.Primary" Style="font-size: 0.9rem; font-weight: 500;">Ver todos</MudLink>
+            </MudItem>
+
+            <!-- Filter Panel -->
+            @if (showFilters)
+            {
+                <MudItem xs="12">
+                    <MudPaper Class="pa-4 rounded-lg" Elevation="2">
+                        <div class="d-flex align-center justify-space-between mb-4">
+                            <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Filtros e Ordenação</MudText>
+                            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="ToggleFilters" />
+                        </div>
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.subtitle2" Class="mb-2">Categoria</MudText>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    @foreach (var category in categories)
+                                    {
+                                        <MudChip T="string" Color="@(selectedCategory == category ? Color.Primary : Color.Default)"
+                                            OnClick="() => SelectCategory(category)"
+                                            Variant="@(selectedCategory == category ? Variant.Filled : Variant.Outlined)"
+                                            Size="Size.Small">
+                                            @category
+                                        </MudChip>
+                                    }
+                                </div>
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudSelect T="string" @bind-Value="SortOrderProperty" Label="Ordenar por" Variant="Variant.Outlined"
+                                    AnchorOrigin="Origin.BottomCenter" Margin="Margin.Dense" Dense="true">
+                                    <MudSelectItem Value="@("newest")">Mais recentes</MudSelectItem>
+                                    <MudSelectItem Value="@("oldest")">Mais antigos</MudSelectItem>
+                                    <MudSelectItem Value="@("name-asc")">Nome (A-Z)</MudSelectItem>
+                                    <MudSelectItem Value="@("name-desc")">Nome (Z-A)</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                </MudItem>
+            }
 
         @if (isLoading)
         {
@@ -127,6 +139,7 @@
             }
         }
     </MudGrid>
+</div>
 </MudContainer>
 
 @code {

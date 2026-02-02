@@ -1,54 +1,42 @@
 @using pwa_camera_poc_blazor.Models
 
-<MudCard Elevation="2" @onclick="() => OnView.InvokeAsync(Item)"
-    Class="rounded-xl logo-hover"
-    Style="@(IsListView ? "cursor: pointer; display: flex; flex-direction: row; height: 110px; width: 100%; overflow: hidden; border: 1px solid rgba(0,0,0,0.05);" : "cursor: pointer; height: 100%; display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(0,0,0,0.05);")">
+<MudCard Elevation="1" @onclick="() => OnView.InvokeAsync(Item)"
+    Class="rounded-lg mb-3"
+    Style="cursor: pointer; border: 1px solid rgba(0,0,0,0.05); position: relative;">
+    
+    <!-- Status Dot Top Right -->
+    <div style="@($"position: absolute; top: 12px; right: 12px; width: 10px; height: 10px; border-radius: 50%; background-color: {(Item.Synced ? "#4CAF50" : "#FFC107")}; z-index: 5;")"></div>
 
-    <div
-        style="@(IsListView ? "position: relative; width: 110px; height: 100%;" : "position: relative; width: 100%; aspect-ratio: 16 / 9; background-color: var(--mud-palette-background-grey);")">
-        <MudImage Src="@(string.IsNullOrEmpty(Item.CoverImage) ? "images/placeholder.svg" : Item.CoverImage)"
-            Alt="@Item.Name" ObjectFit="ObjectFit.Cover" Style="width: 100%; height: 100%;" />
+    <div class="d-flex pa-3">
+        <!-- Thumbnail Placeholder -->
+        <div class="rounded-lg d-flex align-center justify-center mr-4" 
+            style="width: 80px; height: 80px; background-color: #F0F2F5; flex-shrink: 0;">
+            <MudIcon Icon="@Icons.Material.Filled.Description" Color="Color.Default" style="opacity: 0.3; font-size: 2.5rem;" />
+        </div>
 
-        @* Status Badge *@
-        <div style="position: absolute; top: 8px; right: 8px; z-index: 2;">
-            @if (Item.Synced)
-            {
-                <MudTooltip Text="Sincronizado" Arrow="true" Placement="Placement.Left">
-                    <div style="background-color: #28a745; border-radius: 50%; padding: 4px; display: flex; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-                        <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Surface" Size="Size.Small" Style="font-size: 0.8rem;" />
-                    </div>
-                </MudTooltip>
-            }
-            else
-            {
-                <MudTooltip Text="Pendente" Arrow="true" Placement="Placement.Left">
-                    <div style="background-color: #ffc107; border-radius: 50%; padding: 4px; display: flex; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-                        <MudIcon Icon="@Icons.Material.Filled.Sync" Color="Color.Surface" Size="Size.Small" Style="font-size: 0.8rem;" />
-                    </div>
-                </MudTooltip>
-            }
+        <div class="d-flex flex-column flex-grow-1">
+            <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-1" Style="font-size: 1rem; color: #212121;">@Item.Name</MudText>
+            
+            <div class="d-flex gap-2 mb-2">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" 
+                    Style="background-color: #E8EAF6; color: #3F51B5; font-weight: 600; height: 22px; font-size: 0.75rem;">@Item.Code</MudChip>
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" 
+                    Style="background-color: #E8F5E9; color: #2E7D32; font-weight: 600; height: 22px; font-size: 0.75rem;">@Item.Category.ToLower()</MudChip>
+            </div>
+
+            <div class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Color="Color.Default" style="opacity: 0.4; font-size: 1rem;" />
+                <MudText Typo="Typo.caption" Style="color: #757575; font-size: 0.85rem;" Class="ml-1">@Item.Location</MudText>
+            </div>
         </div>
     </div>
 
-    <MudCardContent Class="d-flex flex-column flex-grow-1 py-3 px-4">
-        <div class="d-flex justify-space-between align-center mb-1">
-            <MudText Typo="Typo.subtitle1" Class="text-truncate font-weight-bold" Style="line-height: 1.2;">@Item.Name</MudText>
-        </div>
-
-        <div class="d-flex align-center gap-2 mb-2">
-            <MudText Typo="Typo.caption" Color="Color.Primary" Class="font-weight-bold">@Item.Category</MudText>
-            <MudDivider Vertical="true" FlexItem="true" Style="height: 12px;" />
-            <MudText Typo="Typo.caption" Color="Color.Secondary">#@Item.Code</MudText>
-        </div>
-
-        <div class="d-flex align-center mt-auto">
-            <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Color="Color.Secondary" Class="mr-1"
-                Style="font-size: 0.9rem;" />
-            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="text-truncate">@Item.Location</MudText>
-            <MudSpacer />
-            <MudText Typo="Typo.caption" Color="Color.Secondary" Style="font-size: 0.7rem;">@Item.Timestamp.ToString("dd/MM")</MudText>
-        </div>
-    </MudCardContent>
+    <MudDivider Style="opacity: 0.05;" />
+    
+    <div class="d-flex align-center justify-space-between px-4 py-2">
+        <MudText Typo="Typo.caption" Style="color: #757575; font-size: 0.8rem;">Status: <span style="font-weight: 600;">@(Item.Synced ? "Ativo" : "Pendente")</span></MudText>
+        <MudLink Underline="Underline.None" Color="Color.Primary" Style="font-size: 0.8rem; font-weight: 600;">Ver detalhes →</MudLink>
+    </div>
 </MudCard>
 
 @code {
