@@ -206,9 +206,6 @@ else
                     </MudButton>
                 }
             </div>
-
-            <MudIconButton Icon="@Icons.Material.Filled.FlipCameraIos" Color="Color.Surface" Size="Size.Large"
-                OnClick="SwitchCamera" />
         </MudPaper>
     </div>
 }
@@ -248,7 +245,6 @@ else
             <MudIconButton Icon="@Icons.Material.Filled.Camera" Color="Color.Surface"
                 Style="width: 72px; height: 72px; border: 4px solid white; border-radius: 50%; padding: 0;"
                 OnClick="CapturePhotoFromModal" />
-            <MudIconButton Icon="@Icons.Material.Filled.FlipCameraIos" Color="Color.Surface" Size="Size.Large" OnClick="SwitchModalCamera" Class="ml-8" />
         </MudPaper>
     </div>
 }
@@ -256,7 +252,6 @@ else
 @code {
     [Parameter, SupplyParameterFromQuery] public string? mode { get; set; }
     private bool isFormVisible = false;
-    private bool useFrontCamera = false;
     private List<string> capturedPhotos = new();
     private int currentPreviewIndex = 0;
     private InventoryItem itemModel = new();
@@ -435,27 +430,12 @@ else
     {
         try
         {
-            await CameraService.StartCameraAsync("camera-feed", useFrontCamera);
+            await CameraService.StartCameraAsync("camera-feed", false);
             appState.IsCameraActive = true;
         }
         catch (Exception ex)
         {
             ToastService.ShowError(ex.Message);
-        }
-    }
-
-    private async Task SwitchCamera()
-    {
-        useFrontCamera = !useFrontCamera;
-        if (isCameraInModalActive)
-        {
-            await CameraService.StopCameraAsync("modal-camera-feed");
-            await CameraService.StartCameraAsync("modal-camera-feed", useFrontCamera);
-        }
-        else
-        {
-            await CameraService.StopCameraAsync("camera-feed");
-            await StartCamera();
         }
     }
 
@@ -467,7 +447,7 @@ else
         isPhotoModalOpen = false;
         isCameraInModalActive = true;
         await Task.Delay(100);
-        await CameraService.StartCameraAsync("modal-camera-feed", useFrontCamera);
+        await CameraService.StartCameraAsync("modal-camera-feed", false);
     }
 
     private async Task StopModalCamera()
@@ -486,13 +466,6 @@ else
             currentPreviewIndex = capturedPhotos.Count - 1;
             await StopModalCamera();
         }
-    }
-
-    private async Task SwitchModalCamera()
-    {
-        useFrontCamera = !useFrontCamera;
-        await CameraService.StopCameraAsync("modal-camera-feed");
-        await CameraService.StartCameraAsync("modal-camera-feed", useFrontCamera);
     }
 
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
