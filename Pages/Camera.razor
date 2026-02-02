@@ -58,22 +58,33 @@
 
                     <EditForm EditContext="@editContext" OnValidSubmit="HandleSave" id="camera-form">
                         <DataAnnotationsValidator />
-                        <MudGrid>
+                        <MudGrid Spacing="2">
+                            <!-- Section: Identificação -->
                             <MudItem xs="12">
-                                <MudTextField @bind-Value="itemModel.Name" Label="Nome do Item *" Variant="Variant.Outlined"
-                                    For="@(() => itemModel.Name)" />
+                                <div class="d-flex align-center gap-2 mb-2 mt-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" Size="Size.Small" />
+                                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Identificação do Patrimônio</MudText>
+                                </div>
+                                <MudDivider Class="mb-4" />
                             </MudItem>
+
                             <MudItem xs="12">
                                 <MudTextField @bind-Value="itemModel.Code" Label="Código/ID *" Variant="Variant.Outlined"
-                                    For="@(() => itemModel.Code)" />
+                                    For="@(() => itemModel.Code)" Margin="Margin.Dense" />
                             </MudItem>
+
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="itemModel.Name" Label="Nome do Item *" Variant="Variant.Outlined"
+                                    For="@(() => itemModel.Name)" Margin="Margin.Dense" />
+                            </MudItem>
+
                             <MudItem xs="12">
                                 <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Categoria *</MudText>
                                 <div class="mud-input-control mud-input-input-control">
                                     <div class="mud-input-control-input-container">
                                         <div class="mud-input mud-input-outlined" style="position: relative;">
                                             <select @bind="itemModel.Category" class="mud-input-slot mud-input-root mud-input-root-outlined" 
-                                                    style="height: 56px; padding: 18.5px 14px; width: 100%; -webkit-appearance: none; appearance: none; background: transparent; z-index: 10; font-size: 1rem; color: var(--mud-palette-text-primary);">
+                                                    style="height: 40px; padding: 8px 14px; width: 100%; -webkit-appearance: none; appearance: none; background: transparent; z-index: 10; font-size: 0.875rem; color: var(--mud-palette-text-primary);">
                                                 <option value="">Selecione a categoria</option>
                                                 <option value="Móveis">Móveis</option>
                                                 <option value="Eletrônicos">Eletrônicos</option>
@@ -83,26 +94,39 @@
                                                 <option value="Outros">Outros</option>
                                             </select>
                                             <div class="mud-input-outlined-border"></div>
-                                            <div style="position: absolute; right: 14px; top: 16px; pointer-events: none;">
-                                                <MudIcon Icon="@Icons.Material.Filled.ArrowDropDown" Color="Color.Secondary" />
+                                            <div style="position: absolute; right: 14px; top: 8px; pointer-events: none;">
+                                                <MudIcon Icon="@Icons.Material.Filled.ArrowDropDown" Color="Color.Secondary" Size="Size.Small" />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </MudItem>
+
+                            <!-- Section: Detalhes -->
+                            <MudItem xs="12" Class="mt-4">
+                                <div class="d-flex align-center gap-2 mb-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Place" Color="Color.Primary" Size="Size.Small" />
+                                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Localização e Detalhes</MudText>
+                                </div>
+                                <MudDivider Class="mb-4" />
+                            </MudItem>
+
                             <MudItem xs="12">
                                 <MudTextField @bind-Value="itemModel.Location" Label="Localização *" Variant="Variant.Outlined"
-                                    For="@(() => itemModel.Location)" />
+                                    For="@(() => itemModel.Location)" Margin="Margin.Dense" />
                             </MudItem>
+
                             <MudItem xs="12">
                                 <MudTextField @bind-Value="itemModel.Observations" Label="Observações"
-                                    Variant="Variant.Outlined" Lines="3" For="@(() => itemModel.Observations)" />
+                                    Variant="Variant.Outlined" Lines="2" For="@(() => itemModel.Observations)" Margin="Margin.Dense" />
                             </MudItem>
-                            <MudItem xs="12" Class="d-flex justify-end gap-2 mt-4">
-                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CancelForm">Cancelar
+
+                            <MudItem xs="12" Class="d-flex justify-end gap-2 mt-6 pb-4">
+                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CancelForm" Class="rounded-lg">
+                                    Cancelar
                                 </MudButton>
                                 <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
-                                    Disabled="@isSaving" StartIcon="@Icons.Material.Filled.Save">
+                                    Disabled="@isSaving" StartIcon="@Icons.Material.Filled.Save" Class="rounded-lg px-6">
                                     @(isSaving ? "Salvando..." : "Salvar")
                                 </MudButton>
                             </MudItem>
