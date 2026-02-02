@@ -146,7 +146,7 @@ else
         style="position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: black; z-index: 2000; display: flex; flex-direction: column;">
         
         <!-- Header for Scanning -->
-         <div class="d-flex align-center pa-4" style="background: linear-gradient(to bottom, #007AFF, transparent); z-index: 2001; position: absolute; top: 0; left: 0; right: 0; height: 100px;">
+         <div class="d-flex align-center pa-4" style="background: linear-gradient(to bottom, #1B4F72, transparent); z-index: 2001; position: absolute; top: 0; left: 0; right: 0; height: 100px;">
              <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Surface" 
                 Style="background-color: rgba(255,255,255,0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3);"
                 OnClick="CloseCamera" />
@@ -192,9 +192,9 @@ else
             <div class="d-flex justify-center align-center" style="width: 100%;">
                 @if (mode == "photo")
                 {
-                    <div style="border: 5px solid white; border-radius: 50%; padding: 6px; box-shadow: 0 0 25px rgba(0,122,255,0.6);">
+                    <div style="border: 5px solid white; border-radius: 50%; padding: 6px; box-shadow: 0 0 25px rgba(27,79,114,0.6);">
                         <MudIconButton Icon="@Icons.Material.Filled.Camera" Color="Color.Surface"
-                            Style="width: 84px; height: 84px; background-color: #007AFF; color: white !important; border: 3px solid #fff; border-radius: 50%;"
+                            Style="width: 84px; height: 84px; background-color: #1B4F72; color: white !important; border: 3px solid #fff; border-radius: 50%;"
                             OnClick="CapturePhoto" />
                     </div>
                 }
