@@ -20,7 +20,7 @@
             <MudPaper Elevation="2" Class="pa-1 rounded-pill d-flex align-center flex-grow-1" Style="border: 1px solid rgba(0,0,0,0.05);">
                 <MudIcon Icon="@Icons.Material.Filled.Search" Class="ml-4" Color="Color.Default" />
                 <MudTextField @bind-Value="searchQuery" Placeholder="Buscar por nome, código ou local..." 
-                    Variant="Variant.Text" Class="flex-grow-1 mx-2" Margin="Margin.Dense" DisableUnderLine="true" />
+                    Variant="Variant.Text" Class="flex-grow-1 mx-2" Margin="Margin.Dense" Underline="false" />
             </MudPaper>
             <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@(showFilters ? Color.Primary : Color.Default)" 
                 OnClick="ToggleFilters" Variant="Variant.Filled" Style="border-radius: 12px; height: 48px; width: 48px;" />

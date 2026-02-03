@@ -30,7 +30,9 @@ builder.Services.AddScoped<IIndexedDbService, IndexedDbService>();
 builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<CameraService>();
-builder.Services.AddScoped<OcrService>();
+builder.Services.AddTransient<OcrService>(); // Transient para garantir lifecycle Create/Dispose por uso
+builder.Services.AddScoped<pwa_camera_poc_blazor.Services.UO.UOStateService>();
+builder.Services.AddScoped<pwa_camera_poc_blazor.Services.Scanning.ScanOrchestrator>();
 builder.Services.AddScoped<AwsConfig>();
 builder.Services.AddScoped<IAwsStorageService, AwsStorageService>();
 builder.Services.AddScoped<pwa_camera_poc_blazor.Services.ToastService>();

@@ -7,6 +7,42 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ## [Não Lançado]
 
+## [1.4.0] - 2026-02-03
+
+### Adicionado
+
+#### 🔍 Scanner OCR com Validação Contextual (v0.1.11)
+- **Sistema de Validação em Três Camadas**:
+  1. **Validação de Infraestrutura**: Verifica se o arquivo JSON do inventário da UO foi carregado com sucesso
+  2. **Validação de Negócio**: Confirma se o código extraído pertence ao inventário oficial da unidade
+  3. **Validação Local**: Busca por registros existentes no IndexedDB
+  
+- **Modelo de Inventário da UO**:
+  - Criado `UnitInventoryItem.cs` para representar itens do inventário oficial
+  - Arquivo JSON por unidade: `/sample-data/unit-{unitId}-inventory.json`
+  - Auto-preenchimento de dados quando patrimônio é validado
+  
+- **Mensagens de Erro Contextuais**:
+  - `"Não foi possível fazer a leitura da imagem"`: Falha no motor OCR (texto vazio ou confidence < 60%)
+  - `"Código inválido, tente novamente"`: Texto extraído mas não passou pela regex de normalização
+  - `"Não foi possível identificar a Unidade Organizadora"`: Erro de infraestrutura (arquivo JSON da UO não carregado)
+  - `"Item não identificado ou não pertence a esta Unidade"`: Código válido mas não consta no inventário oficial da UO
+  
+- **Indicadores Visuais Aprimorados**:
+  - Ícones contextuais para cada tipo de erro (CloudOff, Warning, NotListedLocation, Error)
+  - Cores diferenciadas por tipo de erro (Error, Warning, Info, Success)
+  - Timeout automático de 3 segundos para retornar ao estado de busca
+
+### Corrigido - 2026-02-03
+
+#### 🐛 Correções de Lógica de Scanner
+- **Falsos Negativos Resolvidos**: 
+  - Corrigida lógica que exibia "não foi possível ler" quando o OCR extraia texto mas com baixa confiança
+  - Agora a mensagem de erro só aparece se o OCR realmente falhou (texto vazio ou confidence < 60%)
+- **Fluxo de Validação**: 
+  - Garantido que após extração bem-sucedida, o fluxo OBRIGATORIAMENTE segue para validação
+  - Removida possibilidade de retornar à busca sem validar código extraído
+
 ### Corrigido - 2026-01-26
 
 #### 🐛 Correções de Menu e Layout (v0.1.10)

@@ -2,6 +2,7 @@
 @using pwa_camera_poc_blazor.Models
 @using pwa_camera_poc_blazor.Services.Camera
 @using pwa_camera_poc_blazor.Services.Ocr
+@using pwa_camera_poc_blazor.Services.Scanning
 @inject CameraService CameraService
 @inject OcrService OcrService
 @inject IIndexedDbService DbService
@@ -9,6 +10,9 @@
 @inject NavigationManager Navigation
 @inject pwa_camera_poc_blazor.Services.ToastService ToastService
 @inject AppState appState
+@inject HttpClient HttpClient
+@inject pwa_camera_poc_blazor.Services.UO.UOStateService UOStateService
+@inject pwa_camera_poc_blazor.Services.Scanning.ScanOrchestrator ScanOrchestratorService
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Capturar - ASPEC Capture</PageTitle>
@@ -145,31 +149,55 @@ else
     <div
         style="position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: black; z-index: 2000; display: flex; flex-direction: column;">
         
-        <!-- Header for Scanning -->
-         <div class="d-flex align-center pa-4" style="background: linear-gradient(to bottom, #1B4F72, transparent); z-index: 2001; position: absolute; top: 0; left: 0; right: 0; height: 100px;">
+         <!-- Header for Scanning -->
+          <div class="d-flex align-center pa-4" style="background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 70%, transparent 100%); z-index: 2001; position: absolute; top: 0; left: 0; right: 0; height: 110px;">
              <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Surface" 
-                Style="background-color: rgba(255,255,255,0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3);"
+                Style="background-color: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.5);"
                 OnClick="CloseCamera" />
-             <MudText Typo="Typo.h5" Color="Color.Surface" Class="ml-4 font-weight-black" Style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">@(mode == "photo" ? "FOTO DO ITEM" : "ESCANEAR PLACA")</MudText>
+             <MudSpacer />
+             @if (mode != "photo")
+             {
+                 <MudToggleGroup T="bool" Value="isOcrMode" ValueChanged="OnToggleMode" Color="Color.Primary" Class="ml-4" 
+                    Style="background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2); border-radius: 24px; padding: 2px;">
+                     <MudToggleItem Value="true" UnselectedIcon="@Icons.Material.Filled.TextFields" SelectedIcon="@Icons.Material.Filled.TextFields" Class="px-4">OCR</MudToggleItem>
+                     <MudToggleItem Value="false" UnselectedIcon="@Icons.Material.Filled.QrCode" SelectedIcon="@Icons.Material.Filled.QrCode" Class="px-4">BAR</MudToggleItem>
+                 </MudToggleGroup>
+             }
          </div>
 
-         <div style="position: relative; flex: 1; overflow: hidden;">
-             <video id="camera-feed" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+          <div style="position: relative; flex: 1; overflow: hidden; background: #000;">
+             @if (isOcrMode || mode == "photo")
+             {
+                <video id="camera-feed" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+             }
+             else
+             {
+                <div class="barcode-container">
+                    <BarcodeReader ScanResult="OnBarcodeDetected" 
+                                  ShowScanBarcode="false" />
+                </div>
+             }
              
              @if (mode != "photo")
              {
                 <!-- Scanner ROI Guide -->
-                <div class="scanner-guide" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 150px; border: 2px solid #00c853; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); pointer-events: none;">
-                    <div style="position: absolute; top: -30px; left: 0; width: 100%; text-align: center;">
-                        <MudText Typo="Typo.caption" Style="color: #00c853; font-weight: bold; text-transform: uppercase;">Posicione a placa aqui</MudText>
+                <div class="scanner-guide" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; height: 180px; border: 3px solid #00c853; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.6); pointer-events: none;">
+                    <div style="position: absolute; top: -35px; left: 0; width: 100%; text-align: center;">
+                        <MudText Typo="Typo.caption" Style="color: #00c853; font-weight: bold; text-transform: uppercase; text-shadow: 0 1px 2px black;">
+                            @(isOcrMode ? "Posicione a placa aqui" : "Posicione o código aqui")
+                        </MudText>
                     </div>
-                    <div class="scanner-line" style="position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #00c853; opacity: 0.5; animation: scan 2s infinite ease-in-out;"></div>
+                    <div class="scanner-line" style="position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: #00c853; opacity: 0.8; box-shadow: 0 0 10px #00c853; animation: scan 2s infinite ease-in-out;"></div>
                 </div>
 
                 @if (isScanning)
                 {
-                    <div style="position: absolute; bottom: 20px; left: 0; width: 100%; text-align: center; display: flex; flex-direction: column; align-center; gap: 8px;">
-                        <MudChip T="string" Color="@scanStatusColor" Variant="Variant.Filled" Icon="@scanStatusIcon">@scanStatusText</MudChip>
+                    <div style="position: absolute; bottom: 30px; left: 0; width: 100%; text-align: center; display: flex; flex-direction: column; align-center; gap: 12px; z-index: 2005;">
+                        <MudChip T="string" Color="@scanStatusColor" Variant="Variant.Filled" 
+                            Icon="@scanStatusIcon" 
+                            Style="font-weight: 800; border: 2px solid rgba(255,255,255,0.5); box-shadow: 0 4px 20px rgba(0,0,0,0.6); padding: 20px 24px; font-size: 1.1rem;">
+                            @scanStatusText
+                        </MudChip>
                         @if (!string.IsNullOrEmpty(lastDetectedCode))
                         {
                             <MudText Typo="Typo.h6" Style="color: white; text-shadow: 1px 1px 2px black;">Última leitura: @lastDetectedCode</MudText>
@@ -180,6 +208,23 @@ else
          </div>
 
         <style>
+            .barcode-container {
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                top: 0;
+                left: 0;
+                z-index: 170;
+            }
+            .barcode-container video {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: cover !important;
+            }
+            /* Esconde textos e botões nativos da biblioteca ZXing.Blazor */
+            .barcode-container span, .barcode-container button {
+                display: none !important;
+            }
             @@keyframes scan {
                 0% { top: 0; }
                 50% { top: 100%; }
@@ -188,20 +233,22 @@ else
         </style>
 
         <MudPaper Class="d-flex justify-center align-center"
-            Style="background: rgba(0,0,0,0.85); width: 100%; height: 160px; padding-bottom: calc(env(safe-area-inset-bottom) + 20px);">
+            Style="background: rgba(0,0,0,0.9); width: 100%; height: 170px; border-top: 1px solid rgba(255,255,255,0.1); padding-bottom: calc(env(safe-area-inset-bottom) + 10px);">
             <div class="d-flex justify-center align-center" style="width: 100%;">
                 @if (mode == "photo")
                 {
-                    <div style="border-radius: 50%; box-shadow: 0 0 30px rgba(0,0,0,0.5);">
+                    <div class="capture-btn-container" style="border: none;">
                         <MudIconButton Icon="@Icons.Material.Filled.Camera" 
-                            Style="width: 84px; height: 84px; background-color: #ffffff; color: #3F51B5 !important; border-radius: 50%; font-size: 3.5rem !important;"
+                            Class="capture-btn"
+                            Style="background-color: white !important; color: #1B4F72 !important;"
                             OnClick="CapturePhoto" />
                     </div>
                 }
                 else
                 {
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" 
-                        Style="width: 90%; height: 72px; border-radius: 36px; font-weight: 900; font-size: 1.4rem; border: 2.5px solid rgba(255,255,255,0.2); box-shadow: 0 6px 15px rgba(0,0,0,0.5);"
+                    <MudButton Variant="Variant.Filled" 
+                        Class="scanner-btn"
+                        Style="background: linear-gradient(135deg, #0066CC 0%, #004C99 100%) !important; color: white !important; width: 90%; height: 80px !important; border-radius: 40px !important; font-size: 1.4rem !important; border: none !important; box-shadow: 0 10px 30px rgba(0, 76, 153, 0.5) !important;"
                         StartIcon="@Icons.Material.Filled.QrCodeScanner"
                         OnClick="ManualScanTrigger">
                         ESCANEAR PLACA
@@ -244,9 +291,12 @@ else
         <video id="modal-camera-feed" autoplay playsinline style="width: 100%; flex: 1; object-fit: cover;"></video>
         <MudPaper Class="d-flex justify-center align-center px-8 py-6" Style="background: rgba(0,0,0,0.8);">
             <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Surface" Size="Size.Large" OnClick="StopModalCamera" Class="mr-8" />
-            <MudIconButton Icon="@Icons.Material.Filled.Camera" 
-                Style="width: 72px; height: 72px; background-color: #ffffff; color: #3F51B5 !important; border-radius: 50%; font-size: 2.8rem !important;"
-                OnClick="CapturePhotoFromModal" />
+            <div class="capture-btn-container">
+                <MudIconButton Icon="@Icons.Material.Filled.Camera" 
+                    Class="capture-btn"
+                    Style="width: 64px !important; height: 64px !important;"
+                    OnClick="CapturePhotoFromModal" />
+            </div>
         </MudPaper>
     </div>
 }
@@ -269,13 +319,29 @@ else
     private bool isManualScanTriggered = false;
     private bool isPhotoModalOpen = false;
     private bool isCameraInModalActive = false;
+    
+    private bool isOcrMode = true;
 
     protected override async Task OnInitializedAsync()
     {
         appState.IsCameraActive = true;
         currentUser = await AuthService.GetCurrentUserAsync();
-        await OcrService.InitializeAsync();
 
+        // GATEKEEPER UO: Validação obrigatória antes de iniciar qualquer recurso
+        try 
+        {
+            await UOStateService.ValidateAndLoadAsync();
+            // Se chegou aqui, a UO está válida e carregada.
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Bloqueio de Segurança: {ex.Message}");
+            Navigation.NavigateTo("/home");
+            return;
+        }
+
+        await OcrService.InitializeAsync();
+        
         // Reset item for new capture
         itemModel = new InventoryItem();
         capturedPhotos.Clear();
@@ -290,22 +356,26 @@ else
             isFormVisible = false;
         }
     }
+    
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender && !isFormVisible)
         {
-            await StartCamera();
             if (mode != "photo")
             {
-                StartScanning();
+                if (isOcrMode)
+                {
+                    await StartCamera();
+                    StartScanning();
+                }
             }
         }
     }
 
     private void StartScanning()
     {
-        if (isScanning) return;
+        if (isScanning || !isOcrMode) return;
         isScanning = true;
         scanCts = new System.Threading.CancellationTokenSource();
         _ = ScanLoop(scanCts.Token);
@@ -322,41 +392,30 @@ else
                 var frame = await CameraService.CaptureFrameForOcrAsync("camera-feed", roi);
                 
                 if (!string.IsNullOrEmpty(frame))
+                if (frame != null)
                 {
                     var result = await OcrService.RecognizeAsync(frame);
-                    if (result.Confidence > 60)
+                    
+                    // Lógica de Feedback Visual (Scan Contínuo)
+                    if (!string.IsNullOrEmpty(result.Text) && result.Confidence > 60)
                     {
-                        var cleanedCode = NormalizeCode(result.Text);
-                        if (!string.IsNullOrEmpty(cleanedCode))
+                        // Validação leve apenas para feedback visual (Regex inline)
+                        var match = System.Text.RegularExpressions.Regex.Match(result.Text, @"[0-9A-Z\-\.\/]{4,}");
+                        if (match.Success)
                         {
-                            lastDetectedCode = cleanedCode;
-                            scanStatusText = $"Código detectado: {cleanedCode}";
+                            var potentialCode = match.Value;
+                            lastDetectedCode = potentialCode;
+                            scanStatusText = $"Detectado: {potentialCode}";
                             scanStatusColor = Color.Success;
                             scanStatusIcon = Icons.Material.Filled.CheckCircle;
                             StateHasChanged();
-
-                            if (isManualScanTriggered)
-                            {
-                                await ProcessFoundCode(cleanedCode);
-                            }
-                        }
-                        else
-                        {
-                            SetScanningStatus();
                         }
                     }
-                    else
+
+                    // Se foi solicitado Scan Manual, enviamos para o Orquestrador decidir
+                    if (isManualScanTriggered)
                     {
-                        if (isManualScanTriggered)
-                        {
-                            scanStatusText = "Não foi possível ler, tente novamente";
-                            scanStatusColor = Color.Error;
-                            scanStatusIcon = Icons.Material.Filled.Error;
-                            isManualScanTriggered = false;
-                            StateHasChanged();
-                            await Task.Delay(2000, token);
-                        }
-                        SetScanningStatus();
+                        await ProcessFoundCode(result.Text, result.Confidence);
                     }
                 }
             }
@@ -388,33 +447,56 @@ else
         StateHasChanged();
     }
 
-    private string NormalizeCode(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text)) return string.Empty;
-        // Regex para extrair apenas números e caracteres permitidos
-        var match = System.Text.RegularExpressions.Regex.Match(text, @"[0-9A-Z\-\.\/]{4,}");
-        return match.Success ? match.Value : string.Empty;
-    }
 
-    private async Task ProcessFoundCode(string code)
+
+    /// <summary>
+    /// Processa código extraído delegando a decisão para o ScanOrchestrator.
+    /// </summary>
+    private async Task ProcessFoundCode(string rawText, double confidence)
     {
         isManualScanTriggered = false;
-        // Busca no IndexedDB
-        var items = await DbService.GetAllAsync<InventoryItem>("items");
-        var existingItem = items.FirstOrDefault(i => i.Code == code);
-
-        if (existingItem != null)
+        
+        // Delega decisão complexa para o orquestrador (ScanOrchestratorService)
+        var decision = await ScanOrchestratorService.ProcessScanAsync(rawText, confidence);
+        
+        switch (decision.ResultType)
         {
-            itemModel = existingItem;
-            ToastService.ShowSuccess($"Patrimônio {code} encontrado!");
+            case ScanResultType.Success:
+                // Preenche formulário com dados oficiais
+                itemModel.Code = decision.ExtractedCode;
+                itemModel.Name = decision.OfficialItem!.Name;
+                itemModel.Category = decision.OfficialItem!.Category;
+                itemModel.Location = decision.OfficialItem!.Location;
+                
+                ToastService.ShowInfo(decision.Message);
+                await StopScanningAndShowForm();
+                break;
+            case ScanResultType.AlreadyRegistered:
+                // Já existe localmente
+                itemModel = decision.LocalItem!;
+                ToastService.ShowSuccess(decision.Message);
+                await StopScanningAndShowForm();
+                break;
+            case ScanResultType.ItemNotFoundInUo:
+            case ScanResultType.ValidationFailed:
+            case ScanResultType.ReadError:
+            default:
+                // Feedback de erro visual na área de scan
+                scanStatusText = decision.Message;
+                scanStatusColor = decision.ResultType == ScanResultType.ReadError ? Color.Error : Color.Warning;
+                scanStatusIcon = decision.ResultType == ScanResultType.ReadError ? Icons.Material.Filled.Error : Icons.Material.Filled.Warning;
+                
+                // Se for erro crítico de UO, mostra toast também
+                if (decision.ResultType == ScanResultType.ItemNotFoundInUo)
+                {
+                    ToastService.ShowInfo(decision.Message); // Corrigido: ShowWarning não existe
+                }
+                
+                StateHasChanged();
+                await Task.Delay(2000); 
+                SetScanningStatus();
+                break;
         }
-        else
-        {
-            itemModel.Code = code;
-            ToastService.ShowInfo($"Novo patrimônio detectado: {code}");
-        }
-
-        await StopScanningAndShowForm();
     }
 
     private async Task StopScanningAndShowForm()
@@ -426,6 +508,43 @@ else
         editContext = new EditContext(itemModel);
         isFormVisible = true;
         StateHasChanged();
+    }
+
+    private async Task OnToggleMode(bool value)
+    {
+        if (isOcrMode == value) return;
+        
+        // 1. Limpeza do modo anterior
+        if (isOcrMode)
+        {
+            // Saindo do OCR
+            scanCts?.Cancel();
+            await CameraService.StopCameraAsync("camera-feed");
+            // Nota: OcrService é gerenciado pelo lifecycle e DisposeAsync da página, 
+            // mas aqui podemos ser agressivos se necessário.
+        }
+        else
+        {
+            // Saindo do Barcode
+            // O componente BarcodeReader do ZXing.Blazor se auto-desliga ao ser removido do DOM
+        }
+
+        isOcrMode = value;
+        StateHasChanged();
+        await Task.Delay(100); // Aguarda renderização dos novos componentes
+
+        // 2. Inicialização do novo modo
+        if (isOcrMode)
+        {
+            await StartCamera();
+            StartScanning();
+        }
+    }
+
+    private async Task OnBarcodeDetected(string barcode)
+    {
+        // ZXing detectou algo! Passamos para o orquestrador com confiança 100
+        await ProcessFoundCode(barcode, 100);
     }
 
     private async Task StartCamera()
@@ -558,5 +677,11 @@ else
         scanCts?.Cancel();
         await CameraService.StopCameraAsync("camera-feed");
         appState.IsCameraActive = false;
+        
+        // Garante liberação de memória do worker OCR ao sair da tela
+        if (OcrService != null)
+        {
+            await OcrService.DisposeAsync();
+        }
     }
 }

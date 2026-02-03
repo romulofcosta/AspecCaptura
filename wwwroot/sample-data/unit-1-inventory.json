@@ -1,0 +1,37 @@
+[
+    {
+        "code": "12345",
+        "name": "Mesa de Escritório Premium",
+        "category": "Móveis",
+        "location": "Sala 101, Andar 1",
+        "status": "ativo"
+    },
+    {
+        "code": "MES-001",
+        "name": "Mesa de Reunião",
+        "category": "Móveis",
+        "location": "Sala de Reuniões 201",
+        "status": "ativo"
+    },
+    {
+        "code": "CPU-042",
+        "name": "Computador Desktop Dell",
+        "category": "Eletrônicos",
+        "location": "TI - Sala 305",
+        "status": "ativo"
+    },
+    {
+        "code": "IMP-078",
+        "name": "Impressora Multifuncional HP",
+        "category": "Equipamentos",
+        "location": "Área Administrativa",
+        "status": "ativo"
+    },
+    {
+        "code": "CAD-100",
+        "name": "Cadeira Ergonômica",
+        "category": "Móveis",
+        "location": "Estação de Trabalho 15",
+        "status": "ativo"
+    }
+]
