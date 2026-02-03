@@ -14,30 +14,24 @@
 <PageTitle>Inventário - ASPEC Capture</PageTitle>
 
 <MudContainer id="home-container" MaxWidth="MaxWidth.False" Class="pa-0 pb-20" Style="overflow-y: auto; height: 100dvh;">
-    <!-- Header Section -->
-    <div style="background-color: var(--mud-palette-primary); padding: 24px 16px 40px 16px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; position: relative;">
-        <div class="d-flex align-center justify-space-between mb-4">
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Surface" Edge="Edge.Start" />
-            <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="Color.Surface" OnClick="ToggleFilters" />
-        </div>
-
-        <!-- Search Bar Overlapping -->
-        <div style="position: absolute; bottom: -28px; left: 16px; right: 16px; z-index: 10;">
-            <MudPaper Elevation="4" Class="pa-1 rounded-pill d-flex align-center">
+    <div class="px-4 pt-6">
+        <!-- Search Bar & Filters -->
+        <div class="d-flex align-center gap-2 mb-6">
+            <MudPaper Elevation="2" Class="pa-1 rounded-pill d-flex align-center flex-grow-1" Style="border: 1px solid rgba(0,0,0,0.05);">
                 <MudIcon Icon="@Icons.Material.Filled.Search" Class="ml-4" Color="Color.Default" />
                 <MudTextField @bind-Value="searchQuery" Placeholder="Buscar por nome, código ou local..." 
-                    Variant="Variant.Text" Class="flex-grow-1 mx-2" Margin="Margin.Dense" />
+                    Variant="Variant.Text" Class="flex-grow-1 mx-2" Margin="Margin.Dense" DisableUnderLine="true" />
             </MudPaper>
+            <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@(showFilters ? Color.Primary : Color.Default)" 
+                OnClick="ToggleFilters" Variant="Variant.Filled" Style="border-radius: 12px; height: 48px; width: 48px;" />
         </div>
-    </div>
 
-    <div class="px-4 mt-12">
         <MudGrid Spacing="3">
             <!-- Action Button (Escanear Placa) -->
             <MudItem xs="12">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" 
                     StartIcon="@Icons.Material.Filled.QrCodeScanner" OnClick='() => Navigation.NavigateTo("/camera")'
-                    Style="height: 56px; font-weight: 600; font-size: 0.95rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(63,81,181,0.3);">
+                    Style="height: 60px; font-weight: 600; font-size: 1rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,122,255,0.2);">
                     Escanear Placa
                 </MudButton>
             </MudItem>
