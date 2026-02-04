@@ -5,7 +5,13 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
-## [Não Lançado]
+## [1.4.1] - 2026-02-04
+
+### Corrigido
+- **Câmera**: Corrigida falha na ativação da câmera principal ao entrar diretamente no modo de captura de foto (`mode=photo`).
+- **Build**: Resolvido erro de compilação `RZ2005` (invisible BOM character) no arquivo `Home.razor`.
+- **UI/UX**: Melhorada a visibilidade da versão do aplicativo em dispositivos móveis (adicionado preenchimento no login e versão no NavMenu).
+- **Estabilidade**: Adicionado delay de renderização para garantir disponibilidade do hardware de câmera.
 
 ## [1.4.0] - 2026-02-03
 
@@ -32,6 +38,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
   - Ícones contextuais para cada tipo de erro (CloudOff, Warning, NotListedLocation, Error)
   - Cores diferenciadas por tipo de erro (Error, Warning, Info, Success)
   - Timeout automático de 3 segundos para retornar ao estado de busca
+- **Refinamento de UI da Câmera**:
+  - Aumento do contraste e visibilidade do botão de captura.
+  - Ajuste de tamanho dos controles para melhor ergonomia em dispositivos móveis.
+  - Indicadores de modo (Foto vs Scanner) mais claros.
 
 ### Corrigido - 2026-02-03
 

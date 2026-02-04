@@ -1,18 +1,15 @@
-# PWA Camera POC - Blazor
+# ASPEC Capture - PWA Camera POC
 
-Este é um projeto de Prova de Conceito (POC) para uma Progressive Web App (PWA) de inventário utilizando câmera, desenvolvido com Blazor WebAssembly. O objetivo é demonstrar a integração de funcionalidades de câmera, autenticação local e armazenamento offline para um sistema de inventário simples.
+Uma aplicação Progressiva Web (PWA) desenvolvida em **Blazor WebAssembly** focada na captura offline de inventário, integração com hardware de câmera e sincronização com AWS S3 via API BFF.
 
-## Objetivo
+![Versão](https://img.shields.io/badge/version-1.4.1-blue)
+![.NET](https://img.shields.io/badge/.NET-8.0-512bd4)
+![Blazor](https://img.shields.io/badge/Blazor-WASM-512bd4)
+![Status](https://img.shields.io/badge/Status-Beta-orange)
 
-O projeto visa criar uma aplicação web que funcione offline, permitindo aos usuários fazer login, capturar itens via câmera, registrar inventário e sincronizar dados quando online. É direcionado para cenários de inventário móvel em ambientes com conectividade limitada.
+## 🎯 Objetivo
 
-## ⚠️ Status do Projeto & Limitações Conhecidas
-
-> **Status (16/01/2026):** A integração com a API BFF foi implementada com sucesso, resolvendo o problema de upload S3 via Pre-Signed URLs. O projeto agora requer a execução da API `pwa-camera-poc-api` em paralelo.
-
-**Principais Pontos de Atenção:**
-1.  **Login**: Validação de formato de e-mail impede uso de usuários de teste simples (ex: `admin`).
-2.  **Sincronização**: Resolvida através da integração com a API BFF.
+O projeto visa criar uma aplicação web que funcione offline, permitindo aos usuários fazer login, capturar itens via câmera, registrar inventário de patrimônio via OCR e sincronizar dados quando online. É direcionado para cenários de inventário móvel em ambientes com conectividade limitada.
 
 ## Funcionalidades
 
@@ -206,12 +203,23 @@ O modelo `InventoryItem` (localizado em `Models/Item.cs`) representa um item de 
 #### Estratégia de Sincronização (Via BFF)
 O projeto utiliza uma arquitetura segura com API Backend for Frontend (BFF) para intermediar o acesso ao S3, eliminando a necessidade de credenciais no cliente.
 
-1. **Autenticação**: O usuário é validado localmente.
+1. **Autenticação**: O usuário é validado localmente para garantir acesso offline.
 2. **Sincronização**: O App solicita uma URL assinada (Pre-Signed URL) para a API BFF.
 3. **Upload Direto**: O App faz upload do binário da imagem/JSON diretamente para o S3 usando a URL assinada.
 4. **Segurança**: As credenciais AWS ficam protegidas no servidor (API).
-5. **Limpeza Local**: Após o sucesso, os dados Base64 são removidos do IndexedDB.
-6. **Legado**: O sistema Harbour consome os diretórios do S3 via API de listagem ou sincronização direta de arquivos.
+5. **Limpeza Local**: Após o sucesso, os dados Base64 são removidos do IndexedDB para otimizar espaço.
+6. **Legado**: O sistema Harbour consome os diretórios do S3 seguindo a estrutura `{itemId}/foto-n.jpg` e `{itemId}/metadata.json`.
+
+## 🏗️ Arquitetura do Sistema
+
+```mermaid
+graph TD
+    A[PWA Blazor WASM] -->|Request URL| B[API BFF .NET 8]
+    B -->|Generate Pre-signed| C[AWS S3]
+    A -->|Direct PUT| C
+    A -->|Local Store| D[IndexedDB]
+    E[Tesseract.js] -->|OCR| A
+```
 
 ## ⚙️ Configuração do Ambiente
 

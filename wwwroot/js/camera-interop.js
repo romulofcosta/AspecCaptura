@@ -1,11 +1,15 @@
 window.cameraInterop = {
     startCamera: async (videoElementId, facingMode) => {
+        console.log(`Starting camera: ${videoElementId} with mode: ${facingMode}`);
         const video = document.getElementById(videoElementId);
-        if (!video) return;
+        if (!video) {
+            console.error(`Video element not found: ${videoElementId}`);
+            return;
+        }
 
         const constraints = {
             video: { 
-                facingMode: facingMode,
+                facingMode: { ideal: facingMode },
                 width: { ideal: 1280 },
                 height: { ideal: 720 }
             }

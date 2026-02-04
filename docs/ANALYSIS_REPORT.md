@@ -60,6 +60,21 @@ Tentar configurar o `AmazonS3Client` para ser "WASM-friendly", embora instável 
 
 ---
 
-## 4. Próximos Passos Sugeridos
-1.  **Imediato:** Validar se há infraestrutura de backend (API) disponível para implementar a **Opção A (Pre-Signed URLs)**. Esta é a solução padrão da indústria para uploads S3 via SPAs/PWA.
-2.  **Curto Prazo:** Corrigir as validações da tela de Login para aceitar o usuário de teste oficial.
+---
+
+## 5. Resolução das Obstruções (Atualizado em 16/01/2026)
+
+### 5.1. Solução para Upload S3
+Foi implementada a **Opção A (Pre-Signed URLs)** através da criação da API `pwa-camera-poc-api`. O fluxo agora é:
+1. PWA solicita URL ao BFF.
+2. BFF (com credenciais seguras) gera URL assinada.
+3. PWA faz PUT direto no S3.
+**Resultado:** Sucesso. O AWS SDK foi removido do projeto Blazor, reduzindo o tamanho do bundle e eliminando problemas de compatibilidade WASM.
+
+### 5.2. Solução para o Login
+A tela de login foi ajustada para suportar tanto e-mails quanto usernames simples, facilitando os testes com a conta `admin`.
+
+---
+
+## 6. Conclusão Final
+O sistema agora está estável para captura e sincronização online/offline utilizando a arquitetura BFF. Próximas baterias de teste devem focar na performance do OCR em dispositivos de baixa gama.

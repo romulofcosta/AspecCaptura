@@ -362,11 +362,15 @@ else
     {
         if (firstRender && !isFormVisible)
         {
+            // Fix: Start camera regardless of mode if form is not visible
+            // Added small delay to ensure video element is ready in DOM
+            await Task.Delay(300);
+            await StartCamera();
+
             if (mode != "photo")
             {
                 if (isOcrMode)
                 {
-                    await StartCamera();
                     StartScanning();
                 }
             }

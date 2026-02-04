@@ -1,43 +1,42 @@
 # Guia de Teste Local
 
-Como as credenciais AWS foram removidas do arquivo principal `appsettings.json` por segurança, siga estes passos para testar a aplicação localmente:
+Com a migração para a arquitetura BFF, o PWA não utiliza mais chaves AWS diretamente. Siga estes passos para configurar seu ambiente de teste local:
 
-## Opção 1: Usar appsettings.Development.json (Recomendado)
+## 🔌 Configuração da API BFF
+1. Navegue até o projeto `pwa-camera-poc-api`.
+2. Configure suas credenciais AWS no `appsettings.json` da API (consulte o README da API).
+3. Inicie a API com `dotnet run`. Por padrão, ela rodará em `http://localhost:5069`.
 
-Crie um arquivo chamado `appsettings.Development.json` na pasta `wwwroot` com suas credenciais reais. Este arquivo substituirá as configurações do `appsettings.json` quando rodar em ambiente de desenvolvimento.
+## 📱 Configuração do PWA
+1. No projeto `pwa-camera-poc-blazor`, verifique o arquivo `wwwroot/appsettings.json`.
+2. O campo `ApiBaseUrl` deve apontar para o endereço da sua API local:
+   ```json
+   {
+     "ApiBaseUrl": "http://localhost:5069"
+   }
+   ```
+3. Inicie o PWA com `dotnet run`.
 
-```json
-{
-    "Aws": {
-        "Region": "us-east-1",
-        "BucketName": "SEU_BUCKET_NAME",
-        "AccessKey": "SUA_ACCESS_KEY_REAL",
-        "SecretKey": "SUA_SECRET_KEY_REAL"
-    }
-}
-```
+## 🧪 Roteiro de Testes
 
-> **Nota:** Certifique-se de que este arquivo esteja listado no `.gitignore` para não ser enviado para o repositório.
+### 1. Login e Unidade
+- Faça login com `admin`/`admin`.
+- **Importante**: Selecione uma Unidade Organizadora no Drawer (Menu Lateral). Sem isso, o OCR não validará os itens.
 
-## Opção 2: Testar Sincronização
+### 2. Scanner OCR
+- Vá para a tela de Câmera.
+- Use a função "Escanear Patrimônio" (Ícone de Mira).
+- Aponte para um código de patrimônio que conste no arquivo `/sample-data/unit-{id}-inventory.json` da unidade selecionada.
+- Verifique se os dados (Nome, Código) são preenchidos automaticamente após a validação bem-sucedida.
 
-1. **Login:** Acesse a aplicação com qualquer usuário (ex: `admin`/`admin`).
-2. **Captura:**
-   - Vá para a tela de Câmera (`/camera`).
-   - Capture uma foto e salve um item.
-   - Verifique se ele aparece na Home com ícone de nuvem **Cinza** (Pendente).
-3. **Mudar de Usuário (Teste de Isolamento):**
-   - Faça logout e login com outro usuário (ex: `user2`/`password`).
-   - Verifique que o item criado pelo `admin` **NÃO** aparece na lista.
-   - Crie um novo item para `user2`.
-4. **Sincronização:**
-   - Volte para o usuário que tem itens pendentes.
-   - Vá para a tela de Sincronização (`/sync`).
-   - Clique em "Sincronizar Tudo".
-   - Após sucesso, verifique na Home se o ícone mudou para **Verde** (Sincronizado) ou se ele sumiu (dependendo da lógica de limpeza, mas neste caso mantemos o item localmente apenas marcando como synced).
+### 3. Sincronização
+- Capture um item e salve-o.
+- Note o ícone de nuvem cinza (pendente).
+- Vá em `/sync` e clique em "Sincronizar Tudo".
+- Verifique no console do navegador (F12) se as chamadas para a API BFF estão retornando `200 OK`.
+- Verifique se o ícone na Home mudou para verde.
 
-## Verificação no S3
-
-Acesse o console da AWS S3 e verifique se os arquivos foram criados na pasta `capturas/`:
-- `{GUID}.jpg`
-- `{GUID}.json` (Abra e verifique o campo `usuarioEnvio`).
+## 📁 Verificação no S3
+Os arquivos devem aparecer no bucket configurado na API seguindo a estrutura:
+- `capturas/{itemId}/foto-1.jpg`
+- `capturas/{itemId}/metadata.json`

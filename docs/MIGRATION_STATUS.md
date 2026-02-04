@@ -26,10 +26,16 @@
 - [x] **Tema Escuro**: Otimização de contraste e legibilidade para longas durações de uso.
 - [x] **Detector de Overflow**: Solução JS Interop para garantir scroll perfeito em containers MudProgress.
 
-## 🚀 Próximos Passos (Melhorias Contínuas)
-- [ ] Implementar MudDataGrid pesado para exportação avançada.
-- [ ] Adicionar diálogos de confirmação (MudMessageBox) para deletar itens.
-- [ ] Otimizar tamanho das imagens em base64 no IndexedDB.
+### Funcionalidades Avançadas
+- [x] **Scanner OCR (v0.1.11)**: Integração com Tesseract.js para leitura de patrimônio.
+- [x] **Validação em 3 Camadas**: Sistema robusto de validação contextual (Infra, Negócio, Local).
+- [x] **BFF Integration**: Migração completa de upload direto AWS SDK para API BFF via Pre-signed URLs.
+- [x] **Múltiplas Fotos**: Suporte a galeria e captura de várias imagens por item.
+
+## 🚀 Próximos Passos (Próxima Fase)
+- [ ] Integração real com AWS Cognito para Auth centralizado.
+- [ ] Push Notifications para alertas de sincronização.
+- [ ] Suporte a gravação de vídeos curtos para inspeção.
 
 ## 🐛 Histórico de Ajustes
 - Resolvido aviso MUD0002 sobre atributo `Hover` ilegal.
