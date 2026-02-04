@@ -35,7 +35,7 @@ O sistema de scanner automatiza a leitura de etiquetas de patrimônio utilizando
 
 ### Validação Contextual em Três Camadas:
 1. **Infraestrutura**: Verifica a disponibilidade dos arquivos de dicionário e inventário da unidade.
-2. **Negócio**: Valida se o código lido pertence ao inventário oficial (`UnitInventoryItem`) da Unidade Organizadora selecionada.
+2. **Negócio**: Valida se o código lido pertence ao inventário oficial (`UnitInventoryItem`) da Unidade Gestora selecionada.
 3. **Local**: Verifica se o item já foi capturado e está pendente de sincronização no IndexedDB.
 
 ## 🔐 Sistema de Autenticação e Segurança

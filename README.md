@@ -18,13 +18,13 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 - **Scanner OCR com Validação Contextual**: 
   - Leitura automática de placas patrimoniais usando Tesseract.js
   - Validação em três camadas com mensagens específicas de erro:
-    1. **Validação de Infraestrutura**: Verifica se o arquivo JSON da UO foi carregado
+    1. **Validação de Infraestrutura**: Verifica se o arquivo JSON da UG foi carregado
     2. **Validação de Negócio**: Confirma se o código pertence ao inventário oficial da unidade
     3. **Validação Local**: Busca por registros existentes no IndexedDB
   - Estados de erro contextuais:
     - `"Não foi possível fazer a leitura da imagem"`: Falha no OCR (confidence < 60%)
     - `"Código inválido, tente novamente"`: Texto extraído mas não passou pela normalização
-    - `"Não foi possível identificar a Unidade Organizadora"`: Erro de infraestrutura (arquivo JSON não carregado)
+    - `"Não foi possível identificar a Unidade Gestora"`: Erro de infraestrutura (arquivo JSON não carregado)
     - `"Item não identificado ou não pertence a esta Unidade"`: Código válido mas não consta no inventário oficial
 - **Gerenciamento de Inventário**: Adição, edição e visualização de itens com suporte a categorias, unidades gestoras, busca avançada e ordenação personalizada.
 - **Armazenamento Offline**: Uso de IndexedDB para dados de inventário e localStorage para persistência de sessão e temas.

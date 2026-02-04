@@ -19,11 +19,11 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 #### 🔍 Scanner OCR com Validação Contextual (v0.1.11)
 - **Sistema de Validação em Três Camadas**:
-  1. **Validação de Infraestrutura**: Verifica se o arquivo JSON do inventário da UO foi carregado com sucesso
+  1. **Validação de Infraestrutura**: Verifica se o arquivo JSON do inventário da UG foi carregado com sucesso
   2. **Validação de Negócio**: Confirma se o código extraído pertence ao inventário oficial da unidade
   3. **Validação Local**: Busca por registros existentes no IndexedDB
   
-- **Modelo de Inventário da UO**:
+- **Modelo de Inventário da UG**:
   - Criado `UnitInventoryItem.cs` para representar itens do inventário oficial
   - Arquivo JSON por unidade: `/sample-data/unit-{unitId}-inventory.json`
   - Auto-preenchimento de dados quando patrimônio é validado
@@ -31,8 +31,8 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **Mensagens de Erro Contextuais**:
   - `"Não foi possível fazer a leitura da imagem"`: Falha no motor OCR (texto vazio ou confidence < 60%)
   - `"Código inválido, tente novamente"`: Texto extraído mas não passou pela regex de normalização
-  - `"Não foi possível identificar a Unidade Organizadora"`: Erro de infraestrutura (arquivo JSON da UO não carregado)
-  - `"Item não identificado ou não pertence a esta Unidade"`: Código válido mas não consta no inventário oficial da UO
+  - `"Não foi possível identificar a Unidade Gestora"`: Erro de infraestrutura (arquivo JSON da UG não carregado)
+  - `"Item não identificado ou não pertence a esta Unidade"`: Código válido mas não consta no inventário oficial da UG
   
 - **Indicadores Visuais Aprimorados**:
   - Ícones contextuais para cada tipo de erro (CloudOff, Warning, NotListedLocation, Error)

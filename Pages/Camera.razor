@@ -11,7 +11,7 @@
 @inject pwa_camera_poc_blazor.Services.ToastService ToastService
 @inject AppState appState
 @inject HttpClient HttpClient
-@inject pwa_camera_poc_blazor.Services.UO.UOStateService UOStateService
+@inject pwa_camera_poc_blazor.Services.UG.UGStateService UGStateService
 @inject pwa_camera_poc_blazor.Services.Scanning.ScanOrchestrator ScanOrchestratorService
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
@@ -327,11 +327,11 @@ else
         appState.IsCameraActive = true;
         currentUser = await AuthService.GetCurrentUserAsync();
 
-        // GATEKEEPER UO: Validação obrigatória antes de iniciar qualquer recurso
+        // GATEKEEPER UG: Validação obrigatória antes de iniciar qualquer recurso
         try 
         {
-            await UOStateService.ValidateAndLoadAsync();
-            // Se chegou aqui, a UO está válida e carregada.
+            await UGStateService.ValidateAndLoadAsync();
+            // Se chegou aqui, a UG está válida e carregada.
         }
         catch (Exception ex)
         {
@@ -481,7 +481,7 @@ else
                 ToastService.ShowSuccess(decision.Message);
                 await StopScanningAndShowForm();
                 break;
-            case ScanResultType.ItemNotFoundInUo:
+            case ScanResultType.ItemNotFoundInUg:
             case ScanResultType.ValidationFailed:
             case ScanResultType.ReadError:
             default:
@@ -490,8 +490,8 @@ else
                 scanStatusColor = decision.ResultType == ScanResultType.ReadError ? Color.Error : Color.Warning;
                 scanStatusIcon = decision.ResultType == ScanResultType.ReadError ? Icons.Material.Filled.Error : Icons.Material.Filled.Warning;
                 
-                // Se for erro crítico de UO, mostra toast também
-                if (decision.ResultType == ScanResultType.ItemNotFoundInUo)
+                // Se for erro crítico de UG, mostra toast também
+                if (decision.ResultType == ScanResultType.ItemNotFoundInUg)
                 {
                     ToastService.ShowInfo(decision.Message); // Corrigido: ShowWarning não existe
                 }

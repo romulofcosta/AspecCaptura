@@ -21,7 +21,7 @@ Com a migração para a arquitetura BFF, o PWA não utiliza mais chaves AWS dire
 
 ### 1. Login e Unidade
 - Faça login com `admin`/`admin`.
-- **Importante**: Selecione uma Unidade Organizadora no Drawer (Menu Lateral). Sem isso, o OCR não validará os itens.
+- **Importante**: Selecione uma Unidade Gestora no Drawer (Menu Lateral). Sem isso, o OCR não validará os itens.
 
 ### 2. Scanner OCR
 - Vá para a tela de Câmera.

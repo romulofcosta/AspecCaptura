@@ -3,8 +3,8 @@ using System.Text.Json.Serialization;
 namespace pwa_camera_poc_blazor.Models
 {
     /// <summary>
-    /// Representa um item do inventário oficial da Unidade Organizadora (UO).
-    /// Este modelo é usado para validar se um patrimônio escaneado pertence à UO.
+    /// Representa um item do inventário oficial da Unidade Gestora (UG).
+    /// Este modelo é usado para validar se um patrimônio escaneado pertence à UG.
     /// </summary>
     public class UnitInventoryItem
     {

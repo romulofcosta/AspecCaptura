@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using pwa_camera_poc_blazor.Models;
 using pwa_camera_poc_blazor.Services.Storage;
-using pwa_camera_poc_blazor.Services.UO;
+using pwa_camera_poc_blazor.Services.UG;
 
 namespace pwa_camera_poc_blazor.Services.Scanning
 {
@@ -15,12 +15,12 @@ namespace pwa_camera_poc_blazor.Services.Scanning
     /// </summary>
     public class ScanOrchestrator
     {
-        private readonly UOStateService _uoStateService;
+        private readonly UGStateService _ugStateService;
         private readonly IIndexedDbService _dbService;
 
-        public ScanOrchestrator(UOStateService uoStateService, IIndexedDbService dbService)
+        public ScanOrchestrator(UGStateService ugStateService, IIndexedDbService dbService)
         {
-            _uoStateService = uoStateService;
+            _ugStateService = ugStateService;
             _dbService = dbService;
         }
 
@@ -65,16 +65,16 @@ namespace pwa_camera_poc_blazor.Services.Scanning
                 };
             }
 
-            // 4. Validação Contra Inventário da UO (Gatekeeper de Negócio)
-            // UOStateService já deve ter garantido que OfficialInventory está populado
-            var officialItem = _uoStateService.OfficialInventory
+            // 4. Validação Contra Inventário da UG (Gatekeeper de Negócio)
+            // UGStateService já deve ter garantido que OfficialInventory está populado
+            var officialItem = _ugStateService.OfficialInventory
                 .FirstOrDefault(i => i.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
 
             if (officialItem == null)
             {
                 return new ScanDecision
                 {
-                    ResultType = ScanResultType.ItemNotFoundInUo,
+                    ResultType = ScanResultType.ItemNotFoundInUg,
                     Message = "Item não identificado ou não pertence a esta Unidade",
                     ExtractedCode = code
                 };

@@ -5,7 +5,7 @@ namespace pwa_camera_poc_blazor.Services.Scanning
     public enum ScanResultType
     {
         Success,                // Item identificado e verificado
-        ItemNotFoundInUo,       // Código extraído, mas não está na UO (Erro de Negócio)
+        ItemNotFoundInUg,       // Código extraído, mas não está na UG (Erro de Negócio)
         AlreadyRegistered,      // Item já está cadastrado localmente
         ReadError,              // Falha na extração (Confidence baixo ou vazio)
         ValidationFailed        // Falha na regex ou formato inválido
@@ -16,7 +16,7 @@ namespace pwa_camera_poc_blazor.Services.Scanning
         public ScanResultType ResultType { get; set; }
         public string Message { get; set; } = string.Empty;
         public InventoryItem? LocalItem { get; set; }      // Se já existir localmente
-        public UnitInventoryItem? OfficialItem { get; set; } // Dados da UO para preenchimento
+        public UnitInventoryItem? OfficialItem { get; set; } // Dados da UG para preenchimento
         public string ExtractedCode { get; set; } = string.Empty;
     }
 }
