@@ -19,20 +19,17 @@
     <MudAppBar Elevation="2" Color="Color.Primary" Fixed="true">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
             OnClick="ToggleMenu" />
-        <MudImage Src="images/aspec_logo.png" Alt="Aspec Capture" Width="32" Height="32" Class="mr-2 ml-3"
-            Style="border-radius: 4px;" />
+        <MudImage Src="images/aspec_logo.png" Alt="Aspec Capture" Width="32" Height="32" Class="mr-2 ml-3 aspec-logo" />
         <MudText Typo="Typo.h6">Aspec Capture</MudText>
         <MudSpacer />
     </MudAppBar>
 
     <MudDrawer @bind-Open="isMenuOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Variant="DrawerVariant.Responsive"
-        Style="z-index: 10001;">
-        <NavMenu OnThemeToggle="ToggleTheme" OnUnitSelected="HandleUnitSelected"
-            OnMenuItemClick="@(() => isMenuOpen = false)" />
+        Class="drawer-z-index">
+        <NavMenu OnThemeToggle="ToggleTheme" OnUnitSelected="HandleUnitSelected" OnMenuItemClick="CloseMenu" />
     </MudDrawer>
 
-    <MudMainContent Class="mud-width-full"
-        Style="display: flex; flex-direction: column; height: calc(100vh - 64px - 64px); overflow: hidden;">
+    <MudMainContent Class="mud-width-full main-content">
         @Body
     </MudMainContent>
 
@@ -138,7 +135,7 @@
             var user = await AuthService.GetCurrentUserAsync();
             if (user != null)
             {
-                appState.CurrentUnitId = user.CurrentUnitId;
+                appState.CurrentUnitId = user.UnidadeGestoraAtualId;
             }
         }
         catch (Exception ex)
@@ -170,10 +167,10 @@
     {
         var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri).ToLower();
         if (string.IsNullOrEmpty(relativePath) || relativePath == "home") activeTab = "home";
-        else if (relativePath == "sync") activeTab = "sync";
+        else if (relativePath == "sincronizacao") activeTab = "sync";
         else activeTab = "";
 
-        if (relativePath != "camera" && appState.IsCameraActive)
+        if (relativePath != "captura" && appState.IsCameraActive)
         {
             appState.IsCameraActive = false;
         }
@@ -183,8 +180,8 @@
     {
         try
         {
-            var items = await DbService.GetAllAsync<InventoryItem>("items");
-            appState.PendingSyncCount = items.Count(i => !i.Synced);
+            var items = await DbService.GetAllAsync<ItemPatrimonio>("items");
+            appState.PendingSyncCount = items.Count(i => !i.Sincronizado);
         }
         catch (Exception ex)
         {
@@ -193,10 +190,8 @@
         }
     }
 
-    private void ToggleMenu()
-    {
-        isMenuOpen = !isMenuOpen;
-    }
+    private void ToggleMenu() => isMenuOpen = !isMenuOpen;
+    private void CloseMenu() => isMenuOpen = false;
 
     private async Task ToggleTheme()
     {
@@ -225,12 +220,12 @@
     {
         activeTab = tab;
         if (tab == "home") Navigation.NavigateTo("/home");
-        else if (tab == "sync") Navigation.NavigateTo("/sync");
+        else if (tab == "sync") Navigation.NavigateTo("/sincronizacao");
     }
 
     private void HandleCaptureClick()
     {
-        Navigation.NavigateTo("/camera?mode=photo");
+        Navigation.NavigateTo("/captura?mode=photo");
     }
 
     private void HandleUnitSelected(int unitId)

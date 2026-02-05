@@ -1,0 +1,99 @@
+.aspec-btn {
+    border-radius: var(--radius-lg) !important;
+    font-weight: var(--font-weight-semibold) !important;
+    transition: all var(--transition-fast) !important;
+    min-height: var(--btn-height-lg) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.aspec-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md) !important;
+}
+
+.aspec-btn:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.aspec-btn:focus {
+    outline: 2px solid var(--mud-palette-primary);
+    outline-offset: 2px;
+}
+
+/* Button size variants */
+.aspec-btn.mud-button-size-small {
+    min-height: var(--btn-height-sm) !important;
+    font-size: var(--font-size-sm) !important;
+    padding: var(--spacing-xs) var(--spacing-md) !important;
+}
+
+.aspec-btn.mud-button-size-medium {
+    min-height: var(--btn-height-lg) !important;
+    font-size: var(--font-size-base) !important;
+    padding: var(--spacing-md) var(--spacing-xl) !important;
+}
+
+.aspec-btn.mud-button-size-large {
+    min-height: var(--btn-height-xl) !important;
+    font-size: var(--font-size-lg) !important;
+    padding: var(--spacing-lg) var(--spacing-xxl) !important;
+}
+
+/* Button variant improvements */
+.aspec-btn.mud-button-filled {
+    box-shadow: var(--shadow-sm);
+}
+
+.aspec-btn.mud-button-outlined {
+    border-width: 2px !important;
+    background-color: transparent;
+}
+
+.aspec-btn.mud-button-outlined:hover {
+    background-color: rgba(var(--mud-palette-primary-rgb), 0.04);
+}
+
+.aspec-btn.mud-button-text {
+    background-color: transparent;
+    box-shadow: none !important;
+}
+
+.aspec-btn.mud-button-text:hover {
+    background-color: rgba(var(--mud-palette-primary-rgb), 0.04);
+    transform: none;
+}
+
+/* Loading state */
+.aspec-btn:disabled {
+    opacity: var(--opacity-disabled) !important;
+    transform: none !important;
+    box-shadow: none !important;
+    cursor: not-allowed;
+}
+
+/* Icon alignment */
+.aspec-btn .mud-button-start-icon {
+    margin-right: var(--spacing-sm) !important;
+}
+
+.aspec-btn .mud-button-end-icon {
+    margin-left: var(--spacing-sm) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .aspec-btn {
+        min-height: var(--btn-height-xl) !important;
+        font-size: var(--font-size-base) !important;
+    }
+    
+    .aspec-btn.mud-button-size-small {
+        min-height: var(--btn-height-md) !important;
+    }
+    
+    .aspec-btn.mud-button-size-large {
+        min-height: var(--btn-height-xxl) !important;
+    }
+}

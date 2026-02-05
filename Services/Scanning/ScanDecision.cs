@@ -15,7 +15,7 @@ namespace pwa_camera_poc_blazor.Services.Scanning
     {
         public ScanResultType ResultType { get; set; }
         public string Message { get; set; } = string.Empty;
-        public InventoryItem? LocalItem { get; set; }      // Se já existir localmente
+        public ItemPatrimonio? LocalItem { get; set; }      // Se já existir localmente
         public UnitInventoryItem? OfficialItem { get; set; } // Dados da UG para preenchimento
         public string ExtractedCode { get; set; } = string.Empty;
     }

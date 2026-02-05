@@ -1,40 +1,64 @@
-<MudPaper Elevation="0" Class="@($"d-flex justify-space-around align-center width-100 {(IsHidden ? "d-none" : "")}")"
-    Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; height: 75px; background-color: #ffffff; border-top: 1px solid rgba(0,0,0,0.05); padding-bottom: env(safe-area-inset-bottom);">
+<MudPaper Elevation="0"
+    Class="@($"footer-bar d-flex justify-space-around align-center width-100 {(IsHidden ? "d-none" : "")}")"
+    role="navigation"
+    aria-label="Navegação principal">
 
     <!-- Início -->
-    <div class="d-flex flex-column align-center justify-center"
-        style="width: 33%; height: 100%; cursor: pointer; background-color: #EEF2FF; border-radius: 12px; margin: 8px 4px;"
-    @onclick='() => OnTabChanged.InvokeAsync("home")'>
-        <MudIcon Icon="@Icons.Material.Filled.Home"
-            Style="@($"font-size: 1.8rem; color: {(ActiveTab == "home" ? "#3F51B5" : "#9E9E9E")};")" />
-        <MudText Typo="Typo.caption"
-            Style="@($"font-weight: 600; font-size: 0.75rem; color: {(ActiveTab == "home" ? "#3F51B5" : "#9E9E9E")};")">
+    <div class="@($"footer-nav-item {(ActiveTab == "home" ? "active" : "")}")" 
+        @onclick="SetTabHome"
+        role="button"
+        tabindex="0"
+        aria-label="Ir para página inicial"
+        aria-current="@(ActiveTab == "home" ? "page" : "false")"
+        @onkeypress="@((e) => { if (e.Key == "Enter" || e.Key == " ") SetTabHome(); })">
+        <MudIcon Icon="@Icons.Material.Filled.Home" 
+            Class="@($"footer-icon {(ActiveTab == "home" ? "active" : "")}")"
+            aria-hidden="true" />
+        <MudText Typo="Typo.caption" Class="@($"footer-text {(ActiveTab == "home" ? "active" : "")}")">
             Início</MudText>
     </div>
 
     <!-- Central Capture FAB -->
-    <div class="d-flex align-center justify-center" style="width: 33%; height: 100%; position: relative;">
-        <MudIconButton Icon="@Icons.Material.Filled.CameraAlt"
-            Style="background-color: #ffffff; color: #3F51B5; border-radius: 50%; width: 80px; height: 80px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 10; transform: translateY(-25px); font-size: 2.8rem !important; border: none;"
-            OnClick="OnCaptureClick" />
+    <div class="footer-fab-container">
+        <MudIconButton Icon="@Icons.Material.Filled.CameraAlt" 
+            Class="footer-fab" 
+            OnClick="OnCaptureClick"
+            aria-label="Capturar novo patrimônio" />
     </div>
 
     <!-- Sincronização -->
-    <div class="d-flex flex-column align-center justify-center" style="width: 33%; height: 100%; cursor: pointer;"
-    @onclick='() => OnTabChanged.InvokeAsync("sync")'>
-        <MudBadge Content="@PendingSyncCount" Overlap="true" Bordered="true" Color="Color.Error"
-            Visible="@(PendingSyncCount > 0)">
+    <div class="@($"footer-nav-item {(ActiveTab == "sync" ? "active" : "")}")" 
+        @onclick="SetTabSync"
+        role="button"
+        tabindex="0"
+        aria-label="@($"Ir para sincronização{(PendingSyncCount > 0 ? $" - {PendingSyncCount} itens pendentes" : "")}")"
+        aria-current="@(ActiveTab == "sync" ? "page" : "false")"
+        @onkeypress="@((e) => { if (e.Key == "Enter" || e.Key == " ") SetTabSync(); })">
+        <MudBadge Content="@PendingSyncCount" 
+            Overlap="true" 
+            Bordered="true" 
+            Color="Color.Error"
+            Visible="@(PendingSyncCount > 0)"
+            aria-label="@($"{PendingSyncCount} itens pendentes de sincronização")">
             <MudIcon Icon="@Icons.Material.Filled.Sync"
-                Style="@($"font-size: 1.8rem; color: {(ActiveTab == "sync" ? "#3F51B5" : "#9E9E9E")};")" />
+                Class="@($"footer-icon {(ActiveTab == "sync" ? "active" : "")}")"
+                aria-hidden="true" />
         </MudBadge>
-        <MudText Typo="Typo.caption"
-            Style="@($"font-weight: 600; font-size: 0.75rem; color: {(ActiveTab == "sync" ? "#3F51B5" : "#9E9E9E")};")">
+        <MudText Typo="Typo.caption" Class="@($"footer-text {(ActiveTab == "sync" ? "active" : "")}")">
             Sincronização</MudText>
     </div>
 </MudPaper>
 
 @code {
     [Parameter] public string ActiveTab { get; set; } = "home";
+
+
+
+
+
+
+
+
 
 
 
@@ -50,7 +74,23 @@
 
 
 
+
+
+
+
+
+
+
+
     [Parameter] public EventCallback<string> OnTabChanged { get; set; }
+
+
+
+
+
+
+
+
 
 
 
@@ -66,5 +106,19 @@
 
 
 
+
+
+
+
+
+
+
+
     [Parameter] public bool IsHidden { get; set; }
+
+
+
+    private async Task SetTabHome() => await OnTabChanged.InvokeAsync("home");
+
+    private async Task SetTabSync() => await OnTabChanged.InvokeAsync("sync");
 }

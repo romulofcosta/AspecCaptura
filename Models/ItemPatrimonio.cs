@@ -5,29 +5,29 @@ using System.ComponentModel.DataAnnotations;
 
 namespace pwa_camera_poc_blazor.Models
 {
-    public class InventoryItem
+    public class ItemPatrimonio
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
         [Required(ErrorMessage = "Campo obrigatório")]
-        public string Name { get; set; } = string.Empty;
+        public string Nome { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Campo obrigatório")]
-        public string Code { get; set; } = string.Empty;
+        public string Codigo { get; set; } = string.Empty;
 
         public string Category { get; set; } = "Geral";
 
         [Required(ErrorMessage = "Campo obrigatório")]
-        public string Location { get; set; } = string.Empty;
+        public string Localizacao { get; set; } = string.Empty;
 
-        public string Observations { get; set; } = string.Empty;
+        public string Observacoes { get; set; } = string.Empty;
         public string Status { get; set; } = "ativo";
-        public DateTime Timestamp { get; set; } = DateTime.Now;
-        public bool Synced { get; set; } = false;
-        public int? UnitId { get; set; }
+        public DateTime DataHora { get; set; } = DateTime.Now;
+        public bool Sincronizado { get; set; } = false;
+        public int? UnidadeGestoraId { get; set; }
 
         // Username do usuário que criou o item localmente
-        public string CreatedBy { get; set; } = string.Empty;
+        public string CriadoPor { get; set; } = string.Empty;
 
         // Armazenamento de imagens (Base64 local ou URLs remotas)
         public List<string> Photos { get; set; } = new();

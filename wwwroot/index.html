@@ -30,8 +30,20 @@
         href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp"
         rel="stylesheet">
 
+    <!-- Preload Critical Resources for LCP Optimization -->
+    <link rel="preload" as="image" href="images/aspec_logo.png" fetchpriority="high" />
+
     <!-- MudBlazor CSS -->
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+
+    <!-- Design System CSS -->
+    <link rel="stylesheet" href="css/design-system.css" />
+
+    <!-- Skeleton Loaders CSS -->
+    <link rel="stylesheet" href="css/skeleton-loaders.css" />
+
+    <!-- Animations CSS -->
+    <link rel="stylesheet" href="css/animations.css" />
 
     <!-- Custom App CSS -->
     <link rel="stylesheet" href="css/app.css" />
@@ -61,6 +73,7 @@
     <script src="js/app.js"></script>
     <script src="js/db-interop.js"></script>
     <script src="js/camera-interop.js"></script>
+    <script src="js/gesture-handler.js"></script>
     <script src="_content/ZXing.Blazor/lib/barcodereader/zxing.js"></script>
     <script src="_content/ZXing.Blazor/lib/barcodereader/qrcode.min.js"></script>
     <script src="_content/ZXing.Blazor/lib/barcodereader/barcode.js"></script>

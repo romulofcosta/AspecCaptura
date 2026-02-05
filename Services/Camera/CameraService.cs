@@ -12,12 +12,12 @@ namespace pwa_camera_poc_blazor.Services.Camera
             _jsRuntime = jsRuntime;
         }
 
-        public async Task StartCameraAsync(string videoElementId, bool useFrontCamera)
+        public async Task IniciarCameraAsync(string videoElementId, bool useFrontCamera)
         {
             await _jsRuntime.InvokeVoidAsync("cameraInterop.startCamera", videoElementId, useFrontCamera ? "user" : "environment");
         }
 
-        public async Task<string> TakePhotoAsync(string videoElementId)
+        public async Task<string> CapturarImagemAsync(string videoElementId)
         {
             return await _jsRuntime.InvokeAsync<string>("cameraInterop.takePhoto", videoElementId);
         }
@@ -27,7 +27,7 @@ namespace pwa_camera_poc_blazor.Services.Camera
             return await _jsRuntime.InvokeAsync<string>("cameraInterop.captureFrameForOcr", videoElementId, roi);
         }
 
-        public async Task StopCameraAsync(string videoElementId)
+        public async Task PararCameraAsync(string videoElementId)
         {
             await _jsRuntime.InvokeVoidAsync("cameraInterop.stopCamera", videoElementId);
         }

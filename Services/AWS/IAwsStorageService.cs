@@ -31,7 +31,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
         /// <summary>
         /// Obtém a URL pública da imagem do item se existir no S3
         /// </summary>
-        Task<string?> GetItemImageUrlAsync(InventoryItem item);
+        Task<string?> GetItemImageUrlAsync(ItemPatrimonio item);
 
         /// <summary>
         /// Deleta um objeto do S3

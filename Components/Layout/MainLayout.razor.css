@@ -1,0 +1,65 @@
+.main-content {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--header-height) - var(--footer-height));
+    overflow: hidden;
+    position: relative;
+}
+
+.aspec-logo {
+    border-radius: var(--radius-xs);
+    transition: all var(--transition-fast);
+}
+
+.aspec-logo:hover {
+    transform: scale(1.05);
+}
+
+.drawer-z-index {
+    z-index: var(--z-modal) !important;
+}
+
+/* AppBar improvements */
+.mud-appbar {
+    box-shadow: var(--shadow-sm) !important;
+    backdrop-filter: blur(8px);
+    background-color: rgba(var(--mud-palette-primary-rgb), 0.95) !important;
+}
+
+/* Main content improvements */
+.main-content {
+    background-color: var(--mud-palette-background);
+    transition: all var(--transition-fast);
+}
+
+/* Responsive adjustments */
+@media (max-width: 960px) {
+    .main-content {
+        height: calc(100vh - var(--header-height) - var(--footer-height));
+    }
+}
+
+@media (max-width: 600px) {
+    .main-content {
+        padding: 0;
+    }
+}
+
+/* Loading state for main content */
+.main-content.loading {
+    opacity: var(--opacity-muted);
+    pointer-events: none;
+}
+
+/* Accessibility improvements */
+.mud-appbar .mud-icon-button:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .mud-appbar {
+        border-bottom: 2px solid var(--mud-palette-text-primary);
+    }
+}

@@ -10,16 +10,16 @@
             </div>
             <div class="modal-body">
                 <div class="modal-image-container">
-                    <img id="modal-image" src="@Item.CoverImage" alt="@Item.Name">
+                    <img id="modal-image" src="@Item.CoverImage" alt="@Item.Nome">
                 </div>
                 <div class="modal-details">
                     <div class="detail-row">
                         <span class="detail-label">Nome:</span>
-                        <span id="detail-name" class="detail-value">@Item.Name</span>
+                        <span id="detail-name" class="detail-value">@Item.Nome</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Código:</span>
-                        <span id="detail-code" class="detail-value">@Item.Code</span>
+                        <span id="detail-code" class="detail-value">@Item.Codigo</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Categoria:</span>
@@ -27,19 +27,19 @@
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Localização:</span>
-                        <span id="detail-location" class="detail-value">@Item.Location</span>
+                        <span id="detail-location" class="detail-value">@Item.Localizacao</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Observações:</span>
-                        <span id="detail-observations" class="detail-value">@Item.Observations</span>
+                        <span id="detail-observations" class="detail-value">@Item.Observacoes</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Data de Cadastro:</span>
-                        <span id="detail-date" class="detail-value">@Item.Timestamp.ToString("dd/MM/yyyy HH:mm")</span>
+                        <span id="detail-date" class="detail-value">@Item.DataHora.ToString("dd/MM/yyyy HH:mm")</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Status:</span>
-                        <span id="detail-sync-status" class="detail-value">@(Item.Synced ? "Sincronizado" :
+                        <span id="detail-sync-status" class="detail-value">@(Item.Sincronizado ? "Sincronizado" :
                         "Pendente")</span>
                     </div>
                 </div>
@@ -57,10 +57,10 @@
 
 @code {
     [Parameter] public bool IsOpen { get; set; }
-    [Parameter] public InventoryItem? Item { get; set; }
+    [Parameter] public ItemPatrimonio? Item { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
-    [Parameter] public EventCallback<InventoryItem> OnDelete { get; set; }
-    [Parameter] public EventCallback<InventoryItem> OnEdit { get; set; }
+    [Parameter] public EventCallback<ItemPatrimonio> OnDelete { get; set; }
+    [Parameter] public EventCallback<ItemPatrimonio> OnEdit { get; set; }
 
     private async Task Close() => await OnClose.InvokeAsync();
     private async Task HandleDelete() => await OnDelete.InvokeAsync(Item!);

@@ -6,7 +6,7 @@ using System.Text.Json;
 using pwa_camera_poc_blazor.Models;
 using pwa_camera_poc_blazor.Services.Auth;
 
-namespace pwa_camera_poc_blazor.Services.UG
+namespace pwa_camera_poc_blazor.Services.UnidadesGestoras
 {
     /// <summary>
     /// Gatekeeper responsável por validar se a Unidade Gestora (UG) está pronta para operação.
@@ -49,7 +49,7 @@ namespace pwa_camera_poc_blazor.Services.UG
                 throw new InvalidOperationException("Usuário não autenticado.");
             }
 
-            _currentUnitId = user.CurrentUnitId.GetValueOrDefault();
+            _currentUnitId = user.UnidadeGestoraAtualId.GetValueOrDefault();
             if (_currentUnitId <= 0)
             {
                 throw new InvalidOperationException("Unidade Gestora não selecionada.");

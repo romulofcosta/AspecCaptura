@@ -1,46 +1,89 @@
 @using pwa_camera_poc_blazor.Models
 
 <MudCard Elevation="1" @onclick="() => OnView.InvokeAsync(Item)"
-    Class="rounded-lg mb-3"
+    Class="item-card rounded-lg mb-3 transition-fast hover-lift"
     Style="cursor: pointer; border: 1px solid rgba(0,0,0,0.05); position: relative;">
     
     <!-- Status Dot Top Right -->
-    <div style="@($"position: absolute; top: 12px; right: 12px; width: 10px; height: 10px; border-radius: 50%; background-color: {(Item.Synced ? "#4CAF50" : "#FFC107")}; z-index: 5;")"></div>
+    <div class="item-status-dot" 
+         style="@($"background-color: {(Item.Sincronizado ? "var(--mud-palette-success)" : "var(--mud-palette-warning)}")}")"></div>
 
-    <div class="d-flex pa-3">
+    <div class="d-flex pa-3 gap-md">
         <!-- Thumbnail Placeholder -->
-        <div class="rounded-lg d-flex align-center justify-center mr-4" 
-            style="width: 80px; height: 80px; background-color: #F0F2F5; flex-shrink: 0;">
-            <MudIcon Icon="@Icons.Material.Filled.Description" Color="Color.Default" style="opacity: 0.3; font-size: 2.5rem;" />
+        <div class="item-thumbnail rounded-md d-flex align-center justify-center" 
+            style="width: 80px; height: 80px; background-color: var(--mud-palette-background-grey); flex-shrink: 0;">
+            @if (!string.IsNullOrEmpty(Item.CoverImage))
+            {
+                <MudImage Src="@Item.CoverImage" 
+                    ObjectFit="ObjectFit.Cover" 
+                    Style="width: 100%; height: 100%; border-radius: var(--radius-md);" 
+                    Alt="@($"Imagem do patrimônio {Item.Nome}")"
+                    Width="80"
+                    Height="80"
+                    Loading="lazy" />
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Description" 
+                    Color="Color.Default" 
+                    Style="opacity: var(--opacity-muted); font-size: 2.5rem;"
+                    aria-hidden="true" />
+            }
         </div>
 
-        <div class="d-flex flex-column flex-grow-1">
-            <MudText Typo="Typo.subtitle1" Class="font-weight-bold mb-1" Style="font-size: 1rem; color: #212121;">@Item.Name</MudText>
+        <div class="d-flex flex-column flex-grow-1 gap-sm">
+            <MudText Typo="Typo.subtitle1" Class="item-title font-weight-bold mb-1" 
+                Style="font-size: var(--font-size-base); color: var(--mud-palette-text-primary); line-height: var(--line-height-tight);">
+                @Item.Nome
+            </MudText>
             
-            <div class="d-flex gap-2 mb-2">
-                <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" 
-                    Style="background-color: #E8EAF6; color: #3F51B5; font-weight: 600; height: 22px; font-size: 0.75rem;">@Item.Code</MudChip>
-                <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" 
-                    Style="background-color: #E8F5E9; color: #2E7D32; font-weight: 600; height: 22px; font-size: 0.75rem;">@Item.Category.ToLower()</MudChip>
+            <div class="d-flex gap-sm mb-2 flex-wrap">
+                <MudChip T="string" Size="Size.Medium" Variant="Variant.Filled" 
+                    Class="item-chip-code transition-fast"
+                    Style="background-color: rgba(var(--mud-palette-primary-rgb), 0.1); color: var(--mud-palette-primary); font-weight: var(--font-weight-semibold); min-height: 32px; font-size: var(--font-size-sm); padding: var(--spacing-sm) var(--spacing-md);">
+                    @Item.Codigo
+                </MudChip>
+                <MudChip T="string" Size="Size.Medium" Variant="Variant.Filled" 
+                    Class="item-chip-category transition-fast"
+                    Style="background-color: rgba(var(--mud-palette-success-rgb), 0.1); color: var(--mud-palette-success); font-weight: var(--font-weight-semibold); min-height: 32px; font-size: var(--font-size-sm); padding: var(--spacing-sm) var(--spacing-md);">
+                    @Item.Category.ToLower()
+                </MudChip>
             </div>
 
-            <div class="d-flex align-center">
-                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Color="Color.Default" style="opacity: 0.4; font-size: 1rem;" />
-                <MudText Typo="Typo.caption" Style="color: #757575; font-size: 0.85rem;" Class="ml-1">@Item.Location</MudText>
+            <div class="d-flex align-center gap-xs">
+                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" 
+                    Color="Color.Default" 
+                    Style="opacity: var(--opacity-muted); font-size: 1rem;" />
+                <MudText Typo="Typo.caption" 
+                    Style="color: var(--mud-palette-text-secondary); font-size: var(--font-size-sm); line-height: var(--line-height-normal);" 
+                    Class="ml-1">
+                    @Item.Localizacao
+                </MudText>
             </div>
         </div>
     </div>
 
-    <MudDivider Style="opacity: 0.05;" />
+    <MudDivider Style="opacity: 0.1;" />
     
     <div class="d-flex align-center justify-space-between px-4 py-2">
-        <MudText Typo="Typo.caption" Style="color: #757575; font-size: 0.8rem;">Status: <span style="font-weight: 600;">@(Item.Synced ? "Ativo" : "Pendente")</span></MudText>
-        <MudLink Underline="Underline.None" Color="Color.Primary" Style="font-size: 0.8rem; font-weight: 600;">Ver detalhes →</MudLink>
+        <MudText Typo="Typo.caption" 
+            Style="color: var(--mud-palette-text-secondary); font-size: var(--font-size-xs);">
+            Status: 
+            <span class="item-status-text" 
+                  style="@($"font-weight: var(--font-weight-semibold); color: {(Item.Sincronizado ? "var(--mud-palette-success)" : "var(--mud-palette-warning)")}")">
+                @(Item.Sincronizado ? "Ativo" : "Pendente")
+            </span>
+        </MudText>
+        <MudLink Underline="Underline.None" Color="Color.Primary" 
+            Class="item-details-link transition-fast"
+            Style="font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold);">
+            Ver detalhes →
+        </MudLink>
     </div>
 </MudCard>
 
 @code {
-    [Parameter] public InventoryItem Item { get; set; } = null!;
-    [Parameter] public EventCallback<InventoryItem> OnView { get; set; }
+    [Parameter] public ItemPatrimonio Item { get; set; } = null!;
+    [Parameter] public EventCallback<ItemPatrimonio> OnView { get; set; }
     [Parameter] public bool IsListView { get; set; } = false;
 }

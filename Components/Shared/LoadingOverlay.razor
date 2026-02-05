@@ -1,0 +1,12 @@
+@if (IsVisible)
+{
+    <div class="aspec-loading-overlay">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" Class="mb-4" />
+        <MudText Color="Color.Primary" Typo="Typo.h6">@Message</MudText>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public string Message { get; set; } = "Carregando...";
+}

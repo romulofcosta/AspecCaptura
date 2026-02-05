@@ -23,6 +23,6 @@ namespace pwa_camera_poc_blazor.Services.Storage
         Task DeleteAsync(string storeName, object key);
 
         // Queries Específicas (índices)
-        Task<List<InventoryItem>> GetItemsByUnitAsync(int unitId);
+        Task<List<ItemPatrimonio>> GetItemsByUnitAsync(int unitId);
     }
 }

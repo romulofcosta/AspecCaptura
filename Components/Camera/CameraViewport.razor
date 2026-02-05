@@ -1,0 +1,103 @@
+@* Camera Viewport Component *@
+
+<div class="camera-page-container">
+    <div class="camera-viewport">
+        <video id="@VideoElementId" autoplay playsinline 
+            aria-label="Visualização da câmera para captura de patrimônio"
+            role="img"></video>
+        <canvas id="@CanvasElementId" class="d-none" aria-hidden="true"></canvas>
+    </div>
+
+    <!-- Camera Overlay -->
+    <div class="camera-overlay">
+        <!-- Header Actions -->
+        <div class="camera-header-actions">
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" 
+                Color="Color.Inherit" 
+                Href="@BackUrl" 
+                Class="back-btn-blur text-white hover-lift"
+                aria-label="Voltar para página inicial" />
+            
+            <MudIconButton Icon="@(IsFlashOn ? Icons.Material.Filled.FlashOn : Icons.Material.Filled.FlashOff)" 
+                Color="Color.Inherit" 
+                OnClick="OnFlashToggle" 
+                Class="back-btn-blur text-white hover-lift"
+                aria-label="@(IsFlashOn ? "Desativar flash da câmera" : "Ativar flash da câmera")"
+                aria-pressed="@IsFlashOn" />
+        </div>
+
+        <!-- ROI Guide -->
+        <div class="camera-roi-guide">
+            <div class="roi-scrim roi-scrim-top"></div>
+            <div class="roi-center-row">
+                <div class="roi-scrim roi-scrim-side"></div>
+                <div class="roi-window @(IsProcessing ? "active" : "")">
+                    <div class="roi-corner roi-corner-tl"></div>
+                    <div class="roi-corner roi-corner-tr"></div>
+                    <div class="roi-corner roi-corner-bl"></div>
+                    <div class="roi-corner roi-corner-br"></div>
+                </div>
+                <div class="roi-scrim roi-scrim-side"></div>
+            </div>
+            <div class="roi-scrim roi-scrim-bottom"></div>
+        </div>
+
+        <!-- Bottom Controls -->
+        <div class="camera-controls-bottom">
+            @if (!string.IsNullOrEmpty(StatusMessage))
+            {
+                <MudText Typo="Typo.h6" 
+                    Class="text-white font-weight-bold animate-pulse"
+                    role="status"
+                    aria-live="polite"
+                    aria-atomic="true">@StatusMessage</MudText>
+            }
+
+            <div class="mode-toggle-pill d-flex">
+                <MudButton Variant="Variant.Text" 
+                    Class="@($"mode-btn {(!IsScanMode ? "active" : "")}")"
+                    OnClick="() => OnModeChange.InvokeAsync(false)"
+                    aria-label="Modo foto - capturar imagem do patrimônio"
+                    aria-pressed="@(!IsScanMode)">FOTO</MudButton>
+                <MudButton Variant="Variant.Text" 
+                    Class="@($"mode-btn {(IsScanMode ? "active" : "")}")"
+                    OnClick="() => OnModeChange.InvokeAsync(true)"
+                    aria-label="Modo scan - escanear código do patrimônio"
+                    aria-pressed="@IsScanMode">SCAN</MudButton>
+            </div>
+
+            @if (IsScanMode)
+            {
+                <MudButton Variant="Variant.Filled" 
+                    Color="Color.Primary" 
+                    FullWidth="true" 
+                    Class="scan-btn hover-lift ripple-effect" 
+                    OnClick="OnCapture"
+                    aria-label="Escanear código do patrimônio agora">
+                    ESCANEAR AGORA
+                </MudButton>
+            }
+            else
+            {
+                <button class="capture-btn-inner" 
+                    @onclick="OnCapture"
+                    aria-label="Capturar foto do patrimônio">
+                    <div style="width: 60px; height: 60px; border: 2px solid #000; border-radius: 50%;"></div>
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string VideoElementId { get; set; } = "camera-feed";
+    [Parameter] public string CanvasElementId { get; set; } = "camera-canvas";
+    [Parameter] public string BackUrl { get; set; } = "/home";
+    [Parameter] public bool IsFlashOn { get; set; }
+    [Parameter] public bool IsScanMode { get; set; }
+    [Parameter] public bool IsProcessing { get; set; }
+    [Parameter] public string StatusMessage { get; set; } = "";
+    [Parameter] public EventCallback OnFlashToggle { get; set; }
+    [Parameter] public EventCallback<bool> OnModeChange { get; set; }
+    [Parameter] public EventCallback OnCapture { get; set; }
+}

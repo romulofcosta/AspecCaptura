@@ -1,0 +1,209 @@
+/* Skeleton Loaders - ASPEC Capture */
+/* Provides visual feedback during content loading */
+
+/* Base skeleton animation */
+@keyframes skeleton-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.06) 25%,
+        rgba(0, 0, 0, 0.12) 50%,
+        rgba(0, 0, 0, 0.06) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+    border-radius: var(--radius-md);
+}
+
+/* Skeleton Card - matches ItemCard layout */
+.skeleton-card {
+    display: flex;
+    padding: var(--spacing-lg);
+    gap: var(--spacing-md);
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: var(--spacing-lg);
+}
+
+.skeleton-thumbnail {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.06) 25%,
+        rgba(0, 0, 0, 0.12) 50%,
+        rgba(0, 0, 0, 0.06) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+    border-radius: var(--radius-md);
+}
+
+.skeleton-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.skeleton-title {
+    height: 20px;
+    width: 70%;
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.06) 25%,
+        rgba(0, 0, 0, 0.12) 50%,
+        rgba(0, 0, 0, 0.06) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+}
+
+.skeleton-chips {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-xs);
+}
+
+.skeleton-chip {
+    height: 24px;
+    width: 60px;
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.06) 25%,
+        rgba(0, 0, 0, 0.12) 50%,
+        rgba(0, 0, 0, 0.06) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+    border-radius: var(--radius-pill);
+}
+
+.skeleton-text {
+    height: 16px;
+    width: 90%;
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.06) 25%,
+        rgba(0, 0, 0, 0.12) 50%,
+        rgba(0, 0, 0, 0.06) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+    margin-top: var(--spacing-sm);
+}
+
+.skeleton-text.short {
+    width: 50%;
+}
+
+.skeleton-text.medium {
+    width: 70%;
+}
+
+/* Skeleton List - for multiple cards */
+.skeleton-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+}
+
+/* Skeleton Avatar - for profile sections */
+.skeleton-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-circle);
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.06) 25%,
+        rgba(0, 0, 0, 0.12) 50%,
+        rgba(0, 0, 0, 0.06) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+}
+
+/* Skeleton Button */
+.skeleton-button {
+    height: 48px;
+    width: 100%;
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.06) 25%,
+        rgba(0, 0, 0, 0.12) 50%,
+        rgba(0, 0, 0, 0.06) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+    border-radius: var(--radius-lg);
+}
+
+/* Skeleton Grid - for grid layouts */
+.skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .skeleton,
+    .skeleton-thumbnail,
+    .skeleton-title,
+    .skeleton-chip,
+    .skeleton-text,
+    .skeleton-avatar,
+    .skeleton-button {
+        background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.05) 25%,
+            rgba(255, 255, 255, 0.1) 50%,
+            rgba(255, 255, 255, 0.05) 75%
+        );
+        background-size: 200% 100%;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .skeleton,
+    .skeleton-thumbnail,
+    .skeleton-title,
+    .skeleton-chip,
+    .skeleton-text,
+    .skeleton-avatar,
+    .skeleton-button {
+        animation: none;
+        background: rgba(0, 0, 0, 0.08);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .skeleton-card {
+        padding: var(--spacing-md);
+    }
+
+    .skeleton-thumbnail {
+        width: 60px;
+        height: 60px;
+    }
+
+    .skeleton-grid {
+        grid-template-columns: 1fr;
+    }
+}

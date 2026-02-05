@@ -81,6 +81,26 @@ window.cameraInterop = {
         ctx.putImageData(imageData, 0, 0);
         return canvas.toDataURL('image/png');
     },
+    toggleFlash: async (videoElementId, enabled) => {
+        const video = document.getElementById(videoElementId);
+        if (!video || !video.srcObject) return;
+
+        try {
+            const stream = video.srcObject;
+            const track = stream.getVideoTracks()[0];
+            
+            if (track && track.getCapabilities) {
+                const capabilities = track.getCapabilities();
+                if (capabilities.torch) {
+                    await track.applyConstraints({
+                        advanced: [{ torch: enabled }]
+                    });
+                }
+            }
+        } catch (err) {
+            console.log("Flash not supported on this device:", err);
+        }
+    },
     stopCamera: (videoElementId) => {
         const video = document.getElementById(videoElementId);
         if (video && video.srcObject) {

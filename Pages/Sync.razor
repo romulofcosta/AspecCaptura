@@ -1,4 +1,4 @@
-@page "/sync"
+@page "/sincronizacao"
 @using pwa_camera_poc_blazor.Models
 @using System.Text.RegularExpressions
 @using System.Text
@@ -13,7 +13,7 @@
 
 <PageTitle>Sincronização - ASPEC Capture</PageTitle>
 
-<MudContainer id="sync-container" MaxWidth="MaxWidth.Large" Class="mt-4 pb-20" Style="overflow-y: auto; height: 100%;">
+<MudContainer id="sync-container" MaxWidth="MaxWidth.Large" Class="mt-4 pb-20 sync-container">
     <MudText Typo="Typo.h4" Class="mb-2 font-weight-bold">Sincronização Cloud</MudText>
     <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-8">Envie seus itens capturados localmente para o servidor ASPEC.</MudText>
 
@@ -26,7 +26,7 @@
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6">
-            <MudPaper Elevation="1" Class="pa-6 d-flex flex-column align-center rounded-lg" Style="background: rgba(var(--mud-palette-success-rgb), 0.05);">
+            <MudPaper Elevation="1" Class="pa-6 d-flex flex-column align-center rounded-lg bg-success-soft">
                 <MudText Typo="Typo.h3" Color="Color.Success" Class="font-weight-bold">@syncedCount</MudText>
                 <MudText Typo="Typo.body2" Color="Color.Secondary">Sincronizados (Hoje)</MudText>
             </MudPaper>
@@ -35,7 +35,7 @@
         <MudItem xs="12">
             <div class="d-flex justify-center gap-4 my-6">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" 
-                           OnClick="SyncAll" Disabled="@isSyncing" Class="py-3 px-8 shadow-md"
+                           OnClick="SincronizarTudoAsync" Disabled="@isSyncing" Class="py-3 px-8 shadow-md"
                            StartIcon="@(isSyncing ? null : Icons.Material.Filled.CloudUpload)">
                     @(isSyncing ? "Sincronizando..." : "Sincronizar Tudo Agora")
                 </MudButton>
@@ -55,22 +55,22 @@
                             </CardHeaderContent>
                         </MudCardHeader>
                         <MudCardContent Class="pa-0">
-                            <MudList T="InventoryItem" Dense="true" ReadOnly="true">
+                            <MudList T="ItemPatrimonio" Dense="true" ReadOnly="true">
                             @foreach (var item in displayItems)
                             {
-                                        <MudListItem @key="item.Id" Class="@GetItemClass(item.Id)">
+                                        <MudListItem @key="item.Id" Class="@($"sync-item-card mb-2 {(processingItems.ContainsKey(item.Id) && processingItems[item.Id] ? "processing" : "")}")">
                                             <div class="d-flex align-center justify-space-between py-2 px-4 width-100">
                                                 <div class="d-flex flex-column">
-                                                    <MudText Typo="Typo.body1" Class="font-weight-medium">@item.Name</MudText>
-                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Code  @item.Category</MudText>
+                                                    <MudText Typo="Typo.body1" Class="font-weight-medium">@item.Nome</MudText>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Codigo  @item.Category</MudText>
                                                 </div>
                                                 <div class="d-flex flex-column align-end">
-                                                    <MudText Typo="Typo.caption">@item.Timestamp.ToString("dd/MM/yyyy HH:mm")</MudText>
+                                                    <MudText Typo="Typo.caption">@item.DataHora.ToString("dd/MM/yyyy HH:mm")</MudText>
                                                     @if (processingItems.ContainsKey(item.Id) && processingItems[item.Id])
                                                     {
                                                         <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" Class="mt-1" />
                                                     }
-                                                    else if (item.Synced)
+                                                    else if (item.Sincronizado)
                                                     {
                                                         <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Text" Class="mt-1" Icon="@Icons.Material.Filled.Check">Sincronizado</MudChip>
                                                     }
@@ -89,18 +89,18 @@
             }
             else
             {
-                    <MudPaper Elevation="0" Class="pa-16 d-flex flex-column align-center rounded-lg mud-background-gray" Style="border: 2px dashed rgba(0,0,0,0.1);">
-                        <MudIcon Icon="@Icons.Material.Filled.EventNote" Size="Size.Large" Color="Color.Default" Style="font-size: 4rem;" />
-                        <MudText Typo="Typo.h5" Class="mt-4 font-weight-bold">Nenhum item recente</MudText>
-                        <MudText Typo="Typo.body1" Color="Color.Secondary">Capture itens com a câmera para começar.</MudText>
-                    </MudPaper>
+                    <div class="sync-empty-state">
+                        <MudIcon Icon="@Icons.Material.Filled.CloudOff" Color="Color.Default" Class="mb-4" Style="font-size: 3rem;" />
+                        <MudText Typo="Typo.h5" Class="font-weight-bold">Nenhum item pendente</MudText>
+                        <MudText Typo="Typo.body1" Color="Color.Secondary">Capture itens com a câmera para começar a sincronizar.</MudText>
+                    </div>
             }
         </MudItem>
     </MudGrid>
 </MudContainer>
 
 @code {
-    private List<InventoryItem> displayItems = new();
+    private List<ItemPatrimonio> displayItems = new();
     private int pendingCount = 0;
     private int syncedCount = 0;
     private bool isSyncing = false;
@@ -108,7 +108,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadStats();
+        await CarregarEstatisticasAsync();
     }
 
     private string GetItemClass(string itemId)
@@ -120,7 +120,7 @@
         return "";
     }
 
-    private async Task LoadStats()
+    private async Task CarregarEstatisticasAsync()
     {
         var currentUser = await AuthService.GetCurrentUserAsync();
         if (currentUser == null) return;
@@ -140,19 +140,19 @@
             }
             catch {
                 // Fallback: carregar tudo se não tiver GetAllKeys (não deve acontecer com db v3)
-                var allItems = await DbService.GetAllAsync<InventoryItem>("items");
+                var allItems = await DbService.GetAllAsync<ItemPatrimonio>("items");
                 if (allItems != null) 
                 {
                     // Se carregou tudo, já filtra aqui
-                    var userItems = allItems.Where(i => i.CreatedBy == currentUser.Username).ToList();
+                    var userItems = allItems.Where(i => i.CriadoPor == currentUser.NomeUsuario).ToList();
                     
                     // Display: Pendentes OU Criados Hoje
-                    displayItems = userItems.Where(i => !i.Synced || i.Timestamp.Date == today)
-                                          .OrderByDescending(i => i.Timestamp)
+                    displayItems = userItems.Where(i => !i.Sincronizado || i.DataHora.Date == today)
+                                          .OrderByDescending(i => i.DataHora)
                                           .ToList();
                     
-                    pendingCount = userItems.Count(i => !i.Synced);
-                    syncedCount = userItems.Count(i => i.Synced && i.Timestamp.Date == today);
+                    pendingCount = userItems.Count(i => !i.Sincronizado);
+                    syncedCount = userItems.Count(i => i.Sincronizado && i.DataHora.Date == today);
                     appState.PendingSyncCount = pendingCount;
                     return;
                 }
@@ -161,14 +161,14 @@
             // Se usou Keys, carrega itens relevantes um a um
             foreach (var id in allKeys)
             {
-                var item = await DbService.GetAsync<InventoryItem>("items", id);
-                if (item != null && item.CreatedBy == currentUser.Username)
+                var item = await DbService.GetAsync<ItemPatrimonio>("items", id);
+                if (item != null && item.CriadoPor == currentUser.NomeUsuario)
                 {
-                    bool isPending = !item.Synced;
-                    bool isToday = item.Timestamp.Date == today;
+                    bool isPending = !item.Sincronizado;
+                    bool isToday = item.DataHora.Date == today;
 
                     if (isPending) pendingCount++;
-                    if (item.Synced && isToday) syncedCount++;
+                    if (item.Sincronizado && isToday) syncedCount++;
 
                     if (isPending || isToday)
                     {
@@ -178,7 +178,7 @@
             }
             
             // Ordena memória
-            displayItems = displayItems.OrderByDescending(i => i.Timestamp).ToList();
+            displayItems = displayItems.OrderByDescending(i => i.DataHora).ToList();
         }
         catch (Exception ex)
         {
@@ -197,23 +197,23 @@
             return;
         }
 
-        var testItem = new InventoryItem
+        var testItem = new ItemPatrimonio
         {
-            Name = "Item de Teste " + DateTime.Now.ToString("HH:mm:ss"),
-            Code = "TEST-" + new Random().Next(1000, 9999),
+            Nome = "Item de Teste " + DateTime.Now.ToString("HH:mm:ss"),
+            Codigo = "TEST-" + new Random().Next(1000, 9999),
             Category = "Teste",
-            Location = "Laboratório",
-            Observations = "Item criado para teste de sincronização",
+            Localizacao = "Laboratório",
+            Observacoes = "Item criado para teste de sincronização",
             Status = "ativo",
-            Timestamp = DateTime.Now,
-            Synced = false,
-            UnitId = currentUser.CurrentUnitId,
-            CreatedBy = currentUser.Username,
+            DataHora = DateTime.Now,
+            Sincronizado = false,
+            UnidadeGestoraId = currentUser.UnidadeGestoraAtualId,
+            CriadoPor = currentUser.NomeUsuario,
             Photos = new List<string> { "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=" }
         };
 
         await DbService.AddAsync("items", testItem);
-        await LoadStats();
+        await CarregarEstatisticasAsync();
         Snackbar.Add("Item de teste criado!", Severity.Success);
     }
 
@@ -238,7 +238,7 @@
         return sanitized.ToLowerInvariant();
     }
 
-    private async Task SyncAll()
+    private async Task SincronizarTudoAsync()
     {
         if (isSyncing) return;
         isSyncing = true;
@@ -249,7 +249,7 @@
             if (currentUser == null) throw new Exception("Usuário não autenticado.");
 
             // Identifica itens para sincronizar (apenas os pendentes da lista atual)
-            var itemsToSync = displayItems.Where(i => !i.Synced).ToList();
+            var itemsToSync = displayItems.Where(i => !i.Sincronizado).ToList();
             
             if (!itemsToSync.Any())
             {
@@ -268,8 +268,8 @@
                 StateHasChanged(); // Atualiza UI para mostrar spinner/border
 
                 // Verifica se item ainda existe/é válido
-                var dbItem = await DbService.GetAsync<InventoryItem>("items", item.Id);
-                if (dbItem == null || dbItem.Synced) 
+                var dbItem = await DbService.GetAsync<ItemPatrimonio>("items", item.Id);
+                if (dbItem == null || dbItem.Sincronizado) 
                 {
                     processingItems[item.Id] = false;
                     continue;
@@ -282,7 +282,7 @@
                     {
                         var base64 = dbItem.Photos.First();
                         
-                        var photoResult = await AwsService.UploadPhotoAsync(dbItem.Id, dbItem.Code, base64);
+                        var photoResult = await AwsService.UploadPhotoAsync(dbItem.Id, dbItem.Codigo, base64);
 
                         if (!photoResult.Success)
                         {
@@ -292,7 +292,7 @@
                             }
                             else 
                             {
-                                Snackbar.Add($"Erro ao enviar foto de: {dbItem.Name}", Severity.Error);
+                                Snackbar.Add($"Erro ao enviar foto de: {dbItem.Nome}", Severity.Error);
                             }
                             processingItems[item.Id] = false;
                             continue;
@@ -307,13 +307,13 @@
                     }
 
                     // 2. Metadados
-                    var metadata = ItemMetadata.FromInventoryItem(dbItem, currentUser.Username);
+                    var metadata = ItemMetadata.FromItemPatrimonio(dbItem, currentUser.NomeUsuario);
                     var metadataResult = await AwsService.UploadMetadataAsync(dbItem.Id, metadata);
 
                     if (metadataResult.Success)
                     {
                         // 3. Sucesso - Atualiza Objeto em Memória e DB
-                        dbItem.Synced = true;
+                        dbItem.Sincronizado = true;
                         // dbItem.Photos = new List<string>(); // NÃO LIMPAR FOTOS (Persistência Visual)
                         
                         await DbService.UpdateAsync("items", dbItem);
@@ -322,7 +322,7 @@
                         var displayItem = displayItems.FirstOrDefault(i => i.Id == item.Id);
                         if (displayItem != null)
                         {
-                            displayItem.Synced = true;
+                            displayItem.Sincronizado = true;
                             // displayItem.Photos = ... (mantem)
                         }
 
@@ -331,11 +331,11 @@
                         pendingCount--;
                         appState.PendingSyncCount = pendingCount;
                         
-                        Snackbar.Add($"Item sincronizado: {dbItem.Name}", Severity.Success);
+                        Snackbar.Add($"Item sincronizado: {dbItem.Nome}", Severity.Success);
                     }
                     else
                     {
-                        Snackbar.Add($"Erro ao enviar metadados de: {dbItem.Name}", Severity.Error);
+                        Snackbar.Add($"Erro ao enviar metadados de: {dbItem.Nome}", Severity.Error);
                     }
                 }
                 catch (Exception ex)

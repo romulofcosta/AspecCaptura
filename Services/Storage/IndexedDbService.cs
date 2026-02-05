@@ -125,16 +125,16 @@ namespace pwa_camera_poc_blazor.Services.Storage
             }
         }
 
-        public async Task<List<InventoryItem>> GetItemsByUnitAsync(int unitId)
+        public async Task<List<ItemPatrimonio>> GetItemsByUnitAsync(int unitId)
         {
             try
             {
-                return await _jsRuntime.InvokeAsync<List<InventoryItem>>("dbInterop.getItemsByUnit", unitId);
+                return await _jsRuntime.InvokeAsync<List<ItemPatrimonio>>("dbInterop.getItemsByUnit", unitId);
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Error getting items by unit {unitId}: {ex.Message}");
-                return new List<InventoryItem>();
+                return new List<ItemPatrimonio>();
             }
         }
     }

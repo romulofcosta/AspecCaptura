@@ -1,0 +1,45 @@
+.login-card {
+    max-width: 440px;
+    border-radius: var(--radius-lg) !important;
+    transition: all var(--transition-normal);
+}
+
+.login-logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.login-logo:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-md);
+}
+
+.login-submit-btn {
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-md);
+    padding-bottom: var(--spacing-md);
+    height: var(--btn-height-lg) !important;
+    font-weight: var(--font-weight-bold) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-fast);
+}
+
+.login-submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.login-submit-btn:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+.login-submit-btn:focus {
+    outline: 2px solid var(--mud-palette-primary);
+    outline-offset: 2px;
+}

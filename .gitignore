@@ -27,6 +27,28 @@ bld/
 [Ll]og/
 out/
 
+# Build logs
+scripts/logs/
+*.log
+*.binlog
+msbuild.log
+build_*.txt
+errors.log
+
+# Agent/AI tools
+.agent/
+.kiro/
+.trae/
+
+# Temporary files
+comp_def.txt
+test-payload.json
+
+# IDE temporary files
+*.swp
+*.swo
+*~
+
 # Local .NET SDK and runtime
 .dotnet/
 

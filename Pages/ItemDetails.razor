@@ -1,22 +1,21 @@
 @page "/item/{Id}"
 @using pwa_camera_poc_blazor.Models
-@inject IIndexedDbService DbService
-@inject NavigationManager Navigation
-@inject CameraService CameraService
-@inject pwa_camera_poc_blazor.Services.ToastService ToastService
 @inject IJSRuntime JSRuntime
 @inject IDialogService DialogService
-@using MudBlazor
-@inject AppState appState
+@inject CameraService _cameraService
+@inject IIndexedDbService DbService
+@inject NavigationManager Navigation
 @inject IAuthService AuthService
+@inject pwa_camera_poc_blazor.Services.ToastService ToastService
+@inject AppState appState
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Detalhes do Item - ASPEC Capture</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4 pb-20" Style="overflow-y: auto; height: 100%;">
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4 pb-20 details-container">
     @if (isLoading)
     {
-        <div class="d-flex justify-center align-center" style="height: 50vh;">
+        <div class="d-flex justify-center align-center py-16">
             <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
         </div>
     }
@@ -31,11 +30,11 @@
         <MudCard Elevation="4" Class="mb-4">
             <MudCardHeader>
                 <CardHeaderContent>
-                    <MudText Typo="Typo.h5">@item.Name</MudText>
+                    <MudText Typo="Typo.h5">@item.Nome</MudText>
                     <div class="d-flex gap-2 mt-2">
                         <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Outlined">
                             @item.Category</MudChip>
-                        <MudChip T="string" Color="Color.Secondary" Size="Size.Small" Variant="Variant.Outlined">@item.Code
+                        <MudChip T="string" Color="Color.Secondary" Size="Size.Small" Variant="Variant.Outlined">@item.Codigo
                         </MudChip>
                     </div>
                 </CardHeaderContent>
@@ -47,23 +46,23 @@
                 <MudGrid>
                     <MudItem xs="12" sm="6">
                         <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Localização</MudText>
-                        <MudText Typo="Typo.body1" Class="mb-2">@item.Location</MudText>
+                        <MudText Typo="Typo.body1" Class="mb-2">@item.Localizacao</MudText>
                     </MudItem>
                     <MudItem xs="6" sm="6">
                         <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Status</MudText>
-                        <MudText Typo="Typo.body1" Class="mb-2">@(item.Synced ? "Sincronizado" : "Pendente")</MudText>
+                        <MudText Typo="Typo.body1" Class="mb-2">@(item.Sincronizado ? "Sincronizado" : "Pendente")</MudText>
                         </MudItem>
                         <MudItem xs="12">
                             <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Observações</MudText>
-                            <MudText Typo="Typo.body1" Class="mb-2">@item.Observations</MudText>
+                            <MudText Typo="Typo.body1" Class="mb-2">@item.Observacoes</MudText>
                         </MudItem>
                         <MudItem xs="12" sm="6">
                             <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Data Cadastro</MudText>
-                            <MudText Typo="Typo.body1">@item.Timestamp.ToString("dd/MM/yyyy HH:mm")</MudText>
+                            <MudText Typo="Typo.body1">@item.DataHora.ToString("dd/MM/yyyy HH:mm")</MudText>
                         </MudItem>
                         <MudItem xs="6" sm="6">
                             <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Unidade</MudText>
-                            <MudText Typo="Typo.body1">@item.UnitId</MudText>
+                            <MudText Typo="Typo.body1">@item.UnidadeGestoraId</MudText>
                         </MudItem>
                     </MudGrid>
                 </MudCardContent>
@@ -88,18 +87,18 @@
                     <MudGrid Spacing="2">
                         @foreach (var (photo, index) in displayPhotos.Select((p, i) => (p, i)))
                         {
-                            <MudItem xs="6" sm="4" md="3">
-                                <div style="position: relative; aspect-ratio: 1/1;">
+                            <MudItem @key="index" xs="6" sm="4" md="3">
+                                <div class="details-image-card">
                                     <MudImage Src="@photo" ObjectFit="ObjectFit.Cover"
-                                        Style="width:100%; height:100%; border-radius: 4px; cursor: pointer;"
-                                    @onclick="() => ViewFullImage(photo)" />
+                                        Class="details-image cursor-pointer"
+                                        OnClick="() => ViewFullImage(photo)" />
                                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
-                                        Style="position: absolute; top: 4px; right: 4px; background: rgba(255,255,255,0.8);"
+                                        Class="details-delete-btn"
                                         OnClick="() => ConfirmRemovePhoto(index)" />
                                     @if (index == 0)
                                     {
                                         <MudChip T="string" Color="Color.Primary" Size="Size.Small"
-                                            Style="position: absolute; bottom: 4px; left: 4px;">Capa</MudChip>
+                                            Class="details-chip-capa">Capa</MudChip>
                                     }
                                 </div>
                             </MudItem>
@@ -126,10 +125,10 @@
 @if (showCameraModal)
 {
     <!-- Dark Background -->
-    <div @onclick="CloseCameraModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9998;"></div>
+    <div class="modal-scrim" @onclick="CloseCameraModal"></div>
     
     <!-- Modal Content -->
-    <div @onclick:stopPropagation style="position: fixed; top: 70px; bottom: 85px; left: 50%; transform: translateX(-50%); z-index: 20000; width: 90vw; max-width: 600px;">
+    <div @onclick:stopPropagation class="camera-modal-content">
         <MudPaper Class="d-flex flex-column" Style="height: 100%; padding: 0; position: relative;">
             <!-- Header -->
             <div class="d-flex justify-space-between align-center pa-4" Style="border-bottom: 1px solid rgba(0,0,0,0.1); flex-shrink: 0;">
@@ -140,9 +139,8 @@
             <!-- Scrollable Content Area -->
             <div Style="flex: 1; overflow-y: auto; padding: 16px; min-height: 0;">
                 <!-- Video Feed -->
-                <div class="width-100 mb-3" style="background: black; position: relative; height: 300px;">
-                    <video id="detail-camera-feed" autoplay playsinline
-                        style="width: 100%; height: 100%; object-fit: cover;"></video>
+                <div class="camera-viewport mb-3">
+                    <video id="detail-camera-feed" autoplay playsinline></video>
                 </div>
 
                 <!-- Camera Controls -->
@@ -180,17 +178,17 @@
 @if (showFullImage)
 {
     <MudOverlay Visible="true" DarkBackground="true" AutoClose="true" OnClick="CloseFullImage" ZIndex="3000">
-        <div class="d-flex justify-center align-center" style="width: 100vw; height: 100vh; padding: 20px;">
-            <MudImage Src="@fullImageSrc" ObjectFit="ObjectFit.Contain" Style="max-width: 100%; max-height: 100%;" />
+        <div class="full-image-container">
+            <MudImage Src="@fullImageSrc" ObjectFit="ObjectFit.Contain" Class="full-image" />
             <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Surface" Size="Size.Large"
-                Style="position: absolute; top: 20px; right: 20px;" OnClick="CloseFullImage" />
+                Class="full-image-close" OnClick="CloseFullImage" />
         </div>
     </MudOverlay>
 }
 
 @code {
     [Parameter] public string Id { get; set; } = string.Empty;
-    private InventoryItem? item;
+    private ItemPatrimonio? item;
     private bool isLoading = true;
     private bool showCameraModal = false;
     private bool useFrontCamera = false;
@@ -208,7 +206,7 @@
         isLoading = true;
         try
         {
-            item = await DbService.GetAsync<InventoryItem>("items", Id);
+            item = await DbService.GetAsync<ItemPatrimonio>("items", Id);
         }
         catch (Exception ex)
         {
@@ -226,21 +224,21 @@
         appState.IsCameraActive = true;
         newPhotos.Clear();
         StateHasChanged();
-        await CameraService.StartCameraAsync("detail-camera-feed", useFrontCamera);
+        await _cameraService.IniciarCameraAsync("detail-camera-feed", useFrontCamera);
     }
 
     private async Task SwitchCamera()
     {
         useFrontCamera = !useFrontCamera;
-        await CameraService.StopCameraAsync("detail-camera-feed");
-        await CameraService.StartCameraAsync("detail-camera-feed", useFrontCamera);
+        await _cameraService.PararCameraAsync("detail-camera-feed");
+        await _cameraService.IniciarCameraAsync("detail-camera-feed", useFrontCamera);
     }
 
     private async Task CaptureNewPhoto()
     {
         try
         {
-            var photo = await CameraService.TakePhotoAsync("detail-camera-feed");
+            var photo = await _cameraService.CapturarImagemAsync("detail-camera-feed");
             if (!string.IsNullOrEmpty(photo))
             {
                 newPhotos.Add(photo);
@@ -329,7 +327,7 @@
 
     private async Task CloseCameraModal()
     {
-        await CameraService.StopCameraAsync("detail-camera-feed");
+        await _cameraService.PararCameraAsync("detail-camera-feed");
         showCameraModal = false;
         appState.IsCameraActive = false;
         newPhotos.Clear();
@@ -347,6 +345,6 @@
 
     public async ValueTask DisposeAsync()
     {
-        await CameraService.StopCameraAsync("detail-camera-feed");
+        await _cameraService.PararCameraAsync("detail-camera-feed");
     }
 }

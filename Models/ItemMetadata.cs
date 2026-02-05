@@ -47,21 +47,21 @@ namespace pwa_camera_poc_blazor.Models
         public DateTime DataEnvio { get; set; } = DateTime.Now;
 
         /// <summary>
-        /// Converte um InventoryItem para ItemMetadata
+        /// Converte um ItemPatrimonio para ItemMetadata
         /// </summary>
-        public static ItemMetadata FromInventoryItem(InventoryItem item, string username)
+        public static ItemMetadata FromItemPatrimonio(ItemPatrimonio item, string username)
         {
             return new ItemMetadata
             {
                 Id = item.Id,
-                Nome = item.Name,
-                Codigo = item.Code,
+                Nome = item.Nome,
+                Codigo = item.Codigo,
                 Categoria = item.Category,
-                Localizacao = item.Location,
-                Observacoes = item.Observations,
+                Localizacao = item.Localizacao,
+                Observacoes = item.Observacoes,
                 Status = item.Status,
-                Timestamp = item.Timestamp,
-                UnitId = item.UnitId,
+                Timestamp = item.DataHora,
+                UnitId = item.UnidadeGestoraId,
                 UsuarioEnvio = username,
                 DataEnvio = DateTime.Now
             };

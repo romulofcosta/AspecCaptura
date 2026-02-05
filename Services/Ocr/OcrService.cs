@@ -65,7 +65,7 @@ namespace pwa_camera_poc_blazor.Services.Ocr
         /// <summary>
         /// Executa o reconhecimento OCR em uma imagem Base64.
         /// </summary>
-        public async Task<OcrResult> RecognizeAsync(string base64Image)
+        public async Task<OcrResult> ReconhecerTextoAsync(string base64Image)
         {
             // Validações de Pré-condição (Gatekeeper)
             if (_state == OcrState.Disposed) throw new ObjectDisposedException(nameof(OcrService));

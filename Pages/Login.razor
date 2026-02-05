@@ -10,13 +10,16 @@
 <PageTitle>Login - ASPEC Inventory</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-center justify-start pa-0 pb-16">
-    <MudPaper id="login-card" Elevation="4" Class="@($"pa-8 pa-sm-10 rounded-lg premium-card w-100 mb-8 {loginContentClass}")"
-        Style="max-width: 440px;">
+    <MudPaper id="login-card" Elevation="4" Class="@($"pa-8 pa-sm-10 rounded-lg premium-card w-100 mb-8 {loginContentClass} login-card")">
         <div class="d-flex flex-column align-center mb-6">
             <div class="d-flex justify-center mb-4">
-                <MudImage Src="images/aspec_logo.png" Alt="ASPEC Logo"
-                    Style="width: 100px; height: 100px; object-fit: contain; border-radius: 12px;"
-                    Class="logo-hover shadow-sm" />
+                <MudImage Src="images/aspec_logo.png" 
+                    Alt="ASPEC Logo - Sistema de Captura de Patrimônio"
+                    Class="logo-hover shadow-sm login-logo"
+                    Width="64"
+                    Height="64"
+                    Loading="eager"
+                    fetchpriority="high" />
             </div>
             <div class="d-flex justify-center mb-2">
                 <h1 class="app-title-login">Aspec Capture</h1>
@@ -55,7 +58,7 @@
 
                 <MudItem xs="12">
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
-                        FullWidth="true" Disabled="@isLoading" Size="Size.Large" Class="mt-2 py-3 shadow-md">
+                        FullWidth="true" Disabled="@isLoading" Size="Size.Large" Class="ms-n1 login-submit-btn shadow-md">
                         @if (isLoading)
                         {
                             <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
@@ -77,17 +80,11 @@
     </MudPaper>
 
     <div class="d-flex justify-center mt-4">
-        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="version-indicator">Versão: v1.4.1 (Stable - Camera Fix & Build Optimization)</MudText>
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="version-indicator">Versão: v1.5.0 (UI/UX Overhaul - Footer Fix & MudSelect Upgrade)</MudText>
     </div>
 </MudContainer>
 
-@if (showLoadingOverlay)
-{
-    <div class="loading-overlay show">
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" Class="mb-4" />
-        <MudText Color="Color.Primary" Typo="Typo.h6">@loadingMessage</MudText>
-    </div>
-}
+<LoadingOverlay IsVisible="@showLoadingOverlay" Message="@loadingMessage" />
 
 @code {
     private LoginModel loginModel = new();
@@ -131,7 +128,7 @@
 
         try
         {
-            var user = await AuthService.LoginAsync(loginModel.Username, loginModel.Password);
+            var user = await AuthService.AutenticarAsync(loginModel.Username, loginModel.Password);
             if (user != null)
             {
                 alertMessage = "Login realizado com sucesso!";

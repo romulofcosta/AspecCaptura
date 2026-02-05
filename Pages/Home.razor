@@ -1,5 +1,7 @@
 @page "/home"
 @using pwa_camera_poc_blazor.Models
+@using pwa_camera_poc_blazor.Components.Shared
+@using Microsoft.JSInterop
 @inject IAuthService AuthService
 @inject IIndexedDbService DbService
 @inject NavigationManager Navigation
@@ -13,40 +15,40 @@
 
 <PageTitle>Inventário - ASPEC Capture</PageTitle>
 
-<MudContainer id="home-container" MaxWidth="MaxWidth.False" Class="pa-0 pb-20" Style="overflow-y: auto; height: 100dvh;">
+<MudContainer id="home-container" MaxWidth="MaxWidth.False" Class="pa-0 pb-20 home-container">
     <div class="px-4 pt-6">
         <!-- Search Bar & Filters -->
         <div class="d-flex align-center gap-2 mb-6">
-            <MudPaper Elevation="2" Class="pa-1 rounded-pill d-flex align-center flex-grow-1" Style="border: 1px solid rgba(0,0,0,0.05);">
+            <MudPaper Elevation="2" Class="pa-1 rounded-pill d-flex align-center flex-grow-1 home-search-paper">
                 <MudIcon Icon="@Icons.Material.Filled.Search" Class="ml-4" Color="Color.Default" />
                 <MudTextField @bind-Value="searchQuery" Placeholder="Buscar por nome, código ou local..." 
                     Variant="Variant.Text" Class="flex-grow-1 mx-2" Margin="Margin.Dense" Underline="false" />
             </MudPaper>
             <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" Color="@(showFilters ? Color.Primary : Color.Default)" 
-                OnClick="ToggleFilters" Variant="Variant.Filled" Style="border-radius: 12px; height: 48px; width: 48px;" />
+                OnClick="ToggleFilters" Variant="Variant.Filled" Class="home-btn-filter" />
         </div>
 
         <MudGrid Spacing="3">
             <!-- Action Button (Escanear Placa) -->
             <MudItem xs="12">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" 
-                    StartIcon="@Icons.Material.Filled.QrCodeScanner" OnClick='() => Navigation.NavigateTo("/camera")'
-                    Style="height: 60px; font-weight: 600; font-size: 1rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,122,255,0.2);">
+                    StartIcon="@Icons.Material.Filled.DocumentScanner" OnClick="IniciarEscaneamento"
+                    Class="home-btn-scan hover-lift ripple-effect">
                     Escanear Placa
                 </MudButton>
             </MudItem>
 
             <!-- List Header -->
             <MudItem xs="12" Class="d-flex align-center justify-space-between mt-2">
-                <MudText Typo="Typo.h6" Class="font-weight-bold">Ativos Registrados <span style="font-weight: normal; font-size: 1rem; color: var(--mud-palette-text-secondary);">(@filteredItems.Count())</span></MudText>
-                <MudLink Underline="Underline.None" Color="Color.Primary" Style="font-size: 0.9rem; font-weight: 500;">Ver todos</MudLink>
+                <MudText Typo="Typo.h6" Class="font-weight-bold">Ativos Registrados <span class="home-items-count">(@filteredItems.Count())</span></MudText>
+                <MudLink Underline="Underline.None" Color="Color.Primary" Class="home-link-view-all">Ver todos</MudLink>
             </MudItem>
 
             <!-- Filter Panel -->
             @if (showFilters)
             {
                 <MudItem xs="12">
-                    <MudPaper Class="pa-4 rounded-lg" Elevation="2">
+                    <MudPaper Class="pa-4 rounded-lg slide-in-down" Elevation="2">
                         <div class="d-flex align-center justify-space-between mb-4">
                             <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Filtros e Ordenação</MudText>
                             <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="ToggleFilters" />
@@ -60,7 +62,8 @@
                                         <MudChip T="string" Color="@(selectedCategory == category ? Color.Primary : Color.Default)"
                                             OnClick="() => SelectCategory(category)"
                                             Variant="@(selectedCategory == category ? Variant.Filled : Variant.Outlined)"
-                                            Size="Size.Small">
+                                            Size="Size.Medium"
+                                            Style="min-height: 44px; min-width: 44px; padding: var(--spacing-md) var(--spacing-lg);">
                                             @category
                                         </MudChip>
                                     }
@@ -82,20 +85,23 @@
 
         @if (isLoading)
         {
-            <MudItem xs="12" Class="d-flex justify-center my-16">
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+            <MudItem xs="12" Class="d-flex flex-column gap-3">
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
             </MudItem>
         }
         else if (!filteredItems.Any())
         {
-            <MudItem xs="12" Class="d-flex flex-column align-center justify-center my-16 py-16">
-                <div class="rounded-circle d-flex align-center justify-center mb-6" style="width: 120px; height: 120px; background-color: var(--mud-palette-background-grey);">
-                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Large" Color="Color.Default" style="font-size: 3rem; opacity: 0.3;" />
+            <MudItem xs="12" Class="d-flex flex-column align-center justify-center my-16 py-16 fade-in">
+                <div class="rounded-circle d-flex align-center justify-center mb-6 home-empty-state-icon-container float">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Large" Color="Color.Default" Class="home-empty-state-icon" />
                 </div>
                 <MudText Typo="Typo.h5" Class="font-weight-bold" Align="Align.Center">Nada por aqui ainda</MudText>
                 <MudText Typo="Typo.body1" Color="Color.Secondary" Align="Align.Center" Class="mb-8">Tente ajustar seus filtros ou comece a cadastrar novos patrimônios.</MudText>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.QrCodeScanner" 
-                    OnClick="@(() => Navigation.NavigateTo("/camera"))" Size="Size.Large" Style="border-radius: 24px; padding-left: 32px; padding-right: 32px;">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.DocumentScanner" 
+                    OnClick="IniciarInventario" Size="Size.Large" Class="home-btn-start hover-lift">
                     Começar Inventário
                 </MudButton>
             </MudItem>
@@ -104,7 +110,7 @@
         {
             @foreach (var item in pagedItems)
             {
-                <MudItem Class="inventory-grid-item" xs="12" sm="@(viewMode == "list" ? 12 : 6)" md="@(viewMode == "list" ? 12 : 6)"
+                <MudItem Class="inventory-grid-item stagger-item" xs="12" sm="@(viewMode == "list" ? 12 : 6)" md="@(viewMode == "list" ? 12 : 6)"
                     lg="@(viewMode == "list" ? 12 : 6)">
                     <ItemCard Item="item" OnView="NavigateToItemCallback" IsListView="@(viewMode == "list")" />
                 </MudItem>
@@ -126,7 +132,7 @@
 </MudContainer>
 
 @code {
-    private List<InventoryItem> items = new();
+    private List<ItemPatrimonio> items = new();
     private string searchQuery = "";
     private string selectedCategory = "Todas";
     private string sortOrder = "newest";
@@ -134,6 +140,7 @@
     private bool showFilters = false;
     private bool isLoading = true;
     private bool isSyncing = false;
+    private DotNetObjectReference<Home>? dotNetHelper;
 
     // Pagination
     private int currentPage = 1;
@@ -165,11 +172,23 @@
                 await Task.Delay(500);
                 await JSRuntime.InvokeVoidAsync("appInterop.checkOverflow", "#home-container");
                 
+                // Initialize pull-to-refresh gesture
+                dotNetHelper = DotNetObjectReference.Create(this);
+                await JSRuntime.InvokeVoidAsync("gestureHandler.initPullToRefresh", "home-container", dotNetHelper);
+                
                 // Tenta sincronizar automaticamente ao carregar (mas sem bloquear UI ou forçar re-upload agressivo)
                 _ = SyncPendingItems(autoSync: true);
             }
             catch { /* Log or handle JS interop errors if necessary */ }
         }
+    }
+
+    [JSInvokable]
+    public async Task OnPullToRefresh()
+    {
+        Console.WriteLine("[Home] Pull to refresh triggered");
+        await LoadItems();
+        await SyncPendingItems(autoSync: false);
     }
 
     private async Task SyncPendingItems(bool autoSync = false)
@@ -186,7 +205,7 @@
         try
         {
             var user = await AuthService.GetCurrentUserAsync();
-            var username = user?.Username ?? "unknown";
+            var username = user?.NomeUsuario ?? "unknown";
 
             // CORREÇÃO OTIMIZADA: Buscar apenas IDs dos itens pendentes para evitar carregar fotos pesadas
             // Usa índice 'synced' (false = 0)
@@ -197,9 +216,9 @@
             catch {
                  // Fallback: se índice não existir
                  Console.WriteLine("Fallback sync: buscando todos os itens (lento)");
-                 var allItems = await DbService.GetAllAsync<InventoryItem>("items");
+                 var allItems = await DbService.GetAllAsync<ItemPatrimonio>("items");
                  if (allItems != null)
-                    pendingIds = allItems.Where(i => !i.Synced).Select(i => i.Id).ToList();
+                    pendingIds = allItems.Where(i => !i.Sincronizado).Select(i => i.Id).ToList();
             }
 
             if (!pendingIds.Any()) 
@@ -215,11 +234,11 @@
             foreach (var id in pendingIds)
             {
                 // Carrega o item completo (com fotos)
-                var item = await DbService.GetAsync<InventoryItem>("items", id);
+                var item = await DbService.GetAsync<ItemPatrimonio>("items", id);
                 
                 // Filtra usuário
-                if (item == null || item.CreatedBy != username) continue;
-                if (item.Synced) continue;
+                if (item == null || item.CriadoPor != username) continue;
+                if (item.Sincronizado) continue;
 
                 bool itemSyncSuccess = false;
 
@@ -241,7 +260,7 @@
                         var firstPhoto = item.Photos.FirstOrDefault();
                         if (!string.IsNullOrEmpty(firstPhoto))
                         {
-                            var (success, url) = await AwsService.UploadPhotoAsync(item.Id, item.Code, firstPhoto);
+                            var (success, url) = await AwsService.UploadPhotoAsync(item.Id, item.Codigo, firstPhoto);
                             if (success && !string.IsNullOrEmpty(url))
                             {
                                 if (item.RemoteUrls == null) item.RemoteUrls = new List<string>();
@@ -253,7 +272,7 @@
                             else
                             {
                                 photoSuccess = false;
-                                Console.WriteLine($"Falha ao enviar foto do item {item.Name}");
+                                Console.WriteLine($"Falha ao enviar foto do item {item.Nome}");
                             }
                         }
                     }
@@ -261,7 +280,7 @@
                     // B. Upload dos Metadados (apenas se foto ok ou se não tiver foto)
                     if (photoSuccess)
                     {
-                        var metadata = ItemMetadata.FromInventoryItem(item, username);
+                        var metadata = ItemMetadata.FromItemPatrimonio(item, username);
                         var (metaSuccess, _) = await AwsService.UploadMetadataAsync(item.Id, metadata);
                         
                         if (metaSuccess)
@@ -270,7 +289,7 @@
                         }
                         else
                         {
-                             Console.WriteLine($"Falha ao enviar metadados do item {item.Name}");
+                             Console.WriteLine($"Falha ao enviar metadados do item {item.Nome}");
                         }
                     }
                 }
@@ -289,7 +308,7 @@
                         }
                     }
 
-                    item.Synced = true;
+                    item.Sincronizado = true;
                     // item.Photos = new List<string>(); // MANTÉM fotos locais
                     
                     await DbService.UpdateAsync("items", item);
@@ -342,26 +361,26 @@
         try
         {
             var user = await AuthService.GetCurrentUserAsync();
-            if (user?.CurrentUnitId != null)
+            if (user?.UnidadeGestoraAtualId != null)
             {
                 // Aqui ainda usamos GetItemsByUnitAsync que carrega tudo.
                 // Se o usuário tiver muitos itens, isso será lento.
-                var allItems = await DbService.GetItemsByUnitAsync(user.CurrentUnitId.Value);
+                var allItems = await DbService.GetItemsByUnitAsync(user.UnidadeGestoraAtualId.Value);
                 
                 // Filtra apenas os itens criados pelo usuário atual
-                items = allItems.Where(i => i.CreatedBy == user.Username).ToList();
+                items = allItems.Where(i => i.CriadoPor == user.NomeUsuario).ToList();
 
                 // If no items, load example item
                 if (!items.Any())
                 {
-                    await LoadExampleItem(user.CurrentUnitId.Value, user.Username);
-                    allItems = await DbService.GetItemsByUnitAsync(user.CurrentUnitId.Value);
-                    items = allItems.Where(i => i.CreatedBy == user.Username).ToList();
+                    await LoadExampleItem(user.UnidadeGestoraAtualId.Value, user.NomeUsuario);
+                    allItems = await DbService.GetItemsByUnitAsync(user.UnidadeGestoraAtualId.Value);
+                    items = allItems.Where(i => i.CriadoPor == user.NomeUsuario).ToList();
                 }
             }
             else
             {
-                items = new List<InventoryItem>();
+                items = new List<ItemPatrimonio>();
             }
         }
         catch (Exception ex)
@@ -379,11 +398,11 @@
         try
         {
             var json = await HttpClient.GetStringAsync("sample-data/exemplo-item.json");
-            var exampleItem = System.Text.Json.JsonSerializer.Deserialize<InventoryItem>(json);
+            var exampleItem = System.Text.Json.JsonSerializer.Deserialize<ItemPatrimonio>(json);
             if (exampleItem != null)
             {
-                exampleItem.UnitId = unitId;
-                exampleItem.CreatedBy = username; // Define o criador
+                exampleItem.UnidadeGestoraId = unitId;
+                exampleItem.CriadoPor = username; // Define o criador
                 await DbService.AddAsync("items", exampleItem);
             }
         }
@@ -403,7 +422,7 @@
         currentPage = 1;
     }
 
-    private IEnumerable<InventoryItem> filteredItems
+    private IEnumerable<ItemPatrimonio> filteredItems
     {
         get
         {
@@ -417,19 +436,19 @@
             if (!string.IsNullOrWhiteSpace(searchQuery))
             {
                 result = result.Where(i =>
-                i.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                i.Code.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                i.Nome.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                i.Codigo.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
                 i.Category.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
                 );
             }
 
             result = sortOrder switch
             {
-                "oldest" => result.OrderBy(i => i.Timestamp),
-                "name-asc" => result.OrderBy(i => i.Name),
-                "name-desc" => result.OrderByDescending(i => i.Name),
-                "code-asc" => result.OrderBy(i => i.Code),
-                _ => result.OrderByDescending(i => i.Timestamp)
+                "oldest" => result.OrderBy(i => i.DataHora),
+                "name-asc" => result.OrderBy(i => i.Nome),
+                "name-desc" => result.OrderByDescending(i => i.Nome),
+                "code-asc" => result.OrderBy(i => i.Codigo),
+                _ => result.OrderByDescending(i => i.DataHora)
             };
 
             return result;
@@ -437,18 +456,35 @@
     }
 
     private int totalPages => (int)Math.Ceiling((double)filteredItems.Count() / pageSize);
-    private IEnumerable<InventoryItem> pagedItems => filteredItems.Skip((currentPage - 1) * pageSize).Take(pageSize);
+    private IEnumerable<ItemPatrimonio> pagedItems => filteredItems.Skip((currentPage - 1) * pageSize).Take(pageSize);
 
     private void PrevPage() { if (currentPage > 1) currentPage--; }
     private void NextPage() { if (currentPage < totalPages) currentPage++; }
 
-    private void NavigateToItemCallback(InventoryItem item)
+    private void NavigateToItemCallback(ItemPatrimonio item)
     {
         Navigation.NavigateTo($"/item/{item.Id}");
+    }
+
+    /// <summary>
+    /// Inicia o escaneamento de placa - navega para a página de captura em modo scan
+    /// </summary>
+    private void IniciarEscaneamento()
+    {
+        Navigation.NavigateTo("/captura?mode=scan");
+    }
+
+    /// <summary>
+    /// Inicia o inventário - navega para a página de captura em modo photo
+    /// </summary>
+    private void IniciarInventario()
+    {
+        Navigation.NavigateTo("/captura?mode=photo");
     }
 
     public void Dispose()
     {
         appState.OnChange -= HandleStateChange;
+        dotNetHelper?.Dispose();
     }
 }

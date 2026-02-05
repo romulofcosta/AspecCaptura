@@ -60,9 +60,9 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 // 1. Preparar dados
                 var base64Clean = base64Data.Contains(",") ? base64Data.Split(',')[1] : base64Data;
                 var bytes = Convert.FromBase64String(base64Clean);
-                var item = await _dbService.GetAsync<InventoryItem>("items", itemId);
+                var item = await _dbService.GetAsync<ItemPatrimonio>("items", itemId);
                 
-                var safeItemName = SanitizeKey(item?.Name ?? itemId);
+                var safeItemName = SanitizeKey(item?.Nome ?? itemId);
                 var fileName = $"{safeItemName}.jpg";
                 var contentType = "image/jpeg";
 
@@ -70,13 +70,13 @@ namespace pwa_camera_poc_blazor.Services.AWS
 
                 // 2. Solicitar URL Assinada
                 var user = await _authService.GetCurrentUserAsync();
-                var fullName = $"{user?.FirstName} {user?.LastName}".Trim();
-                var username = string.IsNullOrWhiteSpace(fullName) ? (user?.Username ?? "usuario") : fullName;
+                var fullName = $"{user?.PrimeiroNome} {user?.UltimoNome}".Trim();
+                var username = string.IsNullOrWhiteSpace(fullName) ? (user?.NomeUsuario ?? "usuario") : fullName;
                 var unitName = "unidade";
-                if (user?.CurrentUnitId != null)
+                if (user?.UnidadeGestoraAtualId != null)
                 {
-                    var unit = await _dbService.GetAsync<Unit>("units", user.CurrentUnitId.Value);
-                    unitName = unit?.Name ?? unitName;
+                    var unit = await _dbService.GetAsync<UnidadeGestora>("units", user.UnidadeGestoraAtualId.Value);
+                    unitName = unit?.Nome ?? unitName;
                 }
                 
                 // FIX: Sanitize components for folder path
@@ -137,8 +137,8 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
                 var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(metadata, options);
 
-                var itemMetaItem = await _dbService.GetAsync<InventoryItem>("items", itemId);
-                var safeMetaItemName = SanitizeKey(itemMetaItem?.Name ?? itemId);
+                var itemMetaItem = await _dbService.GetAsync<ItemPatrimonio>("items", itemId);
+                var safeMetaItemName = SanitizeKey(itemMetaItem?.Nome ?? itemId);
                 var fileName = $"{safeMetaItemName}.json";
                 var contentType = "application/json";
 
@@ -146,13 +146,13 @@ namespace pwa_camera_poc_blazor.Services.AWS
 
                 // 1. Obter URL
                 var user = await _authService.GetCurrentUserAsync();
-                var fullNameMeta = $"{user?.FirstName} {user?.LastName}".Trim();
-                var username = string.IsNullOrWhiteSpace(fullNameMeta) ? (user?.Username ?? "usuario") : fullNameMeta;
+                var fullNameMeta = $"{user?.PrimeiroNome} {user?.UltimoNome}".Trim();
+                var username = string.IsNullOrWhiteSpace(fullNameMeta) ? (user?.NomeUsuario ?? "usuario") : fullNameMeta;
                 var unitName = "unidade";
-                if (user?.CurrentUnitId != null)
+                if (user?.UnidadeGestoraAtualId != null)
                 {
-                    var unit = await _dbService.GetAsync<Unit>("units", user.CurrentUnitId.Value);
-                    unitName = unit?.Name ?? unitName;
+                    var unit = await _dbService.GetAsync<UnidadeGestora>("units", user.UnidadeGestoraAtualId.Value);
+                    unitName = unit?.Nome ?? unitName;
                 }
                 
                 // FIX: Sanitize components for folder path
@@ -208,19 +208,19 @@ namespace pwa_camera_poc_blazor.Services.AWS
             try
             {
                 var user = await _authService.GetCurrentUserAsync();
-                var fullName = $"{user?.FirstName} {user?.LastName}".Trim();
-                var username = string.IsNullOrWhiteSpace(fullName) ? (user?.Username ?? "usuario") : fullName;
+                var fullName = $"{user?.PrimeiroNome} {user?.UltimoNome}".Trim();
+                var username = string.IsNullOrWhiteSpace(fullName) ? (user?.NomeUsuario ?? "usuario") : fullName;
                 var unitName = "unidade";
-                if (user?.CurrentUnitId != null)
+                if (user?.UnidadeGestoraAtualId != null)
                 {
-                    var unit = await _dbService.GetAsync<Unit>("units", user.CurrentUnitId.Value);
-                    unitName = unit?.Name ?? unitName;
+                    var unit = await _dbService.GetAsync<UnidadeGestora>("units", user.UnidadeGestoraAtualId.Value);
+                    unitName = unit?.Nome ?? unitName;
                 }
-                var itemRecord = await _dbService.GetAsync<InventoryItem>("items", itemId);
+                var itemRecord = await _dbService.GetAsync<ItemPatrimonio>("items", itemId);
                 
                 var safeUsername = SanitizeKey(username);
                 var safeUnitName = SanitizeKey(unitName);
-                var safeItemName = SanitizeKey(itemRecord?.Name ?? itemId);
+                var safeItemName = SanitizeKey(itemRecord?.Nome ?? itemId);
                 
                 var key = $"{safeUsername}/{safeUnitName}/{safeItemName}.json";
                 
@@ -236,23 +236,23 @@ namespace pwa_camera_poc_blazor.Services.AWS
             }
         }
 
-        public async Task<string?> GetItemImageUrlAsync(InventoryItem item)
+        public async Task<string?> GetItemImageUrlAsync(ItemPatrimonio item)
         {
             try
             {
                 var user = await _authService.GetCurrentUserAsync();
-                var fullName = $"{user?.FirstName} {user?.LastName}".Trim();
-                var username = string.IsNullOrWhiteSpace(fullName) ? (user?.Username ?? "usuario") : fullName;
+                var fullName = $"{user?.PrimeiroNome} {user?.UltimoNome}".Trim();
+                var username = string.IsNullOrWhiteSpace(fullName) ? (user?.NomeUsuario ?? "usuario") : fullName;
                 var unitName = "unidade";
-                if (user?.CurrentUnitId != null)
+                if (user?.UnidadeGestoraAtualId != null)
                 {
-                    var unit = await _dbService.GetAsync<Unit>("units", user.CurrentUnitId.Value);
-                    unitName = unit?.Name ?? unitName;
+                    var unit = await _dbService.GetAsync<UnidadeGestora>("units", user.UnidadeGestoraAtualId.Value);
+                    unitName = unit?.Nome ?? unitName;
                 }
                 
                 var safeUsername = SanitizeKey(username);
                 var safeUnitName = SanitizeKey(unitName);
-                var safeItemName = SanitizeKey(item.Name ?? item.Id);
+                var safeItemName = SanitizeKey(item.Nome ?? item.Id);
                 
                 var key = $"{safeUsername}/{safeUnitName}/{safeItemName}.jpg";
                 var encodedKey = Uri.EscapeDataString(key);

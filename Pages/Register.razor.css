@@ -1,0 +1,240 @@
+.register-container {
+    flex-grow: 1;
+}
+
+.register-card {
+    max-width: 480px;
+    margin-top: var(--spacing-xxl);
+    margin-bottom: var(--spacing-xxl);
+    border-radius: var(--radius-lg) !important;
+    transition: all var(--transition-normal);
+}
+
+.register-logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.register-logo:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-md);
+}
+
+/* MudSelect Improvements */
+.mud-select {
+    transition: all var(--transition-fast);
+}
+
+.mud-select:hover .mud-input-outlined-border {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.mud-select-input {
+    min-height: 40px !important;
+}
+
+/* Fix MudSelect popover alignment */
+.mud-popover {
+    margin-top: 4px !important;
+}
+
+.mud-popover-open {
+    z-index: 1400 !important;
+}
+
+.mud-list {
+    padding: var(--spacing-xs) 0 !important;
+}
+
+.mud-list-item {
+    min-height: 40px !important;
+    padding: var(--spacing-sm) var(--spacing-lg) !important;
+    transition: all var(--transition-fast);
+}
+
+.mud-list-item:hover {
+    background-color: rgba(var(--mud-palette-primary-rgb), 0.08) !important;
+}
+
+.mud-list-item-selected {
+    background-color: rgba(var(--mud-palette-primary-rgb), 0.12) !important;
+    font-weight: var(--font-weight-semibold) !important;
+}
+
+/* Add unit button improvements */
+.add-unit-btn {
+    transition: all var(--transition-fast);
+    border-radius: var(--radius-md) !important;
+    min-height: var(--touch-target-min) !important;
+    font-weight: var(--font-weight-semibold) !important;
+}
+
+.add-unit-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+    background-color: rgba(var(--mud-palette-primary-rgb), 0.04);
+}
+
+.add-unit-btn:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.register-submit-btn {
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-md);
+    padding-bottom: var(--spacing-md);
+    height: var(--btn-height-lg) !important;
+    font-weight: var(--font-weight-bold) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-fast);
+}
+
+.register-submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.register-submit-btn:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+.register-submit-btn:focus {
+    outline: 2px solid var(--mud-palette-primary);
+    outline-offset: 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .register-card {
+        margin-top: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .register-submit-btn {
+        height: var(--btn-height-md) !important;
+        font-size: var(--font-size-base) !important;
+    }
+}
+
+
+/* Chip styling improvements */
+.mud-chip {
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-xs);
+}
+
+.mud-chip:hover {
+    transform: scale(1.05) translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.mud-chip:active {
+    transform: scale(0.98);
+    box-shadow: none;
+}
+
+/* Chips container */
+.chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background: linear-gradient(135deg, 
+        rgba(var(--mud-palette-primary-rgb), 0.03) 0%, 
+        rgba(var(--mud-palette-primary-rgb), 0.06) 100%);
+    border-radius: var(--radius-lg);
+    min-height: 64px;
+    align-items: center;
+    border: 2px dashed rgba(var(--mud-palette-primary-rgb), 0.2);
+    transition: all var(--transition-fast);
+}
+
+.chips-container:hover {
+    border-color: rgba(var(--mud-palette-primary-rgb), 0.4);
+    background: linear-gradient(135deg, 
+        rgba(var(--mud-palette-primary-rgb), 0.05) 0%, 
+        rgba(var(--mud-palette-primary-rgb), 0.08) 100%);
+    box-shadow: var(--shadow-sm);
+}
+
+.chips-container:empty {
+    display: none;
+}
+
+/* Error message styling */
+.field-error {
+    color: var(--mud-palette-error);
+    font-size: var(--font-size-xs);
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: rgba(244, 67, 54, 0.08);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--mud-palette-error);
+    animation: shake 0.3s ease-in-out, fade-in 0.3s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Loading state for selects - Not needed anymore with MudSelect */
+
+/* Improved spacing for form fields */
+.form-field-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Caption label improvements */
+.mud-typography-caption {
+    font-weight: var(--font-weight-medium);
+    letter-spacing: 0.01em;
+}
+
+/* Subtitle improvements */
+.mud-typography-subtitle2 {
+    color: var(--mud-palette-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+/* Accessibility improvements - Not needed with MudSelect */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .mud-input-outlined-border {
+        border-width: 2px;
+    }
+    
+    .chips-container {
+        border-width: 3px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .mud-select,
+    .mud-chip,
+    .add-unit-btn,
+    .chips-container {
+        transition: none;
+    }
+    
+    .shake,
+    .fade-in {
+        animation: none;
+    }
+}

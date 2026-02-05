@@ -1,0 +1,27 @@
+@* Camera Modal Component for Additional Photos *@
+
+@if (IsActive)
+{
+    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: black; z-index: 3000; display: flex; flex-direction: column;" class="fade-in">
+        <video id="@VideoElementId" autoplay playsinline style="width: 100%; flex: 1; object-fit: cover;"></video>
+        <MudPaper Class="d-flex justify-center align-center px-8 py-6" Style="background: rgba(0,0,0,0.8);">
+            <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Surface" Size="Size.Large" 
+                OnClick="OnClose" Class="mr-8 hover-lift" 
+                aria-label="Fechar câmera" />
+            <div class="capture-btn-container">
+                <MudIconButton Icon="@Icons.Material.Filled.Camera" 
+                    Class="capture-btn hover-grow ripple-effect"
+                    Style="width: 64px !important; height: 64px !important;"
+                    OnClick="OnCapture"
+                    aria-label="Capturar foto" />
+            </div>
+        </MudPaper>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsActive { get; set; }
+    [Parameter] public string VideoElementId { get; set; } = "modal-camera-feed";
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnCapture { get; set; }
+}

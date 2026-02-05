@@ -1,0 +1,407 @@
+.camera-page-container {
+    height: 100vh;
+    width: 100%;
+    background-color: #000;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.camera-viewport {
+    position: relative;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+#camera-feed {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.camera-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    z-index: var(--z-sticky);
+}
+
+/* Header actions improvements */
+.camera-header-actions {
+    position: absolute;
+    top: var(--spacing-lg);
+    left: var(--spacing-lg);
+    right: var(--spacing-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: var(--z-sticky);
+}
+
+.back-btn-blur {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    transition: all var(--transition-fast) !important;
+}
+
+.back-btn-blur:hover {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    transform: scale(1.05);
+}
+
+/* ROI Guide improvements */
+.camera-roi-guide {
+    position: relative;
+    width: 100%;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.roi-scrim {
+    background-color: rgba(0, 0, 0, 0.6);
+    transition: background-color var(--transition-fast);
+}
+
+.roi-scrim-top {
+    height: 25%;
+}
+
+.roi-scrim-bottom {
+    flex-grow: 1;
+}
+
+.roi-scrim-side {
+    width: 10%;
+}
+
+.roi-center-row {
+    height: 200px;
+    display: flex;
+}
+
+.roi-window {
+    flex-grow: 1;
+    position: relative;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: var(--radius-md);
+    box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.6);
+    transition: all var(--transition-fast);
+}
+
+.roi-window.active {
+    border-color: var(--mud-palette-success);
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.5), 0 0 0 1000px rgba(0, 0, 0, 0.6);
+    animation: roi-pulse 2s infinite;
+}
+
+@keyframes roi-pulse {
+    0%, 100% { 
+        border-color: var(--mud-palette-success);
+        box-shadow: 0 0 20px rgba(76, 175, 80, 0.5), 0 0 0 1000px rgba(0, 0, 0, 0.6);
+    }
+    50% { 
+        border-color: rgba(76, 175, 80, 0.8);
+        box-shadow: 0 0 30px rgba(76, 175, 80, 0.7), 0 0 0 1000px rgba(0, 0, 0, 0.6);
+    }
+}
+
+.roi-corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 4px solid #fff;
+    transition: all var(--transition-fast);
+}
+
+.roi-window.active .roi-corner {
+    border-color: var(--mud-palette-success);
+}
+
+.roi-corner-tl {
+    top: -2px;
+    left: -2px;
+    border-right: 0;
+    border-bottom: 0;
+    border-top-left-radius: var(--radius-sm);
+}
+
+.roi-corner-tr {
+    top: -2px;
+    right: -2px;
+    border-left: 0;
+    border-bottom: 0;
+    border-top-right-radius: var(--radius-sm);
+}
+
+.roi-corner-bl {
+    bottom: -2px;
+    left: -2px;
+    border-right: 0;
+    border-top: 0;
+    border-bottom-left-radius: var(--radius-sm);
+}
+
+.roi-corner-br {
+    bottom: -2px;
+    right: -2px;
+    border-left: 0;
+    border-top: 0;
+    border-bottom-right-radius: var(--radius-sm);
+}
+
+/* Bottom controls improvements */
+.camera-controls-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--spacing-xxl) var(--spacing-lg) calc(var(--spacing-xxl) + env(safe-area-inset-bottom));
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-lg);
+    z-index: var(--z-sticky);
+}
+
+.mode-toggle-pill {
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    border-radius: var(--radius-pill);
+    padding: var(--spacing-xs);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.mode-btn {
+    padding: var(--spacing-sm) var(--spacing-lg) !important;
+    border-radius: var(--radius-lg) !important;
+    font-weight: var(--font-weight-semibold) !important;
+    font-size: var(--font-size-sm) !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    background-color: transparent !important;
+    transition: all var(--transition-fast) !important;
+    min-height: var(--btn-height-md) !important;
+}
+
+.mode-btn.active {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    color: var(--mud-palette-text-primary) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+.mode-btn:hover:not(.active) {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Scan button improvements */
+.scan-btn {
+    border-radius: var(--radius-lg) !important;
+    height: var(--btn-height-xl) !important;
+    font-weight: var(--font-weight-bold) !important;
+    font-size: var(--font-size-lg) !important;
+    backdrop-filter: blur(8px);
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    transition: all var(--transition-fast) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.scan-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left var(--transition-slow);
+}
+
+.scan-btn:hover::before {
+    left: 100%;
+}
+
+.scan-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(var(--mud-palette-primary-rgb), 0.4);
+}
+
+.scan-btn:active {
+    transform: translateY(0);
+}
+
+/* Capture button improvements */
+.capture-btn-inner {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: var(--spacing-lg);
+    transition: all var(--transition-fast);
+}
+
+.capture-btn-inner:hover {
+    transform: scale(1.1);
+}
+
+.capture-btn-inner:active {
+    transform: scale(0.95);
+}
+
+.capture-btn-inner div {
+    background-color: rgba(255, 255, 255, 0.9);
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-lg);
+}
+
+.capture-btn-inner:hover div {
+    background-color: white;
+    box-shadow: var(--shadow-xl);
+}
+
+/* Processing status improvements */
+.camera-controls-bottom .mud-text {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .camera-header-actions {
+        top: var(--spacing-md);
+        left: var(--spacing-md);
+        right: var(--spacing-md);
+    }
+    
+    .camera-controls-bottom {
+        padding: var(--spacing-lg) var(--spacing-md) calc(var(--spacing-lg) + env(safe-area-inset-bottom));
+    }
+    
+    .roi-center-row {
+        height: 150px;
+    }
+    
+    .scan-btn {
+        height: var(--btn-height-lg) !important;
+        font-size: var(--font-size-base) !important;
+    }
+}
+
+/* Accessibility improvements */
+.mode-btn:focus,
+.scan-btn:focus,
+.capture-btn-inner:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+}
+
+/* Animation for processing state */
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .roi-window {
+        border-width: 3px;
+    }
+    
+    .mode-btn {
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    
+    .scan-btn {
+        border-width: 3px !important;
+    }
+}
+
+
+/* Photo Preview Swipe Gestures */
+#photo-preview-container {
+    touch-action: pan-y pinch-zoom;
+    cursor: grab;
+}
+
+#photo-preview-container:active {
+    cursor: grabbing;
+}
+
+#photo-preview-container .mud-image {
+    transition: opacity var(--transition-fast);
+}
+
+/* Swipe Indicators */
+#photo-preview-container > div[style*="position: absolute"][style*="left: 12px"],
+#photo-preview-container > div[style*="position: absolute"][style*="right: 12px"] {
+    opacity: 0.7;
+    transition: all var(--transition-fast);
+    pointer-events: none;
+}
+
+#photo-preview-container:hover > div[style*="position: absolute"][style*="left: 12px"],
+#photo-preview-container:hover > div[style*="position: absolute"][style*="right: 12px"] {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Photo Counter Badge */
+#photo-preview-container > div[style*="bottom: 12px"] {
+    backdrop-filter: blur(8px);
+    transition: all var(--transition-fast);
+}
+
+/* Swipe Animation Hint */
+@keyframes swipe-hint {
+    0%, 100% {
+        transform: translateX(0);
+        opacity: 0.7;
+    }
+    50% {
+        transform: translateX(-10px);
+        opacity: 1;
+    }
+}
+
+#photo-preview-container > div[style*="left: 12px"] {
+    animation: swipe-hint 2s ease-in-out infinite;
+}
+
+@keyframes swipe-hint-right {
+    0%, 100% {
+        transform: translateX(0);
+        opacity: 0.7;
+    }
+    50% {
+        transform: translateX(10px);
+        opacity: 1;
+    }
+}
+
+#photo-preview-container > div[style*="right: 12px"] {
+    animation: swipe-hint-right 2s ease-in-out infinite;
+}
+
+/* Disable hint animation on touch */
+#photo-preview-container:active > div[style*="left: 12px"],
+#photo-preview-container:active > div[style*="right: 12px"] {
+    animation: none;
+}

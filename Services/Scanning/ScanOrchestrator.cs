@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using pwa_camera_poc_blazor.Models;
 using pwa_camera_poc_blazor.Services.Storage;
-using pwa_camera_poc_blazor.Services.UG;
+using pwa_camera_poc_blazor.Services.UnidadesGestoras;
 
 namespace pwa_camera_poc_blazor.Services.Scanning
 {
@@ -51,8 +51,8 @@ namespace pwa_camera_poc_blazor.Services.Scanning
             }
 
             // 3. Validação Contra Inventário Local (Já bipado?)
-            var localItems = await _dbService.GetAllAsync<InventoryItem>("items");
-            var existingItem = localItems.FirstOrDefault(i => i.Code == code);
+            var localItems = await _dbService.GetAllAsync<ItemPatrimonio>("items");
+            var existingItem = localItems.FirstOrDefault(i => i.Codigo == code);
 
             if (existingItem != null)
             {
@@ -68,7 +68,7 @@ namespace pwa_camera_poc_blazor.Services.Scanning
             // 4. Validação Contra Inventário da UG (Gatekeeper de Negócio)
             // UGStateService já deve ter garantido que OfficialInventory está populado
             var officialItem = _ugStateService.OfficialInventory
-                .FirstOrDefault(i => i.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(i => i.Codigo.Equals(code, StringComparison.OrdinalIgnoreCase));
 
             if (officialItem == null)
             {
@@ -84,7 +84,7 @@ namespace pwa_camera_poc_blazor.Services.Scanning
             return new ScanDecision
             {
                 ResultType = ScanResultType.Success,
-                Message = $"Patrimônio {code} identificado: {officialItem.Name}",
+                Message = $"Patrimônio {code} identificado: {officialItem.Nome}",
                 OfficialItem = officialItem,
                 ExtractedCode = code
             };

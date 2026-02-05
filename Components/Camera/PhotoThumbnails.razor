@@ -1,0 +1,51 @@
+@* Photo Thumbnails Component *@
+
+<div class="d-flex gap-2 mb-4 overflow-x-auto">
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AddAPhoto"
+        OnClick="OnAddPhotoClick" Class="pa-4 hover-lift" Style="height: 60px; min-width: 60px;"
+        aria-label="Adicionar mais fotos">
+        ADICIONAR FOTOS
+    </MudButton>
+    
+    @for (int i = 0; i < Photos.Count; i++)
+    {
+        int index = i;
+        <div style="position: relative; width: 60px; height: 60px; flex-shrink: 0; cursor: pointer;"
+            class="@(CurrentIndex == index ? "scale-in" : "")"
+            @onclick="() => OnThumbnailClick(index)"
+            role="button"
+            tabindex="0"
+            aria-label="@($"Selecionar foto {index + 1}")">
+            <MudImage Src="@Photos[index]" ObjectFit="ObjectFit.Cover"
+                Style="@($"width:100%; height:100%; border-radius: 4px; border: {(CurrentIndex == index ? "2px solid var(--mud-palette-primary)" : "1px solid rgba(0,0,0,0.1)")}")" 
+                Alt="@($"Miniatura da foto {index + 1}")" />
+            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Error"
+                Style="position: absolute; top: -5px; right: -5px; background: white; box-shadow: var(--shadow-sm);"
+                OnClick="@((e) => OnRemovePhoto(index))"
+                aria-label="@($"Remover foto {index + 1}")" />
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public List<string> Photos { get; set; } = new();
+    [Parameter] public int CurrentIndex { get; set; }
+    [Parameter] public EventCallback OnAddPhoto { get; set; }
+    [Parameter] public EventCallback<int> OnThumbnailSelected { get; set; }
+    [Parameter] public EventCallback<int> OnPhotoRemoved { get; set; }
+
+    private async Task OnAddPhotoClick()
+    {
+        await OnAddPhoto.InvokeAsync();
+    }
+
+    private async Task OnThumbnailClick(int index)
+    {
+        await OnThumbnailSelected.InvokeAsync(index);
+    }
+
+    private async Task OnRemovePhoto(int index)
+    {
+        await OnPhotoRemoved.InvokeAsync(index);
+    }
+}
