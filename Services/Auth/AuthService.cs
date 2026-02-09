@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using pwa_camera_poc_blazor.Models;
 using pwa_camera_poc_blazor.Services.Storage;
+using pwa_camera_poc_blazor.Services.Provisioning;
 using Microsoft.AspNetCore.Components.Authorization;
 
 namespace pwa_camera_poc_blazor.Services.Auth
@@ -156,6 +157,97 @@ namespace pwa_camera_poc_blazor.Services.Auth
             {
                 session.UnitId = user.UnidadeGestoraAtualId ?? 0;
                 await _localStorage.SetItemAsync(SESSION_KEY, session);
+            }
+        }
+
+        /// <summary>
+        /// Downloads and syncs users for a UnidadeGestora from provisioning service.
+        /// Stores users in IndexedDB with Argon2id password hashes.
+        /// Called after authentication to enable offline auth for current UG.
+        /// </summary>
+        public async Task SincronizarUsuariosUGAsync(int ugId, IProvisioningService provisioningService)
+        {
+            try
+            {
+                var usuarios = await provisioningService.DownloadUsuariosAsync(ugId);
+                foreach (var user in usuarios)
+                {
+                    await _localStorage.SetItemAsync(user.NomeUsuario, user);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AuthService] Error syncing users: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Authenticates user using Argon2id password hash stored in provisioned users JSON.
+        /// Enables 100% offline authentication after initial provisioning.
+        /// Validates hash locally without server call.
+        /// </summary>
+        public async Task<Usuario?> AutenticarComArgon2IdAsync(string username, string argon2IdHash)
+        {
+            try
+            {
+                var cleanUsername = username?.ToLower().Trim();
+                if (string.IsNullOrEmpty(cleanUsername)) return null;
+
+                var user = await _localStorage.GetItemAsync<Usuario>(cleanUsername);
+                if (user == null) return null;
+
+                // Validate against stored Argon2id hash
+                if (!ValidateArgon2IdHash(argon2IdHash, user.HashSenha))
+                {
+                    return null;
+                }
+
+                // Authentication successful
+                user.UltimoLogin = DateTime.Now;
+                await _localStorage.SetItemAsync(user.NomeUsuario, user);
+
+                var session = new UserSession { Username = user.NomeUsuario, UnitId = user.UnidadeGestoraAtualId ?? 0 };
+                await _localStorage.SetItemAsync(SESSION_KEY, session);
+
+                if (_authStateProvider is CustomAuthStateProvider customProvider)
+                {
+                    customProvider.NotifyAuthenticationStateChanged();
+                }
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AuthService] Error in Argon2id auth: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Validates Argon2id password hash.
+        /// Implementation stub - requires Argon2id validation library.
+        /// Recommended library: Isopoh.Cryptography.Argon2 or argon2-core-dotnet
+        /// 
+        /// Production implementation should:
+        /// - Use Argon2 parameters: m=65536, t=3, p=4
+        /// - Return true if hash matches plaintext password
+        /// </summary>
+        private bool ValidateArgon2IdHash(string plaintext, string argon2IdHash)
+        {
+            try
+            {
+                // TODO: Replace with actual Argon2id library
+                // Example with Isopoh.Cryptography.Argon2:
+                // return Argon2.Verify(argon2IdHash, plaintext, null);
+                
+                // Temporary fallback: simple hash comparison
+                var tempHash = HashPassword(plaintext);
+                return tempHash == argon2IdHash;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AuthService] Argon2id validation error: {ex.Message}");
+                return false;
             }
         }
     }

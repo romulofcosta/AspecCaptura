@@ -9,6 +9,9 @@ using pwa_camera_poc_blazor.Services.Camera;
 using pwa_camera_poc_blazor.Services.Storage;
 using pwa_camera_poc_blazor.Services.Ocr;
 using pwa_camera_poc_blazor.Services.AWS;
+using pwa_camera_poc_blazor.Services.Provisioning;
+using pwa_camera_poc_blazor.Services.Search;
+using pwa_camera_poc_blazor.Services.Scanning;
 using pwa_camera_poc_blazor.Models;
 using MudBlazor.Services;
 using MudBlazor;
@@ -37,6 +40,11 @@ builder.Services.AddScoped<AwsConfig>();
 builder.Services.AddScoped<IAwsStorageService, AwsStorageService>();
 builder.Services.AddScoped<pwa_camera_poc_blazor.Services.ToastService>();
 builder.Services.AddScoped<AppState>();
+
+// v1.5.0 Provisioning & Sync Services
+builder.Services.AddScoped<IProvisioningService, ProvisioningService>();
+builder.Services.AddScoped<ISearchMergeService, SearchMergeService>();
+builder.Services.AddScoped<ISyncService, SyncService>();
 
 // UI Component Library
 // MudBlazor: Material Design component library (free & open-source)

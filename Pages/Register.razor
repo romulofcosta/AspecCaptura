@@ -85,10 +85,12 @@
                 </MudItem>
 
                 <!-- ESTADO MUDSELECT -->
-<MudItem xs="12" Class="pb-4">
+                <MudItem xs="12" Class="pb-4">
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Estado</MudText>
                     <MudSelect T="string" 
-                               @bind-Value="SelectedStateId" 
-                               Label="Estado" 
+                               @bind-Value="_selectedStateId"
+                               Placeholder="Selecione o estado"
+                               Clearable="true"
                                Variant="Variant.Outlined" 
                                AnchorOrigin="Origin.BottomLeft"
                                TransformOrigin="Origin.TopLeft"
@@ -98,38 +100,43 @@
                                Disabled="@(!statesLoaded)"
                                FullWidth="true"
                                Class="mb-2">
-                        @if (statesLoaded)
+                        @if (statesLoaded && states?.Any() == true)
                         {
                             @foreach (var state in states)
                             {
-                                <MudSelectItem Value="@state.Id">@state.Nome</MudSelectItem>
+                                <MudSelectItem T="string" Value="@state.Id">@state.Nome</MudSelectItem>
                             }
+                        }
+                        else if (!statesLoaded)
+                        {
+                            <MudSelectItem T="string" Disabled="true" Value="@("")">Carregando...</MudSelectItem>
                         }
                         else
                         {
-                            <MudSelectItem Value="@string.Empty" Disabled="true">Carregando...</MudSelectItem>
+                            <MudSelectItem T="string" Disabled="true" Value="@("")">Nenhum estado disponivel</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
 
                 <!-- CIDADE MUDSELECT -->
                 <MudItem xs="12" Class="pb-4">
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Município</MudText>
                     <MudSelect T="int" 
-                               @bind-Value="SelectedCityId" 
-                               Label="Município" 
+                               Value="_selectedCityId"
+                               ValueChanged="OnCityChanged"
+                               Placeholder="@(_selectedStateId == null ? "Selecione um estado primeiro" : "Selecione o município")"
                                Variant="Variant.Outlined" 
                                AnchorOrigin="Origin.BottomLeft"
                                TransformOrigin="Origin.TopLeft"
                                Margin="Margin.Dense"
                                Adornment="Adornment.Start"
                                AdornmentIcon="@Icons.Material.Filled.LocationCity"
-                               Disabled="@(isLoading || !citiesLoaded || string.IsNullOrEmpty(SelectedStateId))"
+                               Disabled="@(isLoading || !citiesLoaded || _selectedStateId == null)"
                                FullWidth="true"
-                               Class="mb-2"
-                               Placeholder="@(string.IsNullOrEmpty(SelectedStateId) ? "Selecione um estado primeiro" : "Selecione o município")">
+                               Class="mb-2">
                         @foreach (var city in filteredCities)
                         {
-                            <MudSelectItem Value="@city.Id">@city.Nome</MudSelectItem>
+                            <MudSelectItem T="int" Value="@city.Id">@city.Nome</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
@@ -150,18 +157,18 @@
                                      Margin="Margin.Dense"
                                      Adornment="Adornment.Start"
                                      AdornmentIcon="@Icons.Material.Filled.Business"
-                                     Disabled="@(isLoading || !unitsLoaded || SelectedCityId == 0)"
+                                     Disabled="@(isLoading || !unitsLoaded || _selectedCityId == 0)"
                                      FullWidth="true"
-                                     Placeholder="@(SelectedCityId == 0 ? "Selecione um município primeiro" : "Selecione uma unidade")">
+                                     Placeholder="@(_selectedCityId == 0 ? "Selecione um município primeiro" : "Selecione uma unidade")">
                             @foreach (var unit in filteredUnits)
                             {
-                                <MudSelectItem Value="@unit.Id">@unit.Nome</MudSelectItem>
+                                <MudSelectItem T="int" Value="@unit.Id">@unit.Nome</MudSelectItem>
                             }
                         </MudSelect>
                         
                         <MudButton Variant="Variant.Outlined"
                                    Color="Color.Primary"
-                                   Disabled="@(isLoading || !unitsLoaded || SelectedCityId == 0 || selectedUnitIdForAdd == 0)"
+                                   Disabled="@(isLoading || !unitsLoaded || _selectedCityId == 0 || selectedUnitIdForAdd == 0)"
                                    OnClick="AddUnit"
                                    StartIcon="@Icons.Material.Filled.Add"
                                    FullWidth="true"
@@ -218,65 +225,73 @@
 
 @code {
     private RegisterModel registerModel = new();
-    private List<Estado> states = new();
-    private List<Cidade> cities = new();
-    private List<UnidadeGestora> units = new();
-    private List<Cidade> filteredCities = new();
-    private List<UnidadeGestora> filteredUnits = new();
+    
+    // Inicializar explicitamente
+    private List<Estado> states = new List<Estado>();
+    private List<Cidade> cities = new List<Cidade>();
+    private List<UnidadeGestora> units = new List<UnidadeGestora>();
+    private List<Cidade> filteredCities = new List<Cidade>();
+    private List<UnidadeGestora> filteredUnits = new List<UnidadeGestora>();
+    
     private bool statesLoaded = false;
     private bool citiesLoaded = false;
     private bool unitsLoaded = false;
 
-    // Backing fields
-    private string _selectedStateId = string.Empty;
-    private int _selectedCityId;
-    
-    // Properties with logic
-    public string SelectedStateId 
-    { 
-        get => _selectedStateId; 
-        set 
+    // Property with backing field and change notification
+    private string? _selectedStateId
+    {
+        get => _selectedStateIdBacking;
+        set
         {
-            if (_selectedStateId != value)
+            if (_selectedStateIdBacking != value)
             {
-                _selectedStateId = value;
-                // Logic cascading
-                _selectedCityId = 0;
-                if (!string.IsNullOrEmpty(_selectedStateId))
-                {
-                    filteredCities = cities.Where(c => c.EstadoId == _selectedStateId).ToList();
-                }
-                else
-                {
-                    filteredCities = new List<Cidade>();
-                }
-                filteredUnits = new List<UnidadeGestora>();
-                registerModel.UnitIds.Clear();
-                StateHasChanged(); // Force UI update
-            }
-        } 
-    }
-
-    public int SelectedCityId 
-    { 
-        get => _selectedCityId; 
-        set 
-        { 
-            if (_selectedCityId != value)
-            {
-                _selectedCityId = value;
-                if (_selectedCityId > 0)
-                {
-                    filteredUnits = units.Where(u => u.CidadeId == _selectedCityId).ToList();
-                }
-                else
-                {
-                    filteredUnits = new List<UnidadeGestora>();
-                }
-                registerModel.UnitIds.Clear();
-                StateHasChanged();
+                _selectedStateIdBacking = value;
+                _ = HandleStateChangeAsync(value);
             }
         }
+    }
+    private string? _selectedStateIdBacking;
+
+    private int _selectedCityId = 0;
+    
+    // Handler for state change with cascading logic
+    private async Task HandleStateChangeAsync(string? value)
+    {
+        _selectedCityId = 0;
+        selectedUnitIdForAdd = 0;
+        
+        if (!string.IsNullOrEmpty(value))
+        {
+            filteredCities = cities.Where(c => c.EstadoId == value).ToList();
+            Console.WriteLine($"Estado alterado: {value}, Cidades: {filteredCities.Count}");
+        }
+        else
+        {
+            filteredCities = new List<Cidade>();
+        }
+        
+        filteredUnits = new List<UnidadeGestora>();
+        registerModel.UnitIds.Clear();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnCityChanged(int value)
+    {
+        _selectedCityId = value;
+        selectedUnitIdForAdd = 0;
+        
+        if (value > 0)
+        {
+            filteredUnits = units.Where(u => u.CidadeId == value).ToList();
+            Console.WriteLine($"Filtered units for city {value}: {filteredUnits.Count}");
+        }
+        else
+        {
+            filteredUnits = new List<UnidadeGestora>();
+        }
+        
+        registerModel.UnitIds.Clear();
+        await InvokeAsync(StateHasChanged);
     }
 
     private int selectedUnitIdForAdd;
@@ -286,10 +301,25 @@
     private string? alertType;
     private bool isLoading = false;
 
+    protected override async Task OnInitializedAsync()
+    {
+        // Tema (mantém)
+        try
+        {
+            var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
+            appState.IsDarkMode = theme == "dark";
+        }
+        catch { }
+        
+        // Mover para cá: carregar dados DURANTE inicialização
+        await LoadDataAsync();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            // Apenas JS interop que precisa DOM renderizado
             try
             {
                 await Task.Delay(500);
@@ -299,63 +329,108 @@
         }
     }
 
-    protected override async Task OnInitializedAsync()
+    private async Task LoadDataAsync()
     {
+        Console.WriteLine("[DEBUG] Iniciando LoadDataAsync");
+        
         try
         {
-            var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
-            appState.IsDarkMode = theme == "dark";
-        }
-        catch { }
-
-        try
-        {
-            Console.WriteLine("Carregando estados...");
             states = await DbService.GetAllAsync<Estado>("states");
+            Console.WriteLine($"[DEBUG] Estados carregados: {states?.Count ?? 0}");
+            
             if (states == null || !states.Any()) 
             {
-                Console.WriteLine("AVISO: Nenhum estado encontrado no IndexedDB.");
-                // Tenta carregar mocks APENAS se estiver vazio
+                Console.WriteLine("[DEBUG] Usando mocks de estados");
                 states = new List<Estado> { 
-                    new Estado { Id = "CE", Nome = "Ceará" }, 
-                    new Estado { Id = "SP", Nome = "São Paulo" } 
+                    new Estado { Id = "CE", Nome = "Ceara" },
+                    new Estado { Id = "RN", Nome = "Rio Grande do Norte" },
+                    new Estado { Id = "PA", Nome = "Para" },
+                    new Estado { Id = "MA", Nome = "Maranhao" }
                 };
             }
+            
+            foreach (var s in states)
+            {
+                Console.WriteLine($"[DEBUG] Estado: Id={s.Id}, Nome={s.Nome}");
+            }
+            
             statesLoaded = true;
-            Console.WriteLine($"Estados carregados: {states.Count}");
+            Console.WriteLine($"[DEBUG] statesLoaded = {statesLoaded}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"ERRO ao carregar estados: {ex.Message}");
+            Console.WriteLine($"[DEBUG] ERRO: {ex.Message}");
             statesLoaded = false;
         }
 
         try
         {
             cities = await DbService.GetAllAsync<Cidade>("cities");
+            if (cities == null || !cities.Any())
+            {
+                Console.WriteLine("AVISO: Nenhuma cidade encontrada no IndexedDB. Carregando mocks...");
+                cities = new List<Cidade> {
+                    new Cidade { Id = 1, Nome = "Fortaleza", EstadoId = "CE" },
+                    new Cidade { Id = 2, Nome = "Natal", EstadoId = "RN" },
+                    new Cidade { Id = 3, Nome = "Belém", EstadoId = "PA" },
+                    new Cidade { Id = 4, Nome = "São Luís", EstadoId = "MA" }
+                };
+            }
             citiesLoaded = true;
+            Console.WriteLine($"Cidades carregadas: {cities.Count}");
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"ERRO ao carregar cidades: {ex.Message}");
             citiesLoaded = false;
         }
 
         try
         {
             units = await DbService.GetAllAsync<UnidadeGestora>("units");
+            if (units == null || !units.Any())
+            {
+                Console.WriteLine("AVISO: Nenhuma unidade encontrada no IndexedDB. Carregando mocks...");
+                units = new List<UnidadeGestora> {
+                    new UnidadeGestora { Id = 1, Nome = "Unidade Central Fortaleza", CidadeId = 1 },
+                    new UnidadeGestora { Id = 2, Nome = "Unidade Zona Norte Fortaleza", CidadeId = 1 },
+                    new UnidadeGestora { Id = 3, Nome = "Unidade Central Natal", CidadeId = 2 },
+                    new UnidadeGestora { Id = 4, Nome = "Unidade Zona Sul Natal", CidadeId = 2 },
+                    new UnidadeGestora { Id = 5, Nome = "Unidade Central Belém", CidadeId = 3 },
+                    new UnidadeGestora { Id = 6, Nome = "Unidade Central São Luís", CidadeId = 4 }
+                };
+            }
             unitsLoaded = true;
+            Console.WriteLine($"Unidades carregadas: {units.Count}");
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"ERRO ao carregar unidades: {ex.Message}");
             unitsLoaded = false;
         }
+
+        // Inicializar listas filtradas se já houver seleção
+        if (!string.IsNullOrEmpty(_selectedStateId))
+        {
+            filteredCities = cities.Where(c => c.EstadoId == _selectedStateId).ToList();
+            Console.WriteLine($"Inicializando filteredCities para estado {_selectedStateId}: {filteredCities.Count}");
+        }
+        
+        if (_selectedCityId > 0)
+        {
+            filteredUnits = units.Where(u => u.CidadeId == _selectedCityId).ToList();
+            Console.WriteLine($"Inicializando filteredUnits para cidade {_selectedCityId}: {filteredUnits.Count}");
+        }
+
+        StateHasChanged();
+        Console.WriteLine("[DEBUG] StateHasChanged chamado apos carregamento");
     }
 
     private void AddUnit()
     {
         unitSelectionError = null;
 
-        if (!unitsLoaded || SelectedCityId == 0)
+        if (!unitsLoaded || _selectedCityId == 0)
         {
             unitSelectionError = "Selecione um município antes de adicionar unidades.";
             return;

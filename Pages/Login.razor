@@ -1,11 +1,13 @@
 @page "/login"
 @layout AuthLayout
 @inject IAuthService AuthService
+@inject IProvisioningService ProvisioningService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 @inject AppState appState
 @using System.ComponentModel.DataAnnotations
 @using System.Collections.Generic
+@using pwa_camera_poc_blazor.Services.Provisioning
 
 <PageTitle>Login - ASPEC Inventory</PageTitle>
 
@@ -133,6 +135,24 @@
             {
                 alertMessage = "Login realizado com sucesso!";
                 alertType = "success";
+                
+                // v1.5.0: Sync users and inventory after authentication
+                loadingMessage = "Sincronizando dados...";
+                StateHasChanged();
+                
+                try
+                {
+                    var ugId = user.UnidadeGestoraAtualId ?? 1;
+                    await AuthService.SincronizarUsuariosUGAsync(ugId, ProvisioningService);
+                    var cargaItems = await ProvisioningService.DownloadInventarioCargaAsync(ugId);
+                    await ProvisioningService.SincronizarInventarioLocalAsync(cargaItems);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Login] Provisioning error (non-fatal): {ex.Message}");
+                    // Non-fatal: continue to home even if provisioning fails
+                }
+                
                 loadingMessage = "Redirecionando...";
                 loginContentClass = "fade-out";
                 StateHasChanged();

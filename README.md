@@ -2,73 +2,357 @@
 
 Uma aplicação Progressiva Web (PWA) desenvolvida em **Blazor WebAssembly** focada na captura offline de inventário, integração com hardware de câmera e sincronização com AWS S3 via API BFF.
 
-![Versão](https://img.shields.io/badge/version-1.4.1-blue)
+![Versão](https://img.shields.io/badge/version-1.5.0-blue)
 ![.NET](https://img.shields.io/badge/.NET-8.0-512bd4)
 ![Blazor](https://img.shields.io/badge/Blazor-WASM-512bd4)
-![Status](https://img.shields.io/badge/Status-Beta-orange)
+![Status](https://img.shields.io/badge/Status-Stable-green)
+![License](https://img.shields.io/badge/license-Proprietary-red)
+
+## 📚 Documentação Principal
+
+- **[CHANGELOG](CHANGELOG.md)** - Histórico de versões e mudanças (v1.5.0: Arquitetura S3-Centric & Auth Offline)
+- **[Migration Guide v1.4 → v1.5](MIGRATION_GUIDE_v1.4_to_v1.5.md)** - Como atualizar de v1.4.1
+- **[API JSON Schemas](docs/API_JSON_SCHEMAS.md)** - Modelos JSON completos com exemplos
+- **[Arquitetura do Sistema](docs/ARCHITECTURE.md)** - Decisões arquiteturais e fluxos de dados
+- **[Guia de Componentes](COMPONENT_USAGE_GUIDE.md)** - Como usar componentes do sistema
+- **[Guia de Gestos](GESTURE_GUIDE.md)** - Interações touch e gestos
+
+### 📖 Documentação v1.5.0
+
+- **[Implementation Status](IMPLEMENTATION_STATUS.md)** - Rastreamento de implementação de Fase 1 & 2
+- **[Frontend Integration Testing](FRONTEND_INTEGRATION_TESTING.md)** - Testes da PWA
+- **[API v2 Testing Guide](../pwa-camera-poc-api/API_V2_TESTING_GUIDE.md)** - Testes de endpoints
+- **[Quick Reference](QUICK_REFERENCE.md)** - Referência rápida de arquivos
 
 ## 🎯 Objetivo
 
 O projeto visa criar uma aplicação web que funcione offline, permitindo aos usuários fazer login, capturar itens via câmera, registrar inventário de patrimônio via OCR e sincronizar dados quando online. É direcionado para cenários de inventário móvel em ambientes com conectividade limitada.
 
-## Funcionalidades
+## ✨ Funcionalidades
 
-- **Autenticação Local**: Login e registro de usuários com armazenamento em localStorage e suporte a múltiplos perfis.
-- **Captura de Imagens**: Integração com câmera do dispositivo para fotografar itens com suporte a múltiplas fotos por item, preview e galeria de revisão.
-- **Scanner OCR com Validação Contextual**: 
-  - Leitura automática de placas patrimoniais usando Tesseract.js
-  - Validação em três camadas com mensagens específicas de erro:
-    1. **Validação de Infraestrutura**: Verifica se o arquivo JSON da UG foi carregado
-    2. **Validação de Negócio**: Confirma se o código pertence ao inventário oficial da unidade
-    3. **Validação Local**: Busca por registros existentes no IndexedDB
-  - Estados de erro contextuais:
-    - `"Não foi possível fazer a leitura da imagem"`: Falha no OCR (confidence < 60%)
-    - `"Código inválido, tente novamente"`: Texto extraído mas não passou pela normalização
-    - `"Não foi possível identificar a Unidade Gestora"`: Erro de infraestrutura (arquivo JSON não carregado)
-    - `"Item não identificado ou não pertence a esta Unidade"`: Código válido mas não consta no inventário oficial
-- **Gerenciamento de Inventário**: Adição, edição e visualização de itens com suporte a categorias, unidades gestoras, busca avançada e ordenação personalizada.
-- **Armazenamento Offline**: Uso de IndexedDB para dados de inventário e localStorage para persistência de sessão e temas.
-- **Exportação de Dados**: Funcionalidade de exportação do inventário local para formato CSV, facilitando a portabilidade dos dados.
-- **PWA Real**: Instalável, offline-first, com logotipos oficiais da ASPEC e suporte a ícones **Maskable**.
-- **Temas Dinâmicos**: Suporte a modo claro/escuro com detecção automática de sistema e salvamento de preferência.
-- **Responsividade Mobile-First**: Interface otimizada com barra de navegação inferior (Bottom Navigation) e menu lateral para gestão de perfis e unidades.
-- **UI de Alta Fidelidade**: Baseada em MudBlazor, oferecendo uma experiência Material Design refinada e profissional.
-- **Gestão de Unidades**: Sistema de filtragem e seleção de unidades gestoras (Prefeituras, Fundos, Câmaras) com nomes reais e seeding automático.
+### v1.5.0 Novo (Arquitetura S3-Centric)
+
+- **🔐 Autenticação Offline com Argon2id**:
+  - Download de usuários autorizados via Pre-Signed URLs (S3)
+  - Validação Argon2id local (m=65536, t=3, p=4) - 100% offline
+  - Sem chamadas de servidor após provisioning inicial
+  - Suporta múltiplas Unidades Gestoras
+
+- **📦 Provisioning de Dados**:
+  - `/api/v2/inventario/carga/{ugId}` - Download de inventário oficial
+  - `/api/v2/auth/usuarios/{ugId}` - Download de usuários autorizados
+  - Pre-Signed URLs com expiração de 30 minutos
+  - Dados armazenados em IndexedDB com rastreamento de origem
+
+- **🔍 Busca Inteligente com Merge**:
+  - Dois tipos de dados: CargaOficial (provisioned) + CapturaLocal (user-created)
+  - Deduplicação por `código` - sem duplicatas
+  - CapturaLocal prioritário - edições do usuário nunca sombreadas
+  - Suporte a busca por múltiplos campos
+
+- **🔄 Sincronização Bidirecional**:
+  - **PUSH Phase**: Upload de CapturaLocal para `capturas/{username}/{ugId}/`
+  - **PULL Phase**: Download de CargaOficial atualizada de `cargas/`
+  - Items marcados como `Sincronizado=true` sem deleção (permite resolução de conflitos)
+  - Rastreamento de `DataUltimaSincronizacao`
+
+### Funcionalidades Existentes (v1.4.1+)
+
+- **Autenticação Local**: Login e registro de usuários
+- **Captura de Imagens**: Integração com câmera do dispositivo
+- **Scanner OCR com Validação Contextual**: Leitura de placas patrimoniais usando Tesseract.js
+- **Gerenciamento de Inventário**: Adição, edição e visualização de itens
+- **Armazenamento Offline**: IndexedDB para dados, localStorage para sessão
+- **Exportação de Dados**: Exportação do inventário local para CSV
+- **PWA Real**: Instalável, offline-first, com suporte a Maskable Icons
+- **Temas Dinâmicos**: Modo claro/escuro com salvamento de preferência
+- **Responsividade Mobile-First**: Bottom Navigation e menu lateral
+- **UI de Alta Fidelidade**: MudBlazor Material Design
+
+## 🏗️ Arquitetura v1.5.0
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     ASPEC Capture v1.5.0                         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│  ┌────────────────────────┐      ┌──────────────────────────┐   │
+│  │   Blazor PWA (WASM)    │      │   Backend API (ASP.NET)  │   │
+│  ├────────────────────────┤      ├──────────────────────────┤   │
+│  │ • Login.razor          │      │ • /api/v2/...            │   │
+│  │ • ProvisioningService  │◄────►│ • ApiKeyAuthMiddleware   │   │
+│  │ • SearchMergeService   │      │ • S3 Pre-Signed URLs     │   │
+│  │ • SyncService          │      │ • ProvisioningDtos       │   │
+│  │ • IndexedDB            │      │                          │   │
+│  └────────────────────────┘      └──────────────────────────┘   │
+│           ▲                                   ▲                   │
+│           │                                   │                   │
+│           └───────────────────────────────────┘                   │
+│                   AWS S3 Pre-Signed URLs                          │
+│                                                                   │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │                    AWS S3 Buckets                           │  │
+│  ├────────────────────────────────────────────────────────────┤  │
+│  │  cargas/                          capturas/                │  │
+│  │  ├─ ug_1_users.json  (Download)  ├─ username/...          │  │
+│  │  ├─ ug_1_itens.json  (Download)  └─ itemid.json (Upload)  │  │
+│  │  └─ ug_2_*.json                                            │  │
+│  └────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+
+Data Flow:
+  Login → Provisioning (users + items) → IndexedDB
+  Search → Merge (CapturaLocal + CargaOficial) → Deduplicate
+  Sync → PUSH (upload) → PULL (download) → Merge
+```
 
 ## Stack Tecnológica
 
 - **Frontend**: Blazor WebAssembly (.NET 8)
 - **Backend**: ASP.NET Core Web API (BFF Pattern) - Projeto `pwa-camera-poc-api`
-- **UI Framework**: 
-  - **MudBlazor 7.20.0** (MIT License) - Material Design components library
-    - Componentes modernos e responsivos
-    - Grids, Cards, Modals, Dialogs, Snackbars
-    - Temas customizáveis
-    - Mobile-first design
-- **Design System**: Material Design (via MudBlazor)
-- **Tipografia**: Roboto (Google Fonts) para Material Design
-- **Ícones**: Material Icons (5 variantes: Filled, Outlined, Two Tone, Round, Sharp)
-- **Layout System**: Flexbox e CSS Grid com variáveis CSS para consistência e responsividade
-- **Linguagens**: C#, HTML, CSS, JavaScript
-- **Armazenamento**: IndexedDB (inventário local), localStorage (sessão/tema), armazenamento remoto via API de integração (ex.: S3 usando URLs pré-assinadas)
-- **Autenticação**: Autenticação local baseada em armazenamento no navegador
-- **PWA**: Service Worker, Manifest JSON
-- **Interoperabilidade**: JavaScript interop para câmera e IndexedDB
-- **Build/Deploy**: .NET CLI, potencialmente Netlify ou similar
+- **UI Framework**: MudBlazor 8.0.0 (Material Design)
+- **Database**: 
+  - IndexedDB (offline storage - items, users)
+  - localStorage (sessions, preferences)
+  - AWS S3 (authoritative source of truth)
+- **Security**:
+  - Argon2id hashing (m=65536, t=3, p=4)
+  - X-Api-Key middleware (v2 endpoints)
+  - Pre-Signed URLs (S3 access)
+- **Integrations**: AWS S3, OCR (Tesseract.js), Barcode scanning (ZXing)
 
-## Estrutura do Projeto
+## 📋 Requisitos
+
+- **.NET 8 SDK** (ou superior)
+- **Node.js** (para build e npm dependencies via Blazor)
+- **Visual Studio 2022** ou **VS Code** + CLI
+- **AWS Credentials** (para S3 provisioning)
+- **Modern Browser** (Chrome, Firefox, Edge, Safari)
+
+## 🚀 Quick Start
+
+### 1. Clone o Repositório
+```bash
+git clone <repository-url>
+cd pwa-camera-poc-blazor
+```
+
+### 2. Configure Variáveis de Ambiente
+
+**Backend API** (`pwa-camera-poc-api/appsettings.Development.json`):
+```json
+{
+  "AWS": {
+    "Region": "us-east-2",
+    "BucketName": "aspec-capture",
+    "AccessKey": "your-key",
+    "SecretKey": "your-secret",
+    "S3Paths": {
+      "Cargas": "cargas",
+      "Capturas": "capturas"
+    }
+  },
+  "Api": {
+    "ApiKey": "aspec-pwa-v2-dev-key-2026"
+  }
+}
+```
+
+### 3. Upload Test Data to S3
+
+```bash
+# Upload users provisioning file
+aws s3 cp pwa-camera-poc-api/S3_TEST_DATA_ug_1_users.json s3://aspec-capture/cargas/ug_1_users.json
+
+# Upload items provisioning file
+aws s3 cp pwa-camera-poc-api/S3_TEST_DATA_ug_1_itens.json s3://aspec-capture/cargas/ug_1_itens.json
+```
+
+### 4. Start Backend API
+```bash
+cd pwa-camera-poc-api
+dotnet run
+# API runs on http://localhost:5069
+```
+
+### 5. Start Frontend PWA (nova aba)
+```bash
+cd pwa-camera-poc-blazor
+dotnet run
+# PWA runs on http://localhost:5000
+```
+
+### 6. Test Login
+- Navigate to http://localhost:5000/login
+- Username: `admin`
+- Password: `admin`
+- Observe: Provisioning loads users & inventory
+- Redireted to /home with data synced
+
+## 📖 Uso
+
+### Login & Autenticação
+```
+1. Acesse /login
+2. Digite credenciais (admin/admin para teste)
+3. Provisioning automático: Users + Inventory baixados
+4. Redirected to /home com dados sincronizados
+```
+
+### Buscar Itens
+```
+1. Na página /home
+2. Use search bar
+3. Busque por nome, código, localização, categoria
+4. Resultados deduplicated e prioritizados (CapturaLocal primeiro)
+```
+
+### Criar Novo Item
+```
+1. Vá para Camera page
+2. Preencha dados do item
+3. Tire foto(s) - opcional
+4. Clique "Capturar"
+5. Item armazenado com origem = 'CapturaLocal'
+```
+
+### Sincronizar Dados
+```
+1. Vá para Sync page
+2. Clique "Sincronizar Agora"
+3. PUSH Phase: Items enviados para S3
+4. PULL Phase: CargaOficial atualizada baixada
+5. Items marcados como Sincronizado
+```
+
+## 🧪 Testes
+
+### Backend API Tests
+```bash
+cd pwa-camera-poc-api
+
+# Test v2 endpoints with valid API key
+curl -X GET http://localhost:5069/api/v2/inventario/carga/1 \
+  -H "X-Api-Key: aspec-pwa-v2-dev-key-2026"
+
+# See API_V2_TESTING_GUIDE.md for more tests
+```
+
+### Frontend Tests
+```
+Refer to FRONTEND_INTEGRATION_TESTING.md for:
+- Authentication tests
+- Provisioning tests
+- Search & merge tests
+- Sync tests
+- Offline capabilities
+```
+
+## 📂 Estrutura do Projeto
 
 ```
 pwa-camera-poc-blazor/
-├── Components/          # Componentes reutilizáveis (Layout, Shared)
-├── Models/              # Modelos de dados (User, Item, Unit)
-├── Pages/               # Páginas da aplicação (Home, Login, Camera, etc.)
-├── Services/            # Serviços (Auth, Storage, Camera)
-├── wwwroot/             # Arquivos estáticos (CSS, JS, manifest, service worker)
-├── Properties/          # Configurações do projeto
-├── Program.cs           # Ponto de entrada da aplicação
-└── pwa-camera-poc-blazor.csproj  # Arquivo de projeto
+├── Models/
+│   ├── ItemPatrimonio.cs          (Extended: Origem, EstaRemoto, ...)
+│   ├── Usuario.cs
+│   ├── UnidadeGestora.cs
+│   └── ...
+├── Services/
+│   ├── Auth/AuthService.cs        (Extended: Argon2id methods)
+│   ├── Provisioning/
+│   │   ├── IProvisioningService.cs (NEW)
+│   │   └── ProvisioningService.cs (NEW - 240+ lines)
+│   ├── Search/
+│   │   ├── ISearchMergeService.cs (NEW)
+│   │   └── SearchMergeService.cs  (NEW - 180+ lines)
+│   ├── Scanning/
+│   │   ├── ISyncService.cs        (NEW)
+│   │   └── SyncService.cs         (NEW - 280+ lines)
+│   ├── Storage/
+│   ├── Camera/
+│   └── ...
+├── Pages/
+│   ├── Login.razor                (Extended: Provisioning)
+│   ├── Home.razor
+│   ├── Camera.razor
+│   └── ...
+├── Components/
+│   ├── Layout/
+│   └── Shared/
+├── wwwroot/
+│   ├── manifest.json              (PWA manifest)
+│   ├── offline.html               (Offline fallback)
+│   ├── service-worker.js
+│   └── ...
+├── Program.cs                     (Extended: New service registration)
+├── CHANGELOG.md                   (NEW: v1.5.0 comprehensive)
+├── MIGRATION_GUIDE_v1.4_to_v1.5.md (NEW)
+└── ...
+
+pwa-camera-poc-api/
+├── Middleware/
+│   └── ApiKeyAuthMiddleware.cs    (NEW)
+├── Models/
+│   └── ProvisioningDtos.cs        (NEW - 3 DTOs)
+├── Program.cs                     (Extended: v2 endpoints)
+├── appsettings.json               (Extended: Api key, S3 paths)
+└── ...
 ```
+
+## 🔐 Segurança
+
+### v1.5.0 Melhorias
+- ✅ Argon2id em vez de hash simples
+- ✅ Pre-Signed URLs com expiração (30 min)
+- ✅ X-Api-Key validation para /api/v2/*
+- ✅ Credenciais AWS no servidor, nunca no cliente
+- ✅ Validação local (100% offline)
+
+### Recomendações Produção
+- Usar HTTPS sempre
+- Rotar API keys regularmente
+- Configurar S3 bucket policies restrictivas
+- Habilitar encryption no S3
+- Implementar audit logging
+- Usar IAM roles em vez de Access Keys
+
+## 🐛 Troubleshooting
+
+### Offline login não funciona
+```
+→ Primeiro fazer login online para provisioning
+→ Depois testar offline
+→ Verificar IndexedDB com DevTools
+```
+
+### API retorna 401
+```
+→ Verificar X-Api-Key header configurada
+→ Confirmar appsettings.json com Api:ApiKey
+```
+
+### S3 download falha
+```
+→ Confirmar test data uploaded
+→ Verificar AWS credentials
+→ Testar Pre-Signed URL manualmente
+```
+
+Refer to MIGRATION_GUIDE_v1.4_to_v1.5.md para mais troubleshooting.
+
+## 📈 Roadmap
+
+- **v1.6.0**: Sincronização incremental, compressão WebP
+- **v2.0.0**: GraphQL API, multi-device sync, UI de resolução de conflitos
+
+## 📄 Licença
+
+Proprietary - ASPEC 2026
+
+## 👥 Autores
+
+Desenvolvido por ASPEC Team - February 2026
+
 
 ### Principais Arquivos
 

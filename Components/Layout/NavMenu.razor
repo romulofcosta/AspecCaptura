@@ -143,6 +143,10 @@
         // States
         if (await DbService.GetAsync<Estado>("states", "CE") == null)
             await DbService.AddAsync("states", new Estado { Id = "CE", Nome = "Ceará" });
+        if (await DbService.GetAsync<Estado>("states", "RN") == null)
+            await DbService.AddAsync("states", new Estado { Id = "RN", Nome = "Rio Grande do Norte" });
+        if (await DbService.GetAsync<Estado>("states", "PA") == null)
+            await DbService.AddAsync("states", new Estado { Id = "PA", Nome = "Pará" });
         if (await DbService.GetAsync<Estado>("states", "MA") == null)
             await DbService.AddAsync("states", new Estado { Id = "MA", Nome = "Maranhão" });
         

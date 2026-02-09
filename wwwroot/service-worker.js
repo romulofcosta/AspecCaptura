@@ -61,13 +61,19 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    // Skip Blazor framework requests - let them handle naturally
+    if (url.pathname.includes('/_framework/blazor.') || 
+        url.pathname.includes('/_framework/dotnet.')) {
+        return;
+    }
+
     // Strategy 1: Cache First for images
     if (request.destination === 'image') {
         event.respondWith(cacheFirstStrategy(request, IMAGE_CACHE));
         return;
     }
 
-    // Strategy 2: Cache First for static assets
+    // Strategy 2: Cache First for static assets (CSS, JS, fonts)
     if (isStaticAsset(url.pathname)) {
         event.respondWith(cacheFirstStrategy(request, STATIC_CACHE));
         return;
@@ -79,7 +85,13 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Strategy 4: Network First with cache fallback for everything else
+    // Strategy 4: For navigation requests (HTML pages), use Network First with SPA fallback
+    if (request.mode === 'navigate') {
+        event.respondWith(navigationStrategy(request));
+        return;
+    }
+
+    // Strategy 5: Network First with cache fallback for everything else
     event.respondWith(networkFirstStrategy(request, CACHE_NAME));
 });
 
@@ -91,27 +103,54 @@ async function cacheFirstStrategy(request, cacheName) {
         
         if (cachedResponse) {
             console.log('[Service Worker] Cache hit:', request.url);
-            // Update cache in background
+            // Update cache in background (stale-while-revalidate)
             fetch(request).then((response) => {
                 if (response && response.status === 200) {
                     cache.put(request, response.clone());
                 }
-            }).catch(() => {});
+            }).catch((err) => {
+                console.log('[Service Worker] Background update failed:', err.message);
+            });
             return cachedResponse;
         }
 
         console.log('[Service Worker] Cache miss, fetching:', request.url);
         const response = await fetch(request);
         
-        if (response && response.status === 200) {
+        // Only cache successful responses
+        if (response && response.status === 200 && response.type !== 'error') {
             cache.put(request, response.clone());
         }
         
         return response;
     } catch (error) {
-        console.error('[Service Worker] Cache First error:', error);
-        // Return offline fallback if available
-        return caches.match('/offline.html') || new Response('Offline', { status: 503 });
+        console.error('[Service Worker] Cache First error:', error.message);
+        
+        // Try to return cached version one more time
+        const cache = await caches.open(cacheName);
+        const fallbackResponse = await cache.match(request);
+        
+        if (fallbackResponse) {
+            console.log('[Service Worker] Returning stale cache for:', request.url);
+            return fallbackResponse;
+        }
+        
+        // For navigation requests (HTML pages), return index.html for SPA routing
+        if (request.mode === 'navigate') {
+            const indexResponse = await caches.match('/index.html');
+            if (indexResponse) {
+                console.log('[Service Worker] Returning index.html for navigation');
+                return indexResponse;
+            }
+        }
+        
+        // Last resort: return offline response
+        console.log('[Service Worker] No fallback available, returning offline response');
+        return new Response('Recurso não disponível offline', { 
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+        });
     }
 }
 
@@ -141,6 +180,33 @@ async function networkFirstStrategy(request, cacheName) {
         }), {
             status: 503,
             headers: { 'Content-Type': 'application/json' }
+        });
+    }
+}
+
+// Navigation Strategy - for SPA routes (Blazor pages like /login, /home, etc.)
+async function navigationStrategy(request) {
+    try {
+        // Try network first
+        const response = await fetch(request);
+        return response;
+    } catch (error) {
+        console.log('[Service Worker] Navigation failed, returning index.html for SPA routing');
+        
+        // For Blazor SPA, always return index.html for navigation requests
+        // This allows Blazor router to handle the route client-side
+        const cache = await caches.open(STATIC_CACHE);
+        const indexResponse = await cache.match('/index.html');
+        
+        if (indexResponse) {
+            return indexResponse;
+        }
+        
+        // Last resort fallback
+        return new Response('Aplicação não disponível offline', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
     }
 }

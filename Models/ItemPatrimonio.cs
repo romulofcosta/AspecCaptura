@@ -38,6 +38,32 @@ namespace pwa_camera_poc_blazor.Models
         // Propriedade auxiliar para capa (prioriza local para garantir exibição, ou remota se não houver local)
         public string? CoverImage => Photos.Any() ? Photos.FirstOrDefault() : RemoteUrls.FirstOrDefault();
 
+        // v1.5.0 Hybrid Sync Fields
+        /// <summary>Origem do item: 'CargaOficial' (provisioned from S3) ou 'CapturaLocal' (created locally)</summary>
+        public string Origem { get; set; } = "CapturaLocal";
+
+        /// <summary>Indica se o item foi sincronizado com S3</summary>
+        public bool EstaRemoto { get; set; } = false;
+
+        /// <summary>Data e hora da última sincronização com S3</summary>
+        public DateTime? DataUltimaSincronizacao { get; set; }
+
+        /// <summary>Marca o item como sincronizado sem deletá-lo (permite resolução de conflitos)</summary>
+        public void MarcarSincronizado()
+        {
+            Sincronizado = true;
+            EstaRemoto = true;
+            DataUltimaSincronizacao = DateTime.Now;
+        }
+
+        /// <summary>Reseta o status de sincronização (ex: para retentar após erro)</summary>
+        public void ResetarSincronizacao()
+        {
+            Sincronizado = false;
+            EstaRemoto = false;
+            DataUltimaSincronizacao = null;
+        }
+
         // Extra property for 'EntityId' migration support?
         // public int? EntityId { get; set; }
     }
