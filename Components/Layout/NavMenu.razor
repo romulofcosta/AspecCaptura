@@ -6,34 +6,26 @@
 <MudDrawerHeader Class="d-flex flex-column align-center pa-6"
     Style="background-color: var(--mud-palette-background-grey);">
     <div class="cursor-pointer d-flex flex-column align-center profile-section"
-        style="width: 100%; max-width: 200px; overflow: hidden;"
-        @onclick="NavigateToProfile">
-        <MudAvatar Color="Color.Primary" Size="Size.Large"
-            Class="mb-3 shadow-md border-white border-2 profile-avatar">
+        style="width: 100%; max-width: 200px; overflow: hidden;" @onclick="NavigateToProfile">
+        <MudAvatar Color="Color.Primary" Size="Size.Large" Class="mb-3 shadow-md border-white border-2 profile-avatar">
             @UserInitials
         </MudAvatar>
-        <MudText Typo="Typo.subtitle1" Class="font-weight-bold text-truncate" Style="max-width: 100%">@DisplayName</MudText>
-        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-n1 text-truncate"
-            Style="max-width: 100%">@EmailDisplay</MudText>
+        <MudText Typo="Typo.subtitle1" Class="font-weight-bold text-truncate" Style="max-width: 100%">@DisplayName
+        </MudText>
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-n1 text-truncate" Style="max-width: 100%">
+            @EmailDisplay</MudText>
     </div>
 </MudDrawerHeader>
 
 <MudNavMenu>
-    @if (units != null && units.Any())
-    {
-        <div class="pa-4">
-            <MudSelect T="int" Label="Unidade Atual" Value="@selectedUnitId" ValueChanged="OnUnitChanged"
-                Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
-                @foreach (var unit in units)
-                {
-                    <MudSelectItem Value="@unit.Id">@unit.Name</MudSelectItem>
-                }
-            </MudSelect>
-        </div>
-    }
+    <div class="pa-4 d-flex flex-column gap-1">
+        <MudText Typo="Typo.caption" Color="Color.Secondary">Sessão Atual</MudText>
+        <MudText Typo="Typo.body2" Class="mud-text-secondary">@(appState.CurrentUO?.NomeUO ?? "Sessão não configurada")
+        </MudText>
+    </div>
 
     <MudDivider Class="my-2" />
-    
+
     <div class="mud-nav-link mud-ripple py-3 px-4 d-flex align-center cursor-pointer" @onclick="ToggleTheme">
         <MudIcon Icon="@Icons.Material.Filled.BrightnessMedium" Color="Color.Default" Class="mr-3" />
         <MudText>Alternar Tema</MudText>
@@ -53,9 +45,7 @@
     private string UserInitials = "U";
     private string DisplayName = "Usuário";
     private string EmailDisplay = "";
-    private List<Unit> units = new();
-    private int selectedUnitId;
-    private User? currentUser;
+    private Usuario? currentUser;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -64,108 +54,29 @@
 
     private async Task LoadUserData()
     {
-        if (!DbService.IsInitialized) await DbService.InitAsync();
-        
-        // Ensure some basic data exists if DB is empty (e.g. for admin user)
-        var existingStates = await DbService.GetAllAsync<State>("states");
-        if (!existingStates.Any())
-        {
-            await SeedBasicData();
-        }
-        else 
-        {
-            // Even if states exist, ensure basic units are present (for existing users after updates)
-            await EnsureUnitsExist();
-        }
-
         currentUser = await AuthService.GetCurrentUserAsync();
         if (currentUser != null)
         {
-            EmailDisplay = currentUser.Username;
-            
-            if (!string.IsNullOrEmpty(currentUser.FirstName))
+            EmailDisplay = currentUser.UsuarioNome;
+            DisplayName = currentUser.NomeCompleto;
+
+            if (!string.IsNullOrEmpty(currentUser.NomeCompleto))
             {
-                DisplayName = $"{currentUser.FirstName} {currentUser.LastName}";
-                UserInitials = $"{currentUser.FirstName[0]}{(string.IsNullOrEmpty(currentUser.LastName) ? "" : currentUser.LastName[0].ToString())}".ToUpper();
+                var names = currentUser.NomeCompleto.Split(' ');
+                UserInitials = names.Length > 1
+                ? $"{names[0][0]}{names[^1][0]}".ToUpper()
+                : names[0][0].ToString().ToUpper();
             }
             else
             {
-                DisplayName = "Usuário";
-                UserInitials = currentUser.Username.Substring(0, 1).ToUpper();
-            }
-
-            selectedUnitId = currentUser.CurrentUnitId ?? 0;
-
-            units.Clear();
-            var distinctIds = currentUser.UnitIds.Distinct().ToList();
-            foreach (var id in distinctIds)
-            {
-                var unit = await DbService.GetAsync<Unit>("units", id);
-                if (unit != null) units.Add(unit);
-            }
-
-            // Fallback for ID only display problem if units are still missing
-            if (selectedUnitId > 0 && !units.Any(u => u.Id == selectedUnitId))
-            {
-                var unit = await DbService.GetAsync<Unit>("units", selectedUnitId);
-                if (unit != null) 
-                {
-                    units.Add(unit);
-                }
-                else
-                {
-                    units.Add(new Unit { Id = selectedUnitId, Name = $"Unidade {selectedUnitId}" });
-                }
+                UserInitials = currentUser.UsuarioNome.Substring(0, 1).ToUpper();
             }
         }
         else
         {
             DisplayName = "Usuário";
             EmailDisplay = "";
-            units.Clear();
-            selectedUnitId = 0;
         }
-    }
-
-    private async Task SeedBasicData()
-    {
-        try {
-            await EnsureUnitsExist();
-        } catch { }
-    }
-
-    private async Task EnsureUnitsExist()
-    {
-        // States
-        if (await DbService.GetAsync<State>("states", "CE") == null)
-            await DbService.AddAsync("states", new State { Id = "CE", Name = "Ceará" });
-        if (await DbService.GetAsync<State>("states", "MA") == null)
-            await DbService.AddAsync("states", new State { Id = "MA", Name = "Maranhão" });
-        
-        // Cities
-        if (await DbService.GetAsync<City>("cities", 5) == null)
-            await DbService.AddAsync("cities", new City { Id = 5, StateId = "CE", Name = "Horizonte" });
-        if (await DbService.GetAsync<City>("cities", 4) == null)
-            await DbService.AddAsync("cities", new City { Id = 4, StateId = "MA", Name = "São Luís" });
-        
-        // Units
-        if (await DbService.GetAsync<Unit>("units", 1) == null)
-            await DbService.AddAsync("units", new Unit { Id = 1, CityId = 5, Name = "Prefeitura Municipal de Horizonte" });
-        if (await DbService.GetAsync<Unit>("units", 2) == null)
-            await DbService.AddAsync("units", new Unit { Id = 2, CityId = 5, Name = "Fundo Municipal de Saúde" });
-        if (await DbService.GetAsync<Unit>("units", 6) == null)
-            await DbService.AddAsync("units", new Unit { Id = 6, CityId = 4, Name = "Prefeitura de São Luís" });
-    }
-
-    private async Task OnUnitChanged(int id)
-    {
-        selectedUnitId = id;
-        if (currentUser != null)
-        {
-            currentUser.CurrentUnitId = id;
-            await AuthService.UpdateUserAsync(currentUser);
-        }
-        await OnUnitSelected.InvokeAsync(id);
     }
 
     private async Task ToggleTheme()

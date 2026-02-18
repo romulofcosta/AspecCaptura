@@ -32,19 +32,6 @@ namespace pwa_camera_poc_blazor.Services
             }
         }
 
-        private int? _currentUnitId;
-        public int? CurrentUnitId
-        {
-            get => _currentUnitId;
-            set
-            {
-                if (_currentUnitId != value)
-                {
-                    _currentUnitId = value;
-                    NotifyStateChanged();
-                }
-            }
-        }
 
         private bool _isDarkMode;
         public bool IsDarkMode
@@ -59,6 +46,12 @@ namespace pwa_camera_poc_blazor.Services
                 }
             }
         }
+
+        // Hierarquia Contábil da Sessão
+        public Models.Orgao? CurrentOrgao { get; set; }
+        public Models.UnidadeOrcamentaria? CurrentUO { get; set; }
+        public Models.Area? CurrentArea { get; set; }
+        public Models.Subarea? CurrentSubarea { get; set; }
 
         public event Action? OnChange;
 

@@ -21,7 +21,11 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 // Configuração do HttpClient para a API BFF
 builder.Services.AddHttpClient("BackendApi", client =>
 {
-    var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5069";
+    var apiBaseUrl = builder.Configuration["ApiBaseUrl"];
+    if (string.IsNullOrEmpty(apiBaseUrl) || apiBaseUrl == "__API_BASE_URL__")
+    {
+        apiBaseUrl = "http://localhost:5069";
+    }
     client.BaseAddress = new Uri(apiBaseUrl);
 });
 

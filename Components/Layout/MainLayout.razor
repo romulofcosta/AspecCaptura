@@ -24,7 +24,7 @@
     </MudAppBar>
 
     <MudDrawer @bind-Open="isMenuOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Variant="DrawerVariant.Responsive" Style="z-index: 10001;">
-        <NavMenu OnThemeToggle="ToggleTheme" OnUnitSelected="HandleUnitSelected" OnMenuItemClick="@(() => isMenuOpen = false)" />
+        <NavMenu OnThemeToggle="ToggleTheme" OnMenuItemClick="@(() => isMenuOpen = false)" />
     </MudDrawer>
 
     <MudMainContent Class="mud-width-full" Style="display: flex; flex-direction: column; height: calc(100vh - 64px - 64px); overflow: hidden;">
@@ -130,11 +130,6 @@
 
         try
         {
-            var user = await AuthService.GetCurrentUserAsync();
-            if (user != null)
-            {
-                appState.CurrentUnitId = user.CurrentUnitId;
-            }
         }
         catch (Exception ex)
         {
@@ -235,10 +230,6 @@
         await ExportDataAsync();
     }
 
-    private void HandleUnitSelected(int unitId)
-    {
-        appState.CurrentUnitId = unitId;
-    }
 
     private async Task ExportDataAsync()
     {
@@ -258,11 +249,11 @@
     private string GenerateCsv(IEnumerable<InventoryItem> items)
     {
         var csv = new StringBuilder();
-        csv.AppendLine("ID,Nome,Código,Categoria,Localização,Observações,Data de Criação,Sincronizado,Unidade");
+        csv.AppendLine("ID,Nome,Código,Categoria,Localização,Observações,Data de Criação,Sincronizado,Orgao,UO,Area,Subarea");
 
         foreach (var item in items)
         {
-            csv.AppendLine($"{item.Id},{item.Name},{item.Code},{item.Category},{item.Location},{item.Observations},{item.Timestamp:yyyy-MM-dd HH:mm:ss},{item.Synced},{item.UnitId}");
+            csv.AppendLine($"{item.Id},{item.Name},{item.Code},{item.Category},{item.Location},{item.Observations},{item.Timestamp:yyyy-MM-dd HH:mm:ss},{item.Synced},{item.IdOrgao},{item.IdUO},{item.IdArea},{item.IdSubarea}");
         }
 
         return csv.ToString();

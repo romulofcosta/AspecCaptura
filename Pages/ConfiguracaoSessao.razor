@@ -1,0 +1,116 @@
+@page "/configuracao-sessao"
+@layout MainLayout
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject AppState appState
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+    <MudPaper Class="pa-6 rounded-lg premium-card">
+        <MudText Typo="Typo.h5" Class="mb-4 font-weight-bold">Configuração da Sessão</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-6">
+            Selecione as informações contábeis para iniciar o trabalho.
+        </MudText>
+
+        <MudStack Spacing="4">
+            <MudSelect T="Orgao" Label="Órgão" Value="@SelectedOrgao" ValueChanged="OnOrgaoChanged"
+                Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                @foreach (var orgao in Orgaos)
+                {
+                    <MudSelectItem Value="@orgao">@orgao.NomeOrgao</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSelect T="UnidadeOrcamentaria" Label="Unidade Orçamentária" Value="@SelectedUO"
+                ValueChanged="OnUOChanged" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter"
+                Disabled="@(SelectedOrgao == null)">
+                @foreach (var uo in UnidadesOrcamentarias)
+                {
+                    <MudSelectItem Value="@uo">@uo.NomeUO</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSelect T="Area" Label="Área" Value="@SelectedArea" ValueChanged="OnAreaChanged"
+                Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Disabled="@(SelectedUO == null)">
+                @foreach (var area in Areas)
+                {
+                    <MudSelectItem Value="@area">@area.NomeArea</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSelect T="Subarea" Label="Subárea" Value="@SelectedSubarea" ValueChanged="OnSubareaChanged"
+                Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Disabled="@(SelectedArea == null)">
+                @foreach (var sub in Subareas)
+                {
+                    <MudSelectItem Value="@sub">@sub.NomeSubarea</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" Class="mt-4 py-3"
+                Disabled="@(SelectedSubarea == null)" OnClick="ConfirmarSessao">
+                Confirmar Seleção
+            </MudButton>
+        </MudStack>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private List<Orgao> Orgaos => _usuario?.Orgaos ?? new();
+    private List<UnidadeOrcamentaria> UnidadesOrcamentarias => SelectedOrgao?.UnidadesOrcamentarias ?? new();
+    private List<Area> Areas => SelectedUO?.Areas ?? new();
+    private List<Subarea> Subareas => SelectedArea?.Subareas ?? new();
+
+    private Usuario? _usuario;
+    private Orgao? SelectedOrgao;
+    private UnidadeOrcamentaria? SelectedUO;
+    private Area? SelectedArea;
+    private Subarea? SelectedSubarea;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _usuario = await AuthService.GetCurrentUserAsync();
+        if (_usuario == null)
+        {
+            Navigation.NavigateTo("/login");
+        }
+    }
+
+    private void OnOrgaoChanged(Orgao value)
+    {
+        SelectedOrgao = value;
+        SelectedUO = null;
+        SelectedArea = null;
+        SelectedSubarea = null;
+    }
+
+    private void OnUOChanged(UnidadeOrcamentaria value)
+    {
+        SelectedUO = value;
+        SelectedArea = null;
+        SelectedSubarea = null;
+    }
+
+    private void OnAreaChanged(Area value)
+    {
+        SelectedArea = value;
+        SelectedSubarea = null;
+    }
+
+    private void OnSubareaChanged(Subarea value)
+    {
+        SelectedSubarea = value;
+    }
+
+    private void ConfirmarSessao()
+    {
+        if (SelectedOrgao != null && SelectedUO != null && SelectedArea != null && SelectedSubarea != null)
+        {
+            // Salvar no AppState (a ser implementado no AppState.cs)
+            appState.CurrentOrgao = SelectedOrgao;
+            appState.CurrentUO = SelectedUO;
+            appState.CurrentArea = SelectedArea;
+            appState.CurrentSubarea = SelectedSubarea;
+
+            Navigation.NavigateTo("/home");
+        }
+    }
+}

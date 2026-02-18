@@ -1,14 +1,14 @@
 # PWA Camera POC - Blazor
 
-Este é um projeto de Prova de Conceito (POC) para uma Progressive Web App (PWA) de inventário utilizando câmera, desenvolvido com Blazor WebAssembly. O objetivo é demonstrar a integração de funcionalidades de câmera, autenticação local e armazenamento offline para um sistema de inventário simples.
+Este é um projeto de Prova de Conceito (POC) para uma Progressive Web App (PWA) de inventário utilizando câmera, desenvolvido com Blazor WebAssembly. O objetivo é demonstrar a integração de funcionalidades de câmera, acesso provisionado via API e armazenamento offline.
 
 ## Objetivo
 
-O projeto visa criar uma aplicação web que funcione offline, permitindo aos usuários fazer login, capturar itens via câmera, registrar inventário e sincronizar dados quando online. É direcionado para cenários de inventário móvel em ambientes com conectividade limitada.
+O projeto visa criar uma aplicação web que funcione offline, permitindo aos usuários autenticarem-se, capturarem itens via câmera, registrarem inventário e sincronizarem dados quando online. É direcionado para cenários de inventário móvel em ambientes com conectividade limitada.
 
 ## Funcionalidades
 
-- **Autenticação Local**: Login e registro de usuários com armazenamento em localStorage e suporte a múltiplos perfis.
+- **Acesso Provisionado**: Autenticação de usuários exclusivamente via API Backend, com suporte a múltiplos perfis e cache local para operação offline.
 - **Captura de Imagens**: Integração com câmera do dispositivo para fotografar itens com suporte a múltiplas fotos por item, preview e galeria de revisão.
 - **Gerenciamento de Inventário**: Adição, edição e visualização de itens com suporte a categorias, unidades gestoras, busca avançada e ordenação personalizada.
 - **Armazenamento Offline**: Uso de IndexedDB para dados de inventário e localStorage para persistência de sessão e temas.
@@ -34,7 +34,7 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 - **Layout System**: Flexbox e CSS Grid com variáveis CSS para consistência e responsividade
 - **Linguagens**: C#, HTML, CSS, JavaScript
 - **Armazenamento**: IndexedDB (para inventário local), localStorage (para preferência de temas), **AWS S3** (armazenamento persistente na nuvem)
-- **Autenticação**: **AWS Cognito** (User Pools & Identity Pools) com credenciais temporárias IAM (STS)
+- **Autenticação**: Autenticação via API (BFF) com provisionamento centralizado.
 - **PWA**: Service Worker, Manifest JSON
 - **Interoperabilidade**: JavaScript interop para câmera e IndexedDB
 - **SDKs**: AWS SDK para .NET (S3, Cognito, STS)
@@ -104,7 +104,7 @@ O projeto utiliza as seguintes bibliotecas principais:
 2. Navegue para a pasta do projeto: `cd pwa-camera-poc-blazor`
 3. Execute: `dotnet run`
 4. Abra o navegador em `http://localhost:5230`
-5. Para login, use as credenciais padrão: usuário `admin`, senha `admin`
+5. Para login, utilize as credenciais provisionadas na API.
 
 ### Build para Produção
 
@@ -181,13 +181,13 @@ O modelo `InventoryItem` (localizado em `Models/Item.cs`) representa um item de 
 
 #### localStorage para Autenticação
 - **Chave de Sessão:** `pwa-inventory-session` (objeto UserSession com Username e UnitId)
-- **Usuários:** Armazenados por username (ex: chave "admin" para User object)
+- **Usuários:** Cache local por username após login via API.
 - **Limites:** ~5-10MB por origem, dependendo do navegador.
 
 #### Estratégia de Sincronização Serverless (Modo PoC)
 > ⚠️ **SECURITY WARNING:** A versão atual utiliza credenciais estáticas (Access Key / Secret Key) no lado do cliente apenas para fins de validação técnica (Motto: PoC). **NÃO utilizar chaves reais em ambiente de produção**, pois elas estão expostas no código/configuração do navegador.
 
-1. **Autenticação**: O usuário é validado localmente (LocalStorage).
+1. **Autenticação**: O usuário é validado via API.
 2. **Sincronização**: O sistema utiliza as chaves configuradas em `appsettings.json` para acessar diretamente o S3.
 3. **Upload Mídia**: Imagens convertidas de Base64 para Stream são enviadas para o S3: `uploads/{UnitId}/{UserId}/{ItemId}/{PhotoName}.jpg`.
 4. **Upload Metadata**: Um arquivo `item.json` é enviado para o mesmo diretório, servindo de registro para o sistema legado (Harbour).
@@ -260,8 +260,7 @@ Para a versão de produção, é **obrigatória** a migração para **AWS Cognit
 - Tratamento de erros: Console.Error.WriteLine para falhas.
 
 #### AuthService
-- `LoginAsync(string username, string password)`: Retorna User ou null.
-- `RegisterAsync(string username, string password, List<int> unitIds)`: Cria usuário.
+- `LoginAsync(string username, string password)`: Retorna User ou null via API.
 - `LogoutAsync()`: Limpa sessão.
 - `GetCurrentUserAsync()`: Obtém usuário atual.
 

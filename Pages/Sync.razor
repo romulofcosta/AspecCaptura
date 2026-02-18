@@ -144,7 +144,7 @@
                 if (allItems != null) 
                 {
                     // Se carregou tudo, já filtra aqui
-                    var userItems = allItems.Where(i => i.CreatedBy == currentUser.Username).ToList();
+                    var userItems = allItems.Where(i => i.CreatedBy == currentUser.UsuarioNome).ToList();
                     
                     // Display: Pendentes OU Criados Hoje
                     displayItems = userItems.Where(i => !i.Synced || i.Timestamp.Date == today)
@@ -162,7 +162,7 @@
             foreach (var id in allKeys)
             {
                 var item = await DbService.GetAsync<InventoryItem>("items", id);
-                if (item != null && item.CreatedBy == currentUser.Username)
+                if (item != null && item.CreatedBy == currentUser.UsuarioNome)
                 {
                     bool isPending = !item.Synced;
                     bool isToday = item.Timestamp.Date == today;
@@ -207,8 +207,11 @@
             Status = "ativo",
             Timestamp = DateTime.Now,
             Synced = false,
-            UnitId = currentUser.CurrentUnitId,
-            CreatedBy = currentUser.Username,
+            IdOrgao = appState.CurrentOrgao?.IdOrgao,
+            IdUO = appState.CurrentUO?.IdUO,
+            IdArea = appState.CurrentArea?.IdArea,
+            IdSubarea = appState.CurrentSubarea?.IdSubarea,
+            CreatedBy = currentUser.UsuarioNome,
             Photos = new List<string> { "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=" }
         };
 
@@ -307,7 +310,7 @@
                     }
 
                     // 2. Metadados
-                    var metadata = ItemMetadata.FromInventoryItem(dbItem, currentUser.Username);
+                    var metadata = ItemMetadata.FromInventoryItem(dbItem, currentUser.UsuarioNome);
                     var metadataResult = await AwsService.UploadMetadataAsync(dbItem.Id, metadata);
 
                     if (metadataResult.Success)

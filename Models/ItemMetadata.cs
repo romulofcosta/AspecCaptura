@@ -33,8 +33,17 @@ namespace pwa_camera_poc_blazor.Models
         [JsonPropertyName("timestamp")]
         public DateTime Timestamp { get; set; }
 
-        [JsonPropertyName("unitId")]
-        public int? UnitId { get; set; }
+        [JsonPropertyName("idOrgao")]
+        public string? IdOrgao { get; set; }
+
+        [JsonPropertyName("idUO")]
+        public string? IdUO { get; set; }
+
+        [JsonPropertyName("idArea")]
+        public string? IdArea { get; set; }
+
+        [JsonPropertyName("idSubarea")]
+        public string? IdSubarea { get; set; }
 
         /// <summary>
         /// Campo obrigatório: Username do fiscal que realizou o envio.
@@ -61,7 +70,10 @@ namespace pwa_camera_poc_blazor.Models
                 Observacoes = item.Observations,
                 Status = item.Status,
                 Timestamp = item.Timestamp,
-                UnitId = item.UnitId,
+                IdOrgao = item.IdOrgao,
+                IdUO = item.IdUO,
+                IdArea = item.IdArea,
+                IdSubarea = item.IdSubarea,
                 UsuarioEnvio = username,
                 DataEnvio = DateTime.Now
             };

@@ -62,8 +62,8 @@
                             <MudText Typo="Typo.body1">@item.Timestamp.ToString("dd/MM/yyyy HH:mm")</MudText>
                         </MudItem>
                         <MudItem xs="6" sm="6">
-                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Unidade</MudText>
-                            <MudText Typo="Typo.body1">@item.UnitId</MudText>
+                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">UO / Área</MudText>
+                            <MudText Typo="Typo.body1">@item.IdUO / @item.IdArea</MudText>
                         </MudItem>
                     </MudGrid>
                 </MudCardContent>
@@ -72,7 +72,8 @@
         <MudCard Elevation="4">
             <MudCardHeader>
                 <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Fotos (@(item.Photos.Any() ? item.Photos.Count : item.RemoteUrls.Count))</MudText>
+                    <MudText Typo="Typo.h6">Fotos (@(item.Photos.Any() ? item.Photos.Count : item.RemoteUrls.Count))
+                    </MudText>
                 </CardHeaderContent>
                 <CardHeaderActions>
                     <MudButton StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Primary" OnClick="AddPhotos">
@@ -126,13 +127,16 @@
 @if (showCameraModal)
 {
     <!-- Dark Background -->
-    <div @onclick="CloseCameraModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9998;"></div>
-    
+    <div @onclick="CloseCameraModal"
+        style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9998;"></div>
+
     <!-- Modal Content -->
-    <div @onclick:stopPropagation style="position: fixed; top: 70px; bottom: 85px; left: 50%; transform: translateX(-50%); z-index: 20000; width: 90vw; max-width: 600px;">
+    <div @onclick:stopPropagation
+        style="position: fixed; top: 70px; bottom: 85px; left: 50%; transform: translateX(-50%); z-index: 20000; width: 90vw; max-width: 600px;">
         <MudPaper Class="d-flex flex-column" Style="height: 100%; padding: 0; position: relative;">
             <!-- Header -->
-            <div class="d-flex justify-space-between align-center pa-4" Style="border-bottom: 1px solid rgba(0,0,0,0.1); flex-shrink: 0;">
+            <div class="d-flex justify-space-between align-center pa-4"
+                Style="border-bottom: 1px solid rgba(0,0,0,0.1); flex-shrink: 0;">
                 <MudText Typo="Typo.h6">Nova Foto</MudText>
                 <MudIconButton Icon="@Icons.Material.Filled.Close" OnClick="CloseCameraModal" />
             </div>
@@ -147,8 +151,8 @@
 
                 <!-- Camera Controls -->
                 <div class="d-flex gap-4 justify-center mb-3">
-                    <MudIconButton Icon="@Icons.Material.Filled.FlipCameraIos" Color="Color.Secondary" OnClick="SwitchCamera"
-                        Size="Size.Large" />
+                    <MudIconButton Icon="@Icons.Material.Filled.FlipCameraIos" Color="Color.Secondary"
+                        OnClick="SwitchCamera" Size="Size.Large" />
                     <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Camera" OnClick="CaptureNewPhoto" />
                 </div>
 
@@ -167,7 +171,8 @@
             <!-- Fixed Save Button at Bottom -->
             @if (newPhotos.Any())
             {
-                <div Style="padding: 16px; border-top: 1px solid rgba(0,0,0,0.1); background: var(--mud-palette-surface); flex-shrink: 0; position: relative; z-index: 10;">
+                <div
+                    Style="padding: 16px; border-top: 1px solid rgba(0,0,0,0.1); background: var(--mud-palette-surface); flex-shrink: 0; position: relative; z-index: 10;">
                     <MudButton Variant="Variant.Filled" Color="Color.Success" FullWidth="true" OnClick="SaveNewPhotos">
                         Salvar (@newPhotos.Count)</MudButton>
                 </div>

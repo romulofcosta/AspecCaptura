@@ -142,7 +142,7 @@ else
     private int currentPreviewIndex = 0;
     private InventoryItem itemModel = new();
     private bool isSaving = false;
-    private User? currentUser;
+    private Usuario? currentUser;
     private EditContext? editContext;
 
     protected override async Task OnInitializedAsync()
@@ -216,8 +216,11 @@ else
         try
         {
             itemModel.Photos = capturedPhotos;
-            itemModel.UnitId = currentUser?.CurrentUnitId;
-            itemModel.CreatedBy = currentUser?.Username ?? string.Empty; // Define o criador
+            itemModel.IdOrgao = appState.CurrentOrgao?.IdOrgao;
+            itemModel.IdUO = appState.CurrentUO?.IdUO;
+            itemModel.IdArea = appState.CurrentArea?.IdArea;
+            itemModel.IdSubarea = appState.CurrentSubarea?.IdSubarea;
+            itemModel.CreatedBy = currentUser?.UsuarioNome ?? string.Empty; // Define o criador
             itemModel.Timestamp = DateTime.Now;
             itemModel.Synced = false;
             await DbService.AddAsync("items", itemModel);

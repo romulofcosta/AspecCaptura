@@ -1,27 +1,14 @@
 # Guia de Teste Local
 
-Como as credenciais AWS foram removidas do arquivo principal `appsettings.json` por segurança, siga estes passos para testar a aplicação localmente:
+Este guia descreve como testar a aplicação localmente. Devido à mudança para o modelo de **Acesso Provisionado**, o fluxo de teste requer a API Backend em execução.
 
-## Opção 1: Usar appsettings.Development.json (Recomendado)
-
-Crie um arquivo chamado `appsettings.Development.json` na pasta `wwwroot` com suas credenciais reais. Este arquivo substituirá as configurações do `appsettings.json` quando rodar em ambiente de desenvolvimento.
-
-```json
-{
-    "Aws": {
-        "Region": "us-east-1",
-        "BucketName": "SEU_BUCKET_NAME",
-        "AccessKey": "SUA_ACCESS_KEY_REAL",
-        "SecretKey": "SUA_SECRET_KEY_REAL"
-    }
-}
-```
-
-> **Nota:** Certifique-se de que este arquivo esteja listado no `.gitignore` para não ser enviado para o repositório.
+## Pré-requisitos
+- Executar o projeto `pwa-camera-poc-api` localmente.
+- Configurar o `appsettings.json` ou `wwwroot/appsettings.json` para apontar para a URL da API (padrão: `http://localhost:5069`).
 
 ## Opção 2: Testar Sincronização
 
-1. **Login:** Acesse a aplicação com qualquer usuário (ex: `admin`/`admin`).
+1. **Login:** Utilize as credenciais provisionadas na sua API local.
 2. **Captura:**
    - Vá para a tela de Câmera (`/camera`).
    - Capture uma foto e salve um item.

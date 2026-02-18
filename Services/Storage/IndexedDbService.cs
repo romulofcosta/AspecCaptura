@@ -63,7 +63,7 @@ namespace pwa_camera_poc_blazor.Services.Storage
 
         public async Task<List<TKey>> GetAllKeysFromIndexAsync<TKey>(string storeName, string indexName, object value)
         {
-             return await _jsRuntime.InvokeAsync<List<TKey>>("dbInterop.getAllKeysFromIndex", storeName, indexName, value);
+            return await _jsRuntime.InvokeAsync<List<TKey>>("dbInterop.getAllKeysFromIndex", storeName, indexName, value);
         }
 
         public async Task<List<TKey>> GetAllKeysAsync<TKey>(string storeName)
@@ -125,15 +125,15 @@ namespace pwa_camera_poc_blazor.Services.Storage
             }
         }
 
-        public async Task<List<InventoryItem>> GetItemsByUnitAsync(int unitId)
+        public async Task<List<InventoryItem>> GetItemsByUOAsync(string idUO)
         {
             try
             {
-                return await _jsRuntime.InvokeAsync<List<InventoryItem>>("dbInterop.getItemsByUnit", unitId);
+                return await _jsRuntime.InvokeAsync<List<InventoryItem>>("dbInterop.getItemsByUO", idUO);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error getting items by unit {unitId}: {ex.Message}");
+                Console.Error.WriteLine($"Error getting items by UO {idUO}: {ex.Message}");
                 return new List<InventoryItem>();
             }
         }

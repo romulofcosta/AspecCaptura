@@ -5,7 +5,37 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
-## [Não Lançado]
+## [0.2.0] - 2026-02-18
+
+### Adicionado
+- **Refatoração Hierárquica**: Implementado novo modelo `Usuario` com suporte a `Órgão > UO > Área > Subárea`.
+- **Configuração de Sessão**: Criada nova página `/configuracao-sessao` com dropdowns em cascata para seleção do contexto de trabalho após o login.
+- **S3 Folder Logic**: O sistema agora organiza assets no S3 seguindo a estrutura `{Prefixo}/{IdUO}/`.
+- **Captura Inteligente**: Itens capturados via câmera herdam automaticamente a hierarquia da sessão ativa.
+- **IndexedDB v4**: Esquema atualizado para incluir campos hierárquicos e índice por `idUO` para performance.
+
+### Alterado
+- **Nomenclatura**: Migração de termos em inglês (`User`, `UnitId`) para português (`Usuario`, `IdUO`) em toda a base de código.
+- **AppState**: Centralizada a gestão da sessão hierárquica e notificação de mudanças de estado.
+
+### Corrigido
+- **Startup Errors**: Resolvidos crashes causados por placeholders `__API_BASE_URL__` e conflitos de porta.
+- **Legacy Cleanup**: Removidas todas as referências ao antigo modelo de `UnitId` (inteiro).
+
+## [0.1.14] - 2026-02-18
+
+#### 🔐 Remoção do Módulo de Cadastro (Client-Side) (v0.1.14)
+- **Acesso Provisionado**: Removida completamente a funcionalidade de criação de novos usuários no PWA. O sistema agora opera exclusivamente sob um modelo de "Acesso Provisionado".
+- **Limpeza de UI**:
+  - Excluída a página `Register.razor`.
+  - Removido o link "Cadastre-se" da tela de Login.
+- **Refatoração de Autenticação**:
+  - `AuthService` agora aponta exclusivamente para a API (`/api/auth/login`).
+  - Removida lógica de validação local e usuário "admin" fixo.
+  - O armazenamento local (IndexedDB/localStorage) é utilizado apenas para cache dos dados do usuário após autenticação bem-sucedida via API.
+- **Dependências**:
+  - Removidos modelos e métodos relacionados ao cadastro de usuários no front-end.
+
 
 ### Corrigido - 2026-01-26
 

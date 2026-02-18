@@ -13,7 +13,7 @@
 
 ### Páginas Migradas
 - [x] **Login.razor**: Layout premium, campos com alvos de toque aumentados, alertas estilizados.
-- [x] **Register.razor**: Conversão total de inputs HTML para MudTextField/MudSelect, grid responsivo, sistema de busca de unidades.
+- [x] **Register.razor**: [REMOVIDO] Funcionalidade de cadastro migrada para modelo de "Acesso Provisionado".
 - [x] **Home.razor**: Galeria responsiva, alternância de Grid/Lista, filtros por chip, ordenação via MudSelect.
 - [x] **Camera.razor**: Interface de captura com MudOverlay, formulário de metadados modernizado.
 - [x] **Profile.razor**: Edição de perfil funcional com MudAvatar e integração com AuthService.

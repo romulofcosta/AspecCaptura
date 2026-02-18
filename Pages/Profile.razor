@@ -27,18 +27,13 @@
 
             <MudGrid Spacing="2">
                 <MudItem xs="12">
-                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Nome</MudText>
-                    <MudTextField @bind-Value="profileModel.FirstName" Placeholder="Seu nome" Variant="Variant.Outlined"
-                        For="@(() => profileModel.FirstName)" FullWidth="true" />
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Nome Completo</MudText>
+                    <MudTextField @bind-Value="profileModel.NomeCompleto" Placeholder="Seu nome completo" Variant="Variant.Outlined"
+                        For="@(() => profileModel.NomeCompleto)" FullWidth="true" />
                 </MudItem>
                 <MudItem xs="12">
-                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Sobrenome</MudText>
-                    <MudTextField @bind-Value="profileModel.LastName" Placeholder="Seu sobrenome" Variant="Variant.Outlined"
-                        For="@(() => profileModel.LastName)" FullWidth="true" />
-                </MudItem>
-                <MudItem xs="12">
-                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">E-mail</MudText>
-                    <MudTextField @bind-Value="profileModel.Username" Variant="Variant.Outlined" Disabled="true"
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Usuário</MudText>
+                    <MudTextField @bind-Value="profileModel.Usuario" Variant="Variant.Outlined" Disabled="true"
                         FullWidth="true" />
                 </MudItem>
 
@@ -60,7 +55,7 @@
 
 @code {
     private ProfileModel profileModel = new();
-    private User? currentUser;
+    private Usuario? currentUser;
     private string UserInitials = "U";
     private string FullName = "";
     private string Email = "";
@@ -83,15 +78,17 @@
         currentUser = await AuthService.GetCurrentUserAsync();
         if (currentUser != null)
         {
-            profileModel.FirstName = currentUser.FirstName;
-            profileModel.LastName = currentUser.LastName;
-            profileModel.Username = currentUser.Username;
+            profileModel.NomeCompleto = currentUser.NomeCompleto;
+            profileModel.Usuario = currentUser.UsuarioNome;
 
-            Email = currentUser.Username;
-            FullName = $"{currentUser.FirstName} {currentUser.LastName}";
-            if (!string.IsNullOrEmpty(currentUser.FirstName))
+            Email = currentUser.UsuarioNome;
+            FullName = currentUser.NomeCompleto;
+            if (!string.IsNullOrEmpty(currentUser.NomeCompleto))
             {
-                UserInitials = $"{currentUser.FirstName[0]}{(string.IsNullOrEmpty(currentUser.LastName) ? "" : currentUser.LastName[0].ToString())}".ToUpper();
+                var names = currentUser.NomeCompleto.Split(' ');
+                UserInitials = names.Length > 1 
+                    ? $"{names[0][0]}{names[^1][0]}".ToUpper() 
+                    : names[0][0].ToString().ToUpper();
             }
         }
     }
@@ -100,13 +97,15 @@
     {
         if (currentUser != null)
         {
-            currentUser.FirstName = profileModel.FirstName;
-            currentUser.LastName = profileModel.LastName;
+            currentUser.NomeCompleto = profileModel.NomeCompleto;
 
             await AuthService.UpdateUserAsync(currentUser);
 
-            FullName = $"{currentUser.FirstName} {currentUser.LastName}";
-            UserInitials = $"{currentUser.FirstName[0]}{(string.IsNullOrEmpty(currentUser.LastName) ? "" : currentUser.LastName[0].ToString())}".ToUpper();
+            FullName = currentUser.NomeCompleto;
+            var names = currentUser.NomeCompleto.Split(' ');
+            UserInitials = names.Length > 1 
+                ? $"{names[0][0]}{names[^1][0]}".ToUpper() 
+                : names[0][0].ToString().ToUpper();
 
             Snackbar.Add("Perfil atualizado com sucesso!", Severity.Success);
             StateHasChanged();
@@ -116,11 +115,8 @@
     public class ProfileModel
     {
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
-        public string FirstName { get; set; } = "";
+        public string NomeCompleto { get; set; } = "";
 
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
-        public string LastName { get; set; } = "";
-
-        public string Username { get; set; } = "";
+        public string Usuario { get; set; } = "";
     }
 }

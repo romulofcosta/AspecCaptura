@@ -6,10 +6,10 @@ namespace pwa_camera_poc_blazor.Services.Auth
 {
     public interface IAuthService
     {
-        Task<User?> LoginAsync(string username, string password);
-        Task<User> RegisterAsync(string firstName, string lastName, string username, string password, List<int> unitIds);
+        Task<Usuario?> LoginAsync(string username, string password);
+
         Task LogoutAsync();
-        Task<User?> GetCurrentUserAsync();
-        Task UpdateUserAsync(User user);
+        Task<Usuario?> GetCurrentUserAsync();
+        Task UpdateUserAsync(Usuario user);
     }
 }

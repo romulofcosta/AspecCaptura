@@ -4,110 +4,71 @@ using System.Threading.Tasks;
 using pwa_camera_poc_blazor.Models;
 using pwa_camera_poc_blazor.Services.Storage;
 using Microsoft.AspNetCore.Components.Authorization;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Linq;
 
 namespace pwa_camera_poc_blazor.Services.Auth
 {
-    public class AuthService : IAuthService
+    public class AuthService(ILocalStorageService localStorage, AuthenticationStateProvider authStateProvider, IHttpClientFactory httpClientFactory) : IAuthService
     {
-        private readonly ILocalStorageService _localStorage;
-        private readonly AuthenticationStateProvider _authStateProvider;
         private const string SESSION_KEY = "pwa-inventory-session";
 
-        public AuthService(ILocalStorageService localStorage, AuthenticationStateProvider authStateProvider)
-        {
-            _localStorage = localStorage;
-            _authStateProvider = authStateProvider;
-        }
-
-        public async Task<User?> LoginAsync(string username, string password)
+        public async Task<Usuario?> LoginAsync(string username, string password)
         {
             var cleanUsername = username?.ToLower().Trim();
-            // Default admin user for testing
-            if (cleanUsername == "admin" && password == "admin")
+
+            try
             {
-                var user = await _localStorage.GetItemAsync<User>("admin");
-                if (user == null)
+                var client = httpClientFactory.CreateClient("BackendApi");
+                var response = await client.PostAsJsonAsync("/api/auth/login", new { Usuario = cleanUsername, Senha = password });
+
+                if (!response.IsSuccessStatusCode)
                 {
-                    user = new User
-                    {
-                        Username = "admin",
-                        FirstName = "Administrador",
-                        LastName = "do Sistema",
-                        PasswordHash = "",
-                        UnitIds = new List<int> { 1 },
-                        CurrentUnitId = 1,
-                        CreatedAt = DateTime.Now
-                    };
-                    await _localStorage.SetItemAsync("admin", user);
+                    return null;
                 }
-                user.LastLogin = DateTime.Now;
-                await _localStorage.SetItemAsync(user.Username, user);
 
-                var session = new UserSession { Username = user.Username, UnitId = user.CurrentUnitId ?? 0 };
-                await _localStorage.SetItemAsync(SESSION_KEY, session);
+                var user = await response.Content.ReadFromJsonAsync<Usuario>();
+                if (user == null) return null;
 
-                if (_authStateProvider is CustomAuthStateProvider customProvider)
+                // Cache user data locally
+                await localStorage.SetItemAsync(user.UsuarioNome, user);
+
+                // Create session
+                var session = new UserSession { Username = user.UsuarioNome };
+                await localStorage.SetItemAsync(SESSION_KEY, session);
+
+                if (authStateProvider is CustomAuthStateProvider customProvider)
                 {
                     customProvider.NotifyAuthenticationStateChanged();
                 }
 
                 return user;
             }
-
-            var user2 = await _localStorage.GetItemAsync<User>(cleanUsername);
-            if (user2 == null) return null;
-
-            var inputHash = HashPassword(password);
-            if (user2.PasswordHash != inputHash) return null;
-
-            user2.LastLogin = DateTime.Now;
-            await _localStorage.SetItemAsync(user2.Username, user2);
-
-            // Create session (minimal info)
-            var session2 = new UserSession { Username = user2.Username, UnitId = user2.CurrentUnitId ?? 0 };
-            await _localStorage.SetItemAsync(SESSION_KEY, session2);
-
-            if (_authStateProvider is CustomAuthStateProvider customProvider2)
+            catch (Exception ex)
             {
-                customProvider2.NotifyAuthenticationStateChanged();
+                Console.Error.WriteLine($"Authentication error: {ex.Message}");
+                return null;
             }
-
-            return user2;
         }
 
-        public async Task<User> RegisterAsync(string firstName, string lastName, string username, string password, List<int> unitIds)
-        {
-            var distinctIds = unitIds.Distinct().ToList();
-            var user = new User
-            {
-                Username = username.ToLower().Trim(),
-                FirstName = firstName.Trim(),
-                LastName = lastName.Trim(),
-                PasswordHash = HashPassword(password),
-                UnitIds = distinctIds,
-                CurrentUnitId = distinctIds.Count > 0 ? distinctIds[0] : null,
-                CreatedAt = DateTime.Now
-            };
 
-            await _localStorage.SetItemAsync(user.Username, user);
-            return user;
-        }
 
         public async Task LogoutAsync()
         {
-            await _localStorage.RemoveItemAsync(SESSION_KEY);
-            if (_authStateProvider is CustomAuthStateProvider customProvider)
+            await localStorage.RemoveItemAsync(SESSION_KEY);
+            if (authStateProvider is CustomAuthStateProvider customProvider)
             {
                 customProvider.NotifyAuthenticationStateChanged();
             }
         }
 
-        public async Task<User?> GetCurrentUserAsync()
+        public async Task<Usuario?> GetCurrentUserAsync()
         {
-            var session = await _localStorage.GetItemAsync<UserSession>(SESSION_KEY);
+            var session = await localStorage.GetItemAsync<UserSession>(SESSION_KEY);
             if (session == null) return null;
 
-            return await _localStorage.GetItemAsync<User>(session.Username);
+            return await localStorage.GetItemAsync<Usuario>(session.Username);
         }
 
         private string HashPassword(string password)
@@ -143,17 +104,15 @@ namespace pwa_camera_poc_blazor.Services.Auth
             }
             return negative ? "-" + result : result;
         }
-        public async Task UpdateUserAsync(User user)
+        public async Task UpdateUserAsync(Usuario user)
         {
-            user.UnitIds = user.UnitIds.Distinct().ToList();
-            await _localStorage.SetItemAsync(user.Username, user);
+            await localStorage.SetItemAsync(user.UsuarioNome, user);
 
             // If the updated user is the current session user, update session as well
-            var session = await _localStorage.GetItemAsync<UserSession>(SESSION_KEY);
-            if (session != null && session.Username == user.Username)
+            var session = await localStorage.GetItemAsync<UserSession>(SESSION_KEY);
+            if (session != null && session.Username == user.UsuarioNome)
             {
-                session.UnitId = user.CurrentUnitId ?? 0;
-                await _localStorage.SetItemAsync(SESSION_KEY, session);
+                await localStorage.SetItemAsync(SESSION_KEY, session);
             }
         }
     }
@@ -161,6 +120,5 @@ namespace pwa_camera_poc_blazor.Services.Auth
     public class UserSession
     {
         public string Username { get; set; } = string.Empty;
-        public int UnitId { get; set; }
     }
 }

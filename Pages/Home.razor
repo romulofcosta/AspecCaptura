@@ -176,7 +176,7 @@
         try
         {
             var user = await AuthService.GetCurrentUserAsync();
-            var username = user?.Username ?? "unknown";
+            var username = user?.UsuarioNome ?? "unknown";
 
             // CORREÇÃO OTIMIZADA: Buscar apenas IDs dos itens pendentes para evitar carregar fotos pesadas
             // Usa índice 'synced' (false = 0)
@@ -332,21 +332,21 @@
         try
         {
             var user = await AuthService.GetCurrentUserAsync();
-            if (user?.CurrentUnitId != null)
+            if (appState.CurrentUO?.IdUO != null)
             {
-                // Aqui ainda usamos GetItemsByUnitAsync que carrega tudo.
+                // Aqui ainda usamos GetItemsByUOAsync que carrega tudo.
                 // Se o usuário tiver muitos itens, isso será lento.
-                var allItems = await DbService.GetItemsByUnitAsync(user.CurrentUnitId.Value);
+                var allItems = await DbService.GetItemsByUOAsync(appState.CurrentUO.IdUO);
                 
                 // Filtra apenas os itens criados pelo usuário atual
-                items = allItems.Where(i => i.CreatedBy == user.Username).ToList();
+                items = allItems.Where(i => i.CreatedBy == user.UsuarioNome).ToList();
 
                 // If no items, load example item
                 if (!items.Any())
                 {
-                    await LoadExampleItem(user.CurrentUnitId.Value, user.Username);
-                    allItems = await DbService.GetItemsByUnitAsync(user.CurrentUnitId.Value);
-                    items = allItems.Where(i => i.CreatedBy == user.Username).ToList();
+                    await LoadExampleItem(appState.CurrentUO.IdUO, user.UsuarioNome);
+                    allItems = await DbService.GetItemsByUOAsync(appState.CurrentUO.IdUO);
+                    items = allItems.Where(i => i.CreatedBy == user.UsuarioNome).ToList();
                 }
             }
             else
@@ -364,7 +364,7 @@
         }
     }
 
-    private async Task LoadExampleItem(int unitId, string username)
+    private async Task LoadExampleItem(string idUO, string username)
     {
         try
         {
@@ -372,7 +372,10 @@
             var exampleItem = System.Text.Json.JsonSerializer.Deserialize<InventoryItem>(json);
             if (exampleItem != null)
             {
-                exampleItem.UnitId = unitId;
+                exampleItem.IdOrgao = appState.CurrentOrgao?.IdOrgao;
+                exampleItem.IdUO = idUO;
+                exampleItem.IdArea = appState.CurrentArea?.IdArea;
+                exampleItem.IdSubarea = appState.CurrentSubarea?.IdSubarea;
                 exampleItem.CreatedBy = username; // Define o criador
                 await DbService.AddAsync("items", exampleItem);
             }

@@ -32,7 +32,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
         private string SanitizeKey(string? input)
         {
             if (string.IsNullOrEmpty(input)) return "";
-            
+
             // Normalize to FormD to split accents
             var normalizedString = input.Normalize(System.Text.NormalizationForm.FormD);
             var stringBuilder = new System.Text.StringBuilder();
@@ -61,7 +61,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 var base64Clean = base64Data.Contains(",") ? base64Data.Split(',')[1] : base64Data;
                 var bytes = Convert.FromBase64String(base64Clean);
                 var item = await _dbService.GetAsync<InventoryItem>("items", itemId);
-                
+
                 var safeItemName = SanitizeKey(item?.Name ?? itemId);
                 var fileName = $"{safeItemName}.jpg";
                 var contentType = "image/jpeg";
@@ -70,21 +70,14 @@ namespace pwa_camera_poc_blazor.Services.AWS
 
                 // 2. Solicitar URL Assinada
                 var user = await _authService.GetCurrentUserAsync();
-                var fullName = $"{user?.FirstName} {user?.LastName}".Trim();
-                var username = string.IsNullOrWhiteSpace(fullName) ? (user?.Username ?? "usuario") : fullName;
-                var unitName = "unidade";
-                if (user?.CurrentUnitId != null)
-                {
-                    var unit = await _dbService.GetAsync<Unit>("units", user.CurrentUnitId.Value);
-                    unitName = unit?.Name ?? unitName;
-                }
-                
-                // FIX: Sanitize components for folder path
-                var safeUsername = SanitizeKey(username);
-                var safeUnitName = SanitizeKey(unitName);
-                var folderPrefix = $"{safeUsername}/{safeUnitName}";
-                
-                var request = new PresignedUrlRequest(fileName, contentType, folderPrefix, safeItemCode, safeUsername, safeUnitName);
+                var prefixo = user?.Prefixo ?? "geral";
+                var idUO = item?.IdUO ?? "uo-desconhecida";
+
+                var safePrefixo = SanitizeKey(prefixo);
+                var safeIdUO = SanitizeKey(idUO);
+                var folderPrefix = $"{safePrefixo}/{safeIdUO}";
+
+                var request = new PresignedUrlRequest(fileName, contentType, folderPrefix, safeItemCode);
                 var response = await _httpClient.PostAsJsonAsync("/api/storage/presigned-url", request);
 
                 if (!response.IsSuccessStatusCode)
@@ -141,26 +134,18 @@ namespace pwa_camera_poc_blazor.Services.AWS
                 var safeMetaItemName = SanitizeKey(itemMetaItem?.Name ?? itemId);
                 var fileName = $"{safeMetaItemName}.json";
                 var contentType = "application/json";
-
                 var safeItemCode = SanitizeKey(metadata.Codigo);
 
                 // 1. Obter URL
                 var user = await _authService.GetCurrentUserAsync();
-                var fullNameMeta = $"{user?.FirstName} {user?.LastName}".Trim();
-                var username = string.IsNullOrWhiteSpace(fullNameMeta) ? (user?.Username ?? "usuario") : fullNameMeta;
-                var unitName = "unidade";
-                if (user?.CurrentUnitId != null)
-                {
-                    var unit = await _dbService.GetAsync<Unit>("units", user.CurrentUnitId.Value);
-                    unitName = unit?.Name ?? unitName;
-                }
-                
-                // FIX: Sanitize components for folder path
-                var safeUsername = SanitizeKey(username);
-                var safeUnitName = SanitizeKey(unitName);
-                var folderPrefix = $"{safeUsername}/{safeUnitName}";
-                
-                var request = new PresignedUrlRequest(fileName, contentType, folderPrefix, safeItemCode, safeUsername, safeUnitName);
+                var prefixo = user?.Prefixo ?? "geral";
+                var idUO = metadata.IdUO ?? "uo-desconhecida";
+
+                var safePrefixo = SanitizeKey(prefixo);
+                var safeIdUO = SanitizeKey(idUO);
+                var folderPrefix = $"{safePrefixo}/{safeIdUO}";
+
+                var request = new PresignedUrlRequest(fileName, contentType, folderPrefix, safeItemCode);
                 var response = await _httpClient.PostAsJsonAsync("/api/storage/presigned-url", request);
 
                 if (!response.IsSuccessStatusCode) return (false, null);
@@ -208,22 +193,16 @@ namespace pwa_camera_poc_blazor.Services.AWS
             try
             {
                 var user = await _authService.GetCurrentUserAsync();
-                var fullName = $"{user?.FirstName} {user?.LastName}".Trim();
-                var username = string.IsNullOrWhiteSpace(fullName) ? (user?.Username ?? "usuario") : fullName;
-                var unitName = "unidade";
-                if (user?.CurrentUnitId != null)
-                {
-                    var unit = await _dbService.GetAsync<Unit>("units", user.CurrentUnitId.Value);
-                    unitName = unit?.Name ?? unitName;
-                }
+                var prefixo = user?.Prefixo ?? "geral";
                 var itemRecord = await _dbService.GetAsync<InventoryItem>("items", itemId);
-                
-                var safeUsername = SanitizeKey(username);
-                var safeUnitName = SanitizeKey(unitName);
+                var idUO = itemRecord?.IdUO ?? "uo-desconhecida";
+
+                var safePrefixo = SanitizeKey(prefixo);
+                var safeIdUO = SanitizeKey(idUO);
                 var safeItemName = SanitizeKey(itemRecord?.Name ?? itemId);
-                
-                var key = $"{safeUsername}/{safeUnitName}/{safeItemName}.json";
-                
+
+                var key = $"{safePrefixo}/{safeIdUO}/{safeItemName}.json";
+
                 var encodedKey = Uri.EscapeDataString(key);
 
                 var response = await _httpClient.GetAsync($"/api/storage/exists/{encodedKey}");
@@ -241,20 +220,14 @@ namespace pwa_camera_poc_blazor.Services.AWS
             try
             {
                 var user = await _authService.GetCurrentUserAsync();
-                var fullName = $"{user?.FirstName} {user?.LastName}".Trim();
-                var username = string.IsNullOrWhiteSpace(fullName) ? (user?.Username ?? "usuario") : fullName;
-                var unitName = "unidade";
-                if (user?.CurrentUnitId != null)
-                {
-                    var unit = await _dbService.GetAsync<Unit>("units", user.CurrentUnitId.Value);
-                    unitName = unit?.Name ?? unitName;
-                }
-                
-                var safeUsername = SanitizeKey(username);
-                var safeUnitName = SanitizeKey(unitName);
+                var prefixo = user?.Prefixo ?? "geral";
+                var idUO = item.IdUO ?? "uo-desconhecida";
+
+                var safePrefixo = SanitizeKey(prefixo);
+                var safeIdUO = SanitizeKey(idUO);
                 var safeItemName = SanitizeKey(item.Name ?? item.Id);
-                
-                var key = $"{safeUsername}/{safeUnitName}/{safeItemName}.jpg";
+
+                var key = $"{safePrefixo}/{safeIdUO}/{safeItemName}.jpg";
                 var encodedKey = Uri.EscapeDataString(key);
 
                 var response = await _httpClient.GetFromJsonAsync<ExistResponse>($"/api/storage/exists/{encodedKey}");

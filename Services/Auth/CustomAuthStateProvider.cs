@@ -30,8 +30,7 @@ namespace pwa_camera_poc_blazor.Services.Auth
 
                 var claims = new[]
                 {
-                    new Claim(ClaimTypes.Name, session.Username),
-                    new Claim("UnitId", session.UnitId.ToString())
+                    new Claim(ClaimTypes.Name, session.Username)
                 };
 
                 var identity = new ClaimsIdentity(claims, "Custom Auth");

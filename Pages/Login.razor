@@ -38,18 +38,18 @@
 
             <MudGrid Spacing="1">
                 <MudItem xs="12" Class="pb-4">
-                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">E-mail ou Usuário</MudText>
-                    <MudTextField @bind-Value="loginModel.Username" Placeholder="Digite seu e-mail"
+                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Usuário</MudText>
+                    <MudTextField @bind-Value="loginModel.Usuario" Placeholder="Digite seu usuário (ex: CE305.joao.silva)"
                         Variant="Variant.Outlined" InputType="InputType.Text" Adornment="Adornment.Start"
-                        AdornmentIcon="@Icons.Material.Filled.Person" For="@(() => loginModel.Username)"
+                        AdornmentIcon="@Icons.Material.Filled.Person" For="@(() => loginModel.Usuario)"
                         FullWidth="true" Class="mb-2" />
                 </MudItem>
 
                 <MudItem xs="12" Class="pb-4">
                     <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Senha</MudText>
-                    <MudTextField @bind-Value="loginModel.Password" Placeholder="Digite sua senha"
+                    <MudTextField @bind-Value="loginModel.Senha" Placeholder="Digite sua senha"
                         Variant="Variant.Outlined" InputType="InputType.Password" Adornment="Adornment.Start"
-                        AdornmentIcon="@Icons.Material.Filled.Lock" For="@(() => loginModel.Password)"
+                        AdornmentIcon="@Icons.Material.Filled.Lock" For="@(() => loginModel.Senha)"
                         FullWidth="true" Class="mb-2" />
                 </MudItem>
 
@@ -70,14 +70,11 @@
             </MudGrid>
         </EditForm>
 
-        <div class="d-flex justify-center mt-6">
-            <MudText Typo="Typo.body2" Class="mr-2">Não tem conta?</MudText>
-            <MudLink Href="/register" Underline="Underline.Hover">Cadastre-se</MudLink>
-        </div>
+
     </MudPaper>
 
     <div class="d-flex justify-center mt-4">
-        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="version-indicator">Versão: v0.1.13 (Protótipo - Responsive Camera Layout)</MudText>
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="version-indicator">Versão: v0.2.0 (Hierarquia & S3)</MudText>
     </div>
 </MudContainer>
 
@@ -131,7 +128,7 @@
 
         try
         {
-            var user = await AuthService.LoginAsync(loginModel.Username, loginModel.Password);
+            var user = await AuthService.LoginAsync(loginModel.Usuario, loginModel.Senha);
             if (user != null)
             {
                 alertMessage = "Login realizado com sucesso!";
@@ -140,7 +137,7 @@
                 loginContentClass = "fade-out";
                 StateHasChanged();
                 await Task.Delay(1000);
-                Navigation.NavigateTo("/home");
+                Navigation.NavigateTo("/configuracao-sessao");
             }
             else
             {
@@ -164,21 +161,17 @@
     public class LoginModel : IValidatableObject
     {
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
-        public string Username { get; set; } = string.Empty;
+        public string Usuario { get; set; } = string.Empty;
 
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
-        public string Password { get; set; } = string.Empty;
+        public string Senha { get; set; } = string.Empty;
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            var cleanUsername = Username?.Trim().ToLower();
-            if (!string.IsNullOrEmpty(cleanUsername) && cleanUsername != "admin")
+            var cleanUsername = Usuario?.Trim().ToLower();
+            if (!string.IsNullOrEmpty(cleanUsername) && cleanUsername != "admin" && !cleanUsername.Contains("."))
             {
-                var emailAttribute = new System.ComponentModel.DataAnnotations.EmailAddressAttribute();
-                if (!emailAttribute.IsValid(Username))
-                {
-                    yield return new ValidationResult("Formato de e-mail inválido", new[] { nameof(Username) });
-                }
+                yield return new ValidationResult("Formato de usuário inválido (use PREFIXO.nome)", new[] { nameof(Usuario) });
             }
         }
     }

@@ -1,14 +1,12 @@
 # Relatório de Análise Técnica: PWA Camera POC
-**Data:** 09/01/2026
-**Status:** Validação de Sincronização e Login
+**Data:** 18/02/2026
+**Status:** ✅ RESOLVIDO - Migração para BFF e Acesso Provisionado concluída.
 **Autor:** Antigravity Agent
 
 ## 1. Resumo Executivo
-Foi realizada uma bateria de testes "end-to-end" automatizados focando no fluxo principal do usuário: **Login -> Captura Offline -> Sincronização Online**. 
-
-Os testes identificaram dois pontos de obstrução:
-1.  **Bloqueio de Validação no Login (UX/Fluxo):** Impede o uso das credenciais padrão de teste via UI.
-2.  **Falha Crítica no Upload S3 (Infraestrutura/Runtime):** O AWS SDK para .NET lançou exceção de plataforma não suportada ao tentar enviar arquivos do navegador (WASM).
+Todas as obstruções críticas identificadas anteriormente foram resolvidas com a refatoração concluída em Fevereiro de 2026:
+1.  **Bloqueio de Validação no Login (RESOLVIDO):** Migrado para o modelo de **Acesso Provisionado**, onde a validação ocorre no backend e a interface de login foi simplificada.
+2.  **Falha Crítica no Upload S3 (RESOLVIDO):** Implementada a **Opção A (Pre-Signed URLs)** via API BFF, eliminando a dependência do AWS SDK no Blazor WASM.
 
 ---
 

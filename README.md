@@ -1,22 +1,22 @@
 # PWA Camera POC - Blazor
 
-Este é um projeto de Prova de Conceito (POC) para uma Progressive Web App (PWA) de inventário utilizando câmera, desenvolvido com Blazor WebAssembly. O objetivo é demonstrar a integração de funcionalidades de câmera, autenticação local e armazenamento offline para um sistema de inventário simples.
+Este é um projeto de Prova de Conceito (POC) para uma Progressive Web App (PWA) de inventário utilizando câmera, desenvolvido com Blazor WebAssembly. O objetivo é demonstrar a integração de funcionalidades de câmera, acesso provisionado via API e armazenamento offline.
 
 ## Objetivo
 
-O projeto visa criar uma aplicação web que funcione offline, permitindo aos usuários fazer login, capturar itens via câmera, registrar inventário e sincronizar dados quando online. É direcionado para cenários de inventário móvel em ambientes com conectividade limitada.
+O projeto visa criar uma aplicação web que funcione offline, permitindo aos usuários autenticarem-se, capturarem itens via câmera, registrarem inventário e sincronizarem dados quando online. É direcionado para cenários de inventário móvel em ambientes com conectividade limitada.
 
 ## ⚠️ Status do Projeto & Limitações Conhecidas
 
 > **Status (16/01/2026):** A integração com a API BFF foi implementada com sucesso, resolvendo o problema de upload S3 via Pre-Signed URLs. O projeto agora requer a execução da API `pwa-camera-poc-api` em paralelo.
 
 **Principais Pontos de Atenção:**
-1.  **Login**: Validação de formato de e-mail impede uso de usuários de teste simples (ex: `admin`).
+1.  **Acesso Provisionado**: Não é permitido cadastro local; usuários devem ser provisionados via API.
 2.  **Sincronização**: Resolvida através da integração com a API BFF.
 
 ## Funcionalidades
 
-- **Autenticação Local**: Login e registro de usuários com armazenamento em localStorage e suporte a múltiplos perfis.
+- **Acesso Provisionado**: Autenticação de usuários exclusivamente via API Backend, com suporte a múltiplos perfis e cache local para operação offline.
 - **Captura de Imagens**: Integração com câmera do dispositivo para fotografar itens com suporte a múltiplas fotos por item, preview e galeria de revisão.
 - **Gerenciamento de Inventário**: Adição, edição e visualização de itens com suporte a categorias, unidades gestoras, busca avançada e ordenação personalizada.
 - **Armazenamento Offline**: Uso de IndexedDB para dados de inventário e localStorage para persistência de sessão e temas.
@@ -43,7 +43,7 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 - **Layout System**: Flexbox e CSS Grid com variáveis CSS para consistência e responsividade
 - **Linguagens**: C#, HTML, CSS, JavaScript
 - **Armazenamento**: IndexedDB (inventário local), localStorage (sessão/tema), armazenamento remoto via API de integração (ex.: S3 usando URLs pré-assinadas)
-- **Autenticação**: Autenticação local baseada em armazenamento no navegador
+- **Autenticação**: Autenticação via API (BFF) com provisionamento centralizado.
 - **PWA**: Service Worker, Manifest JSON
 - **Interoperabilidade**: JavaScript interop para câmera e IndexedDB
 - **Build/Deploy**: .NET CLI, potencialmente Netlify ou similar
@@ -112,7 +112,7 @@ O projeto utiliza as seguintes bibliotecas principais:
 2. Navegue para a pasta do projeto: `cd pwa-camera-poc-blazor`
 3. Execute: `dotnet run`
 4. Abra o navegador em `http://localhost:5230`
-5. Para login, use as credenciais padrão: usuário `admin`, senha `admin`
+5. Para login, utilize as credenciais provisionadas na API.
 
 ### Build para Produção
 
@@ -189,13 +189,13 @@ O modelo `InventoryItem` (localizado em `Models/Item.cs`) representa um item de 
 
 #### localStorage para Autenticação
 - **Chave de Sessão:** `pwa-inventory-session` (objeto UserSession com Username e UnitId)
-- **Usuários:** Armazenados por username (ex: chave "admin" para User object)
+- **Usuários:** Cache local por username após login via API.
 - **Limites:** ~5-10MB por origem, dependendo do navegador.
 
 #### Estratégia de Sincronização (Via BFF)
 O projeto utiliza uma arquitetura segura com API Backend for Frontend (BFF) para intermediar o acesso ao S3, eliminando a necessidade de credenciais no cliente.
 
-1. **Autenticação**: O usuário é validado localmente.
+1. **Autenticação**: O usuário é validado via API.
 2. **Sincronização**: O App solicita uma URL assinada (Pre-Signed URL) para a API BFF.
 3. **Upload Direto**: O App faz upload do binário da imagem/JSON diretamente para o S3 usando a URL assinada.
 4. **Segurança**: As credenciais AWS ficam protegidas no servidor (API).
@@ -269,8 +269,7 @@ Próximos passos incluem:
 - Tratamento de erros: Console.Error.WriteLine para falhas.
 
 #### AuthService
-- `LoginAsync(string username, string password)`: Retorna User ou null.
-- `RegisterAsync(string username, string password, List<int> unitIds)`: Cria usuário.
+- `LoginAsync(string username, string password)`: Retorna User ou null via API.
 - `LogoutAsync()`: Limpa sessão.
 - `GetCurrentUserAsync()`: Obtém usuário atual.
 

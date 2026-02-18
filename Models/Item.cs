@@ -24,7 +24,10 @@ namespace pwa_camera_poc_blazor.Models
         public string Status { get; set; } = "ativo";
         public DateTime Timestamp { get; set; } = DateTime.Now;
         public bool Synced { get; set; } = false;
-        public int? UnitId { get; set; }
+        public string? IdOrgao { get; set; }
+        public string? IdUO { get; set; }
+        public string? IdArea { get; set; }
+        public string? IdSubarea { get; set; }
 
         // Username do usuário que criou o item localmente
         public string CreatedBy { get; set; } = string.Empty;
