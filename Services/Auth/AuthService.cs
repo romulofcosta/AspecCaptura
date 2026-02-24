@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace pwa_camera_poc_blazor.Services.Auth
 {
-    public class AuthService(ILocalStorageService localStorage, AuthenticationStateProvider authStateProvider, IHttpClientFactory httpClientFactory) : IAuthService
+    public class AuthService(ILocalStorageService localStorage, AuthenticationStateProvider authStateProvider, IHttpClientFactory httpClientFactory, IIndexedDbService dbService) : IAuthService
     {
         private const string SESSION_KEY = "pwa-inventory-session";
 
@@ -30,6 +30,21 @@ namespace pwa_camera_poc_blazor.Services.Auth
 
                 var user = await response.Content.ReadFromJsonAsync<Usuario>();
                 if (user == null) return null;
+
+                // Sync Patrimonio to IndexedDB
+                if (user.Patrimonio != null && user.Patrimonio.Count > 0)
+                {
+                    await dbService.InitializeAsync();
+                    await dbService.ClearAsync("patrimonio");
+                    foreach (var item in user.Patrimonio)
+                    {
+                        await dbService.AddAsync("patrimonio", item);
+                    }
+                    // Remove from user object to save LocalStorage space
+                    user.Patrimonio = new List<PatrimonioItem>();
+                }
+
+                user.UsuarioNome = cleanUsername!;
 
                 // Cache user data locally
                 await localStorage.SetItemAsync(user.UsuarioNome, user);
@@ -51,6 +66,7 @@ namespace pwa_camera_poc_blazor.Services.Auth
                 return null;
             }
         }
+
 
 
 

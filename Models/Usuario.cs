@@ -8,9 +8,13 @@ namespace pwa_camera_poc_blazor.Models
         public string UsuarioNome { get; set; } = string.Empty;
         public string NomeCompleto { get; set; } = string.Empty;
         public string Prefixo { get; set; } = string.Empty;
+        public string Esfera { get; set; } = string.Empty;
         public List<Orgao> Orgaos { get; set; } = new();
+        public List<PatrimonioItem> Patrimonio { get; set; } = new();
         public string Token { get; set; } = string.Empty;
     }
+
+
 
     public class Orgao
     {
@@ -38,4 +42,12 @@ namespace pwa_camera_poc_blazor.Models
         public string IdSubarea { get; set; } = string.Empty;
         public string NomeSubarea { get; set; } = string.Empty;
     }
+
+    public class PatrimonioItem
+    {
+        public long IdPatomb { get; set; }
+        public string Nutomb { get; set; } = string.Empty;
+        public string Esfera { get; set; } = string.Empty;
+    }
 }
+

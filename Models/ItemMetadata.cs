@@ -45,6 +45,13 @@ namespace pwa_camera_poc_blazor.Models
         [JsonPropertyName("idSubarea")]
         public string? IdSubarea { get; set; }
 
+        [JsonPropertyName("esfera")]
+        public string Esfera { get; set; } = string.Empty;
+
+        [JsonPropertyName("nutomb")]
+        public string? Nutomb { get; set; }
+
+
         /// <summary>
         /// Campo obrigatório: Username do fiscal que realizou o envio.
         /// Usado para isolamento de dados e integração com o módulo Desktop.
@@ -74,7 +81,10 @@ namespace pwa_camera_poc_blazor.Models
                 IdUO = item.IdUO,
                 IdArea = item.IdArea,
                 IdSubarea = item.IdSubarea,
+                Esfera = item.Esfera,
+                Nutomb = item.Nutomb,
                 UsuarioEnvio = username,
+
                 DataEnvio = DateTime.Now
             };
         }

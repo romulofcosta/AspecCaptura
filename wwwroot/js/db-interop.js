@@ -1,7 +1,7 @@
 ﻿window.dbInterop = {
     db: null,
     dbName: 'PwaInventoryDB',
-    dbVersion: 4,
+    dbVersion: 5,
 
     init: async function () {
         return new Promise((resolve, reject) => {
@@ -16,7 +16,7 @@
                 const db = event.target.result;
                 const transaction = event.target.transaction;
 
-                // ... (existing code for users, states, cities, units) ...
+                // ... (existing code) ...
 
                 // 3. Items Store (Inventory)
                 let itemsStore;
@@ -41,7 +41,14 @@
                         itemsStore.createIndex('idUO', 'idUO', { unique: false });
                     }
                 }
+
+                // 4. Patrimonio Store (Lookup)
+                if (!db.objectStoreNames.contains('patrimonio')) {
+                    const patrimonioStore = db.createObjectStore('patrimonio', { keyPath: 'idPatomb' });
+                    patrimonioStore.createIndex('nutomb', 'nutomb', { unique: false });
+                }
             };
+
 
             request.onsuccess = (event) => {
                 this.db = event.target.result;
@@ -132,6 +139,21 @@
             request.onerror = () => reject(request.error);
         });
     },
+
+    clear: async function (storeName) {
+        return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized.'));
+                return;
+            }
+            const transaction = this.db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            const request = store.clear();
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    },
+
 
     getFromIndex: async function (storeName, indexName, value) {
         return new Promise((resolve, reject) => {

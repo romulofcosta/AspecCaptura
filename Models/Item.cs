@@ -28,6 +28,8 @@ namespace pwa_camera_poc_blazor.Models
         public string? IdUO { get; set; }
         public string? IdArea { get; set; }
         public string? IdSubarea { get; set; }
+        public string Esfera { get; set; } = string.Empty;
+        public string? Nutomb { get; set; }
 
         // Username do usuário que criou o item localmente
         public string CreatedBy { get; set; } = string.Empty;

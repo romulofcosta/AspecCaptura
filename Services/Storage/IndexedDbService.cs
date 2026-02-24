@@ -125,6 +125,20 @@ namespace pwa_camera_poc_blazor.Services.Storage
             }
         }
 
+        public async Task ClearAsync(string storeName)
+        {
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("dbInterop.clear", storeName);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error clearing store {storeName}: {ex.Message}");
+                throw;
+            }
+        }
+
+
         public async Task<List<InventoryItem>> GetItemsByUOAsync(string idUO)
         {
             try
@@ -135,6 +149,19 @@ namespace pwa_camera_poc_blazor.Services.Storage
             {
                 Console.Error.WriteLine($"Error getting items by UO {idUO}: {ex.Message}");
                 return new List<InventoryItem>();
+            }
+        }
+
+        public async Task<PatrimonioItem?> GetPatrimonioByNutombAsync(string nutomb)
+        {
+            try
+            {
+                return await _jsRuntime.InvokeAsync<PatrimonioItem?>("dbInterop.getFromIndex", "patrimonio", "nutomb", nutomb);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error searching patrimonio by nutomb {nutomb}: {ex.Message}");
+                return null;
             }
         }
     }
