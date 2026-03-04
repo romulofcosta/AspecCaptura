@@ -22,10 +22,14 @@ namespace pwa_camera_poc_blazor.Services.Storage
         Task<T> UpdateAsync<T>(string storeName, T item);
         Task DeleteAsync(string storeName, object key);
         Task ClearAsync(string storeName);
+        Task BulkAddRangeAsync<T>(string storeName, IEnumerable<T> items);
+        Task SetMetadataAsync(string key, string value);
+        Task<string?> GetMetadataAsync(string key);
 
 
         // Queries Específicas (índices)
         Task<List<InventoryItem>> GetItemsByUOAsync(string idUO);
         Task<PatrimonioItem?> GetPatrimonioByNutombAsync(string nutomb);
+        Task SwapPatrimonioFromStagingAsync();
     }
 }

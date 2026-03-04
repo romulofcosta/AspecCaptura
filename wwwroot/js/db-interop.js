@@ -1,7 +1,7 @@
-﻿window.dbInterop = {
+window.dbInterop = {
     db: null,
     dbName: 'PwaInventoryDB',
-    dbVersion: 5,
+    dbVersion: 6,
 
     init: async function () {
         return new Promise((resolve, reject) => {
@@ -15,8 +15,6 @@
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
                 const transaction = event.target.transaction;
-
-                // ... (existing code) ...
 
                 // 3. Items Store (Inventory)
                 let itemsStore;
@@ -46,6 +44,15 @@
                 if (!db.objectStoreNames.contains('patrimonio')) {
                     const patrimonioStore = db.createObjectStore('patrimonio', { keyPath: 'idPatomb' });
                     patrimonioStore.createIndex('nutomb', 'nutomb', { unique: false });
+                }
+
+                if (!db.objectStoreNames.contains('patrimonio_staging')) {
+                    const staging = db.createObjectStore('patrimonio_staging', { keyPath: 'idPatomb' });
+                    staging.createIndex('nutomb', 'nutomb', { unique: false });
+                }
+
+                if (!db.objectStoreNames.contains('metadata')) {
+                    const metadata = db.createObjectStore('metadata', { keyPath: 'key' });
                 }
             };
 
@@ -116,6 +123,27 @@
         });
     },
 
+    bulkPut: async function (storeName, items) {
+        return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized. Call init first.'));
+                return;
+            }
+            const tx = this.db.transaction([storeName], 'readwrite');
+            const store = tx.objectStore(storeName);
+            let i = 0;
+            function next() {
+                if (i >= items.length) return;
+                const req = store.put(items[i++]);
+                req.onsuccess = next;
+                req.onerror = () => reject(req.error);
+            }
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+            next();
+        });
+    },
+
     update: async function (storeName, item) {
         return new Promise((resolve, reject) => {
             if (!this.db) {
@@ -151,6 +179,68 @@
             const request = store.clear();
             request.onsuccess = () => resolve();
             request.onerror = () => reject(request.error);
+        });
+    },
+
+    setMetadata: async function (key, value) {
+        return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized.'));
+                return;
+            }
+            const tx = this.db.transaction(['metadata'], 'readwrite');
+            const store = tx.objectStore('metadata');
+            const req = store.put({ key: key, value: value });
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+    },
+
+    getMetadata: async function (key) {
+        return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized.'));
+                return;
+            }
+            const tx = this.db.transaction(['metadata'], 'readonly');
+            const store = tx.objectStore('metadata');
+            const req = store.get(key);
+            req.onsuccess = () => resolve(req.result ? req.result.value : null);
+            req.onerror = () => reject(req.error);
+        });
+    },
+
+    swapPatrimonioFromStaging: async function () {
+        return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized.'));
+                return;
+            }
+            const tx = this.db.transaction(['patrimonio', 'patrimonio_staging'], 'readwrite');
+            const destino = tx.objectStore('patrimonio');
+            const staging = tx.objectStore('patrimonio_staging');
+            const getAllReq = staging.getAll();
+            getAllReq.onsuccess = () => {
+                const items = getAllReq.result || [];
+                const clearReq = destino.clear();
+                clearReq.onsuccess = () => {
+                    let i = 0;
+                    function putNext() {
+                        if (i >= items.length) {
+                            const clearStaging = staging.clear();
+                            clearStaging.onsuccess = () => resolve();
+                            clearStaging.onerror = () => reject(clearStaging.error);
+                            return;
+                        }
+                        const req = destino.put(items[i++]);
+                        req.onsuccess = putNext;
+                        req.onerror = () => reject(req.error);
+                    }
+                    putNext();
+                };
+                clearReq.onerror = () => reject(clearReq.error);
+            };
+            getAllReq.onerror = () => reject(getAllReq.error);
         });
     },
 

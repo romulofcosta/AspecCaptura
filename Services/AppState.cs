@@ -4,6 +4,8 @@ namespace pwa_camera_poc_blazor.Services
 {
     public class AppState
     {
+        // Esfera do usuário logado (E, L, A)
+        public string? EsferaAtual { get; set; }
         private int _pendingSyncCount;
         public int PendingSyncCount
         {
@@ -56,5 +58,19 @@ namespace pwa_camera_poc_blazor.Services
         public event Action? OnChange;
 
         private void NotifyStateChanged() => OnChange?.Invoke();
+
+        /// <summary>
+        /// Limpa todos os dados da sessão atual (hierarquia contábil)
+        /// Deve ser chamado ao fazer logout ou novo login
+        /// </summary>
+        public void ClearSessionData()
+        {
+            CurrentOrgao = null;
+            CurrentUO = null;
+            CurrentArea = null;
+            CurrentSubarea = null;
+            EsferaAtual = null;
+            NotifyStateChanged();
+        }
     }
 }

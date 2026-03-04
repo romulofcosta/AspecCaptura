@@ -11,6 +11,7 @@ using pwa_camera_poc_blazor.Services.AWS;
 using pwa_camera_poc_blazor.Models;
 using MudBlazor.Services;
 using MudBlazor;
+using pwa_camera_poc_blazor.Services.Sync;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -37,6 +38,7 @@ builder.Services.AddScoped<AwsConfig>();
 builder.Services.AddScoped<IAwsStorageService, AwsStorageService>();
 builder.Services.AddScoped<pwa_camera_poc_blazor.Services.ToastService>();
 builder.Services.AddScoped<AppState>();
+builder.Services.AddScoped<SyncService>();
 
 // UI Component Library
 // MudBlazor: Material Design component library (free & open-source)

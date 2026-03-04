@@ -22,6 +22,7 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 ## Stack Tecnológica
 
 - **Frontend**: Blazor WebAssembly (.NET 8)
+- **Backend**: API BFF (`pwa-camera-poc-api`) para autenticação e geração de Pre-Signed URLs
 - **UI Framework**: 
   - **MudBlazor 7.20.0** (MIT License) - Material Design components library
     - Componentes modernos e responsivos
@@ -33,11 +34,10 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 - **Ícones**: Material Icons (5 variantes: Filled, Outlined, Two Tone, Round, Sharp)
 - **Layout System**: Flexbox e CSS Grid com variáveis CSS para consistência e responsividade
 - **Linguagens**: C#, HTML, CSS, JavaScript
-- **Armazenamento**: IndexedDB (para inventário local), localStorage (para preferência de temas), **AWS S3** (armazenamento persistente na nuvem)
-- **Autenticação**: Autenticação via API (BFF) com provisionamento centralizado.
+- **Armazenamento**: IndexedDB (inventário local), localStorage (sessão/tema), S3 via API BFF (URLs pré-assinadas)
+- **Autenticação**: Autenticação via API (BFF) com provisionamento centralizado
 - **PWA**: Service Worker, Manifest JSON
 - **Interoperabilidade**: JavaScript interop para câmera e IndexedDB
-- **SDKs**: AWS SDK para .NET (S3, Cognito, STS)
 - **Build/Deploy**: .NET CLI, potencialmente Netlify ou similar
 
 ## Estrutura do Projeto
@@ -184,28 +184,18 @@ O modelo `InventoryItem` (localizado em `Models/Item.cs`) representa um item de 
 - **Usuários:** Cache local por username após login via API.
 - **Limites:** ~5-10MB por origem, dependendo do navegador.
 
-#### Estratégia de Sincronização Serverless (Modo PoC)
-> ⚠️ **SECURITY WARNING:** A versão atual utiliza credenciais estáticas (Access Key / Secret Key) no lado do cliente apenas para fins de validação técnica (Motto: PoC). **NÃO utilizar chaves reais em ambiente de produção**, pois elas estão expostas no código/configuração do navegador.
-
-1. **Autenticação**: O usuário é validado via API.
-2. **Sincronização**: O sistema utiliza as chaves configuradas em `appsettings.json` para acessar diretamente o S3.
-3. **Upload Mídia**: Imagens convertidas de Base64 para Stream são enviadas para o S3: `uploads/{UnitId}/{UserId}/{ItemId}/{PhotoName}.jpg`.
-4. **Upload Metadata**: Um arquivo `item.json` é enviado para o mesmo diretório, servindo de registro para o sistema legado (Harbour).
-5. **Limpeza Local**: Após o sucesso, os dados Base64 são removidos do IndexedDB e substituídos pelas URLs do S3.
-6. **Legado**: O sistema Harbour consome os diretórios do S3 via API de listagem ou sincronização direta de arquivos.
+#### Estratégia de Sincronização (Via BFF)
+- Autenticação via API (broker S3).
+- Pre-Signed URLs geradas pela API para upload direto ao S3.
+- Após sucesso, os dados Base64 são removidos do IndexedDB e substituídos pelas URLs remotas.
 
 ## ⚙️ Configuração do Ambiente
 
-O projeto utiliza o arquivo `wwwroot/appsettings.json` para definir os recursos da AWS. O **AppClientId** deve ser configurado como **Public Client** (sem Client Secret).
+O projeto utiliza o arquivo `wwwroot/appsettings.json` para apontar para a API BFF:
 
 ```json
 {
-  "Aws": {
-    "Region": "us-east-1",
-    "BucketName": "pwa-inventory-uploads",
-    "AccessKey": "USUARIO_ACCESS_KEY",
-    "SecretKey": "USUARIO_SECRET_KEY"
-  }
+  "ApiBaseUrl": "http://localhost:5069"
 }
 ```
 
@@ -225,25 +215,12 @@ Para a versão de produção, é **obrigatória** a migração para **AWS Cognit
 - **Formato e Compressão:** JPEG com compressão de 90%. Resolução baseada na câmera (ideal 1280x720).
 - **Limites:** Sem limite explícito por imagem, mas base64 aumenta tamanho em ~33%. Recomendado <1MB por imagem para performance.
 
-### Fluxo de Dados Atual
-
-1. **Navegação para Câmera:** Usuário acessa `/camera` (Camera.razor).
-2. **Inicialização:** `OnInitializedAsync` obtém usuário atual via `AuthService`.
-3. **Start Câmera:** `OnAfterRenderAsync` chama `CameraService.StartCameraAsync("camera-feed", useFrontCamera)`.
-4. **Captura:** Botão "Capture" chama `CapturePhoto()`, que:
-   - Chama `CameraService.TakePhotoAsync("camera-feed")` para obter base64.
-   - Para câmera, mostra form de metadados.
-5. **Form de Metadados:** Usuário preenche `InventoryItem` (Name, Code, etc.).
-6. **Adicionar Fotos Extras:** Botão "Add More Photo" permite capturar mais fotos.
-7. **Salvamento:** `HandleSave()`:
-   - Define `itemModel.Photos = capturedPhotos`.
-   - Define `UnitId` e `Timestamp`.
-   - Chama `DbService.AddAsync("items", itemModel)`.
-   - Atualiza `appState.PendingSyncCount`.
-   - Navega para `/home`.
-8. **Exportação (Opcional):** Usuário clica no ícone de exportação no menu inferior para baixar CSV com todos os itens locais.
-9. **Páginas/Componentes Envolvidos:** Camera.razor, Home.razor, Stats.razor, Sync.razor, Footer.razor.
-10. **Serviços:** CameraService, IndexedDbService, AuthService, ToastService, AppState.
+### Fluxo de Dados (Resumo)
+1. Usuário acessa `/camera` e captura fotos.
+2. Item é salvo no IndexedDB com `Synced = false`.
+3. Em “Sincronizar Tudo”, o app solicita Pre-Signed URLs à API e faz upload direto ao S3.
+4. Se sucesso, o item é marcado como sincronizado e guarda as URLs remotas.
+5. Aplicações legadas consomem JSONs/JPGs do bucket S3.
 
 ### Serviços e Interoperabilidade JavaScript
 

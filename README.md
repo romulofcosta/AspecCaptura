@@ -8,11 +8,11 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 
 ## ⚠️ Status do Projeto & Limitações Conhecidas
 
-> **Status (16/01/2026):** A integração com a API BFF foi implementada com sucesso, resolvendo o problema de upload S3 via Pre-Signed URLs. O projeto agora requer a execução da API `pwa-camera-poc-api` em paralelo.
+> Status (27/02/2026): Integração com a API BFF consolidada. Uploads utilizam Pre-Signed URLs geradas pelo backend e a resposta de login é otimizada via streaming. Este projeto requer a API `pwa-camera-poc-api` em execução.
 
-**Principais Pontos de Atenção:**
-1.  **Acesso Provisionado**: Não é permitido cadastro local; usuários devem ser provisionados via API.
-2.  **Sincronização**: Resolvida através da integração com a API BFF.
+Principais Pontos:
+1. Acesso provisionado: usuários são definidos no S3 e validados pela API.
+2. Sincronização: executada via API BFF (sem chaves AWS no cliente).
 
 ## Funcionalidades
 
@@ -42,7 +42,7 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 - **Ícones**: Material Icons (5 variantes: Filled, Outlined, Two Tone, Round, Sharp)
 - **Layout System**: Flexbox e CSS Grid com variáveis CSS para consistência e responsividade
 - **Linguagens**: C#, HTML, CSS, JavaScript
-- **Armazenamento**: IndexedDB (inventário local), localStorage (sessão/tema), armazenamento remoto via API de integração (ex.: S3 usando URLs pré-assinadas)
+- **Armazenamento**: IndexedDB (inventário local), localStorage (sessão/tema), S3 via API BFF (URLs pré-assinadas)
 - **Autenticação**: Autenticação via API (BFF) com provisionamento centralizado.
 - **PWA**: Service Worker, Manifest JSON
 - **Interoperabilidade**: JavaScript interop para câmera e IndexedDB
@@ -208,20 +208,16 @@ O projeto utiliza o arquivo `wwwroot/appsettings.json` para configurar a conexã
 
 ```json
 {
-  "Aws": {
-    "Region": "us-east-1",
-    "BucketName": "pwa-inventory-uploads"
-  },
   "ApiBaseUrl": "http://localhost:5069"
 }
 ```
 
 ### Segurança e Próximos Passos
-A versão atual já elimina chaves fixas no client-side através do uso de Pre-Signed URLs geradas pelo BFF.
+A versão atual já elimina chaves fixas no client-side ao usar Pre-Signed URLs geradas pelo BFF.
 
-Próximos passos incluem:
+Próximos passos:
 - Autenticação JWT integrada entre Blazor e API.
-- Validação robusta de tipos de arquivo na API.
+- Validação robusta de tipos/tamanho de arquivo na API.
 
 > **Importante:** O Bucket S3 deve ter políticas de **CORS** habilitadas para aceitar requisições `PUT`, `GET` e `DELETE` da origem da aplicação (localhost e domínio de produção).
 

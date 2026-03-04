@@ -48,6 +48,7 @@ namespace pwa_camera_poc_blazor.Models
         public long IdPatomb { get; set; }
         public string Nutomb { get; set; } = string.Empty;
         public string Esfera { get; set; } = string.Empty;
+        public string Deprod { get; set; } = string.Empty;
     }
 }
 

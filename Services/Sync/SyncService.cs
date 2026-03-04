@@ -1,0 +1,201 @@
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
+using pwa_camera_poc_blazor.Services.Storage;
+
+namespace pwa_camera_poc_blazor.Services.Sync
+{
+    public enum GCStrategy
+    {
+        Automatic,
+        Conditional,
+        Aggressive
+    }
+
+    public record SyncProgress(int Current, int Total);
+    public enum SyncResult
+    {
+        Success,
+        AlreadySynced
+    }
+
+    public record SyncInfoDto(int totalRegistros, int totalChunks, string versao, string hashGlobal);
+
+    public class SyncService
+    {
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IIndexedDbService _db;
+        private readonly JsonSerializerOptions _json;
+
+        public SyncService(IHttpClientFactory httpClientFactory, IIndexedDbService db)
+        {
+            _httpClientFactory = httpClientFactory;
+            _db = db;
+            _json = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            };
+        }
+
+        public GCStrategy GCStrategy { get; set; } = GCStrategy.Conditional;
+        public int MemoryThresholdMB { get; set; } = 150;
+
+        public async Task<SyncResult> SyncAsync(string prefix, IProgress<SyncProgress>? progress = null, CancellationToken ct = default)
+        {
+            var client = _httpClientFactory.CreateClient("BackendApi");
+            var info = await client.GetFromJsonAsync<SyncInfoDto>($"/api/tombamentos/sync-info?prefix={Uri.EscapeDataString(prefix)}", ct);
+            if (info is null) throw new InvalidOperationException("sync-info inválido");
+
+            var currentVersion = await _db.GetMetadataAsync("versao");
+            if (currentVersion == info.versao) return SyncResult.AlreadySynced;
+
+            await _db.ClearAsync("patrimonio_staging");
+
+            var sem = new SemaphoreSlim(3);
+            int total = info.totalChunks;
+            int success = 0;
+            int processed = 0;
+            var tasks = new List<Task>();
+            for (int i = 1; i <= total; i++)
+            {
+                int chunkId = i;
+                tasks.Add(ProcessChunk(client, prefix, chunkId, info, sem, progress, ct, 
+                    () => Interlocked.Increment(ref processed))
+                    .ContinueWith(t =>
+                    {
+                        if (t.Status == TaskStatus.RanToCompletion) Interlocked.Increment(ref success);
+                        else if (t.Exception != null) throw t.Exception;
+                    }, ct));
+            }
+            await Task.WhenAll(tasks);
+
+            if (success != total) throw new InvalidOperationException("falha em baixar todos os chunks");
+
+            var stagingCount = (await _db.GetAllKeysAsync<long>("patrimonio_staging")).Count;
+            if (stagingCount != info.totalRegistros) throw new InvalidOperationException("contagem inválida");
+
+            await _db.SwapPatrimonioFromStagingAsync();
+            await _db.SetMetadataAsync("versao", info.versao);
+
+            return SyncResult.Success;
+        }
+
+        private async Task ProcessChunk(HttpClient client, string prefix, int chunkId, SyncInfoDto info, SemaphoreSlim sem, IProgress<SyncProgress>? progress, CancellationToken ct, Action onProcessed)
+        {
+            await sem.WaitAsync(ct);
+            try
+            {
+                var payload = await DownloadWithRetryAsync(client, $"/api/tombamentos/lote/{chunkId}?prefix={Uri.EscapeDataString(prefix)}", ct);
+                using var doc = JsonDocument.Parse(payload);
+                var root = doc.RootElement;
+                var data = root.GetProperty("data");
+                var hash = root.GetProperty("hash").GetString() ?? "";
+
+                if (!ValidateHash(data, hash)) throw new InvalidOperationException("hash inválido");
+
+                var wireList = JsonSerializer.Deserialize<List<TombamentoWire>>(data.GetRawText(), _json) ?? new();
+                var storeItems = wireList.Select(MapToStore).ToList();
+                await _db.BulkAddRangeAsync("patrimonio_staging", storeItems);
+
+                onProcessed();
+                progress?.Report(new SyncProgress(chunkId, info.totalChunks));
+                // Reduz Task.Yield e adiciona delay para permitir UI thread respirar
+                if (chunkId % 5 == 0) await Task.Delay(50); 
+                else await Task.Yield();
+                
+                if (chunkId % 10 == 0) await ApplyGCAsync();
+            }
+            finally
+            {
+                sem.Release();
+            }
+        }
+
+        private async Task<byte[]> DownloadWithRetryAsync(HttpClient client, string url, CancellationToken ct)
+        {
+            int attempts = 0;
+            Exception? last = null;
+            while (attempts < 3)
+            {
+                try
+                {
+                    var resp = await client.GetAsync(url, ct);
+                    resp.EnsureSuccessStatusCode();
+                    return await resp.Content.ReadAsByteArrayAsync(ct);
+                }
+                catch (Exception ex)
+                {
+                    last = ex;
+                    attempts++;
+                    var delay = (int)Math.Pow(2, attempts) * 200;
+                    await Task.Delay(delay, ct);
+                }
+            }
+            throw last ?? new InvalidOperationException("falha no download");
+        }
+
+        private bool ValidateHash(JsonElement data, string expectedHex)
+        {
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(data, _json);
+            using var sha = SHA256.Create();
+            var hash = sha.ComputeHash(bytes);
+            var hex = Convert.ToHexString(hash);
+            return string.Equals(hex, expectedHex, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static PatrimonioStoreItem MapToStore(TombamentoWire w) =>
+            new PatrimonioStoreItem
+            {
+                IdPatomb = w.idpatomb,
+                Nutomb = w.nutomb ?? string.Empty,
+                Deprod = w.deprod ?? string.Empty,
+                Esfera = w.esfera ?? string.Empty,
+                CdOrgao = w.cdorgao,
+                CdUnid = w.cdunid,
+                CdArea = w.cdarea,
+                CdSArea = w.cdsarea
+            };
+
+        private async Task ApplyGCAsync()
+        {
+            if (GCStrategy != GCStrategy.Conditional) return;
+            var memMB = GC.GetTotalMemory(false) / 1_000_000;
+            if (memMB > MemoryThresholdMB)
+            {
+                GC.Collect(0, GCCollectionMode.Optimized, false, false);
+                await Task.Delay(50);
+            }
+        }
+
+
+    }
+
+    public class TombamentoWire
+    {
+        public long idpatomb { get; set; }
+        public string? nutomb { get; set; }
+        public string? deprod { get; set; }
+        public string? esfera { get; set; }
+        public string cdorgao { get; set; } = "";
+        public string cdunid { get; set; } = "";
+        public string cdarea { get; set; } = "";
+        public string cdsarea { get; set; } = "";
+    }
+
+    public class PatrimonioStoreItem
+    {
+        public long IdPatomb { get; set; }
+        public string Nutomb { get; set; } = "";
+        public string Deprod { get; set; } = "";
+        public string Esfera { get; set; } = "";
+        public string CdOrgao { get; set; } = "";
+        public string CdUnid { get; set; } = "";
+        public string CdArea { get; set; } = "";
+        public string CdSArea { get; set; } = "";
+    }
+
+}

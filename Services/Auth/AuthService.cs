@@ -7,10 +7,11 @@ using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace pwa_camera_poc_blazor.Services.Auth
 {
-    public class AuthService(ILocalStorageService localStorage, AuthenticationStateProvider authStateProvider, IHttpClientFactory httpClientFactory, IIndexedDbService dbService) : IAuthService
+    public class AuthService(ILocalStorageService localStorage, AuthenticationStateProvider authStateProvider, IHttpClientFactory httpClientFactory, IIndexedDbService dbService, AppState appState) : IAuthService
     {
         private const string SESSION_KEY = "pwa-inventory-session";
 
@@ -28,30 +29,62 @@ namespace pwa_camera_poc_blazor.Services.Auth
                     return null;
                 }
 
-                var user = await response.Content.ReadFromJsonAsync<Usuario>();
-                if (user == null) return null;
+                // Lê o response dinâmico
+                var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                if (loginResponse == null) return null;
 
-                // Sync Patrimonio to IndexedDB
-                if (user.Patrimonio != null && user.Patrimonio.Count > 0)
+                // Monta objeto Usuario para manter compatibilidade
+                var user = new Usuario
+                {
+                    UsuarioNome = cleanUsername!,
+                    NomeCompleto = loginResponse.NomeCompleto,
+                    Prefixo = loginResponse.Prefixo,
+                    Esfera = loginResponse.Esfera,
+                    Orgaos = loginResponse.Orgaos ?? new(),
+                    Token = loginResponse.Token,
+                    Patrimonio = new List<PatrimonioItem>() // será populado abaixo
+                };
+
+                // Persistência da esfera
+                if (!string.IsNullOrEmpty(user.Esfera))
+                {
+                    await localStorage.SetItemAsync("user-esfera", user.Esfera);
+                }
+
+                // Persistência da carga de patrimônio recebida
+                if (loginResponse.Patrimonio != null && loginResponse.Patrimonio.Count > 0)
                 {
                     await dbService.InitializeAsync();
                     await dbService.ClearAsync("patrimonio");
-                    foreach (var item in user.Patrimonio)
+                    foreach (var item in loginResponse.Patrimonio)
                     {
-                        await dbService.AddAsync("patrimonio", item);
+                        var patr = new PatrimonioItem
+                        {
+                            IdPatomb = item.IdPatomb,
+                            Nutomb = item.Nutomb ?? string.Empty,
+                            Esfera = item.Esfera ?? string.Empty,
+                            Deprod = item.Deprod ?? string.Empty
+                        };
+                        await dbService.AddAsync("patrimonio", patr);
+                        user.Patrimonio.Add(patr);
                     }
-                    // Remove from user object to save LocalStorage space
-                    user.Patrimonio = new List<PatrimonioItem>();
                 }
-
-                user.UsuarioNome = cleanUsername!;
 
                 // Cache user data locally
                 await localStorage.SetItemAsync(user.UsuarioNome, user);
 
-                // Create session
-                var session = new UserSession { Username = user.UsuarioNome };
+                // Create session with esfera
+                var session = new UserSession { Username = user.UsuarioNome, Esfera = user.Esfera };
                 await localStorage.SetItemAsync(SESSION_KEY, session);
+
+                // CORREÇÃO BUG: Limpar dados de sessão anterior no localStorage
+                // Remove possíveis dados de configuração de sessão anterior
+                await localStorage.RemoveItemAsync("session-config");
+
+                // CORREÇÃO BUG: Limpar estado da sessão anterior no AppState
+                // Isso garante que os dropdowns da ConfiguracaoSessao sejam resetados
+                appState.ClearSessionData();
+                appState.EsferaAtual = user.Esfera;
 
                 if (authStateProvider is CustomAuthStateProvider customProvider)
                 {
@@ -73,6 +106,11 @@ namespace pwa_camera_poc_blazor.Services.Auth
         public async Task LogoutAsync()
         {
             await localStorage.RemoveItemAsync(SESSION_KEY);
+            await localStorage.RemoveItemAsync("session-config");
+            
+            // CORREÇÃO BUG: Limpar estado da sessão ao fazer logout
+            appState.ClearSessionData();
+            
             if (authStateProvider is CustomAuthStateProvider customProvider)
             {
                 customProvider.NotifyAuthenticationStateChanged();
@@ -136,5 +174,29 @@ namespace pwa_camera_poc_blazor.Services.Auth
     public class UserSession
     {
         public string Username { get; set; } = string.Empty;
+        public string? Esfera { get; set; }
     }
+}
+
+// DTO para consumir o novo contrato da API
+public class LoginResponse
+{
+    public string NomeCompleto { get; set; } = string.Empty;
+    public string Prefixo { get; set; } = string.Empty;
+    public string Esfera { get; set; } = string.Empty;
+    public List<Orgao>? Orgaos { get; set; }
+    public List<PatrimonioApiItem>? Patrimonio { get; set; }
+    public string Token { get; set; } = string.Empty;
+}
+
+public class PatrimonioApiItem
+{
+    [JsonPropertyName("idpatomb")]
+    public long IdPatomb { get; set; }
+    [JsonPropertyName("nutomb")]
+    public string? Nutomb { get; set; }
+    [JsonPropertyName("esfera")]
+    public string? Esfera { get; set; }
+    [JsonPropertyName("deprod")]
+    public string? Deprod { get; set; }
 }

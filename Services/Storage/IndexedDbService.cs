@@ -138,6 +138,45 @@ namespace pwa_camera_poc_blazor.Services.Storage
             }
         }
 
+        public async Task BulkAddRangeAsync<T>(string storeName, IEnumerable<T> items)
+        {
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("dbInterop.bulkPut", storeName, items);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error bulk put into {storeName}: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task SetMetadataAsync(string key, string value)
+        {
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("dbInterop.setMetadata", key, value);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error set metadata {key}: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<string?> GetMetadataAsync(string key)
+        {
+            try
+            {
+                return await _jsRuntime.InvokeAsync<string?>("dbInterop.getMetadata", key);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error get metadata {key}: {ex.Message}");
+                return null;
+            }
+        }
+
 
         public async Task<List<InventoryItem>> GetItemsByUOAsync(string idUO)
         {
@@ -162,6 +201,19 @@ namespace pwa_camera_poc_blazor.Services.Storage
             {
                 Console.Error.WriteLine($"Error searching patrimonio by nutomb {nutomb}: {ex.Message}");
                 return null;
+            }
+        }
+
+        public async Task SwapPatrimonioFromStagingAsync()
+        {
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("dbInterop.swapPatrimonioFromStaging");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error swapping from staging: {ex.Message}");
+                throw;
             }
         }
     }

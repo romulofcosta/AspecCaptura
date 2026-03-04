@@ -5,6 +5,29 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [0.2.2] - 2026-03-04
+
+### Corrigido
+- **Bug de Perda de Dados na Configuração de Sessão**: Corrigido problema crítico onde os campos da tela de Configuração de Sessão ficavam vazios após logout e novo login.
+  - Adicionado método `ClearSessionData()` no `AppState` para limpar dados da sessão anterior
+  - `LoginAsync` agora limpa o estado anterior e define `EsferaAtual` corretamente
+  - `LogoutAsync` agora limpa completamente o `AppState` e localStorage
+  - `ConfiguracaoSessao.razor` agora inicializa `appState.EsferaAtual` se necessário
+  - Injetado `AppState` no `AuthService` para gerenciar estado global
+  - Criado documento `TROUBLESHOOTING_SESSION_CONFIG.md` com análise detalhada do bug
+
+### Documentação
+- Adicionado guia completo de troubleshooting para problemas de configuração de sessão
+- Documentados testes de validação para fluxos de login/logout
+- Adicionadas sugestões de melhorias futuras (persistência de configuração, validação de dados)
+
+## [0.2.1] - 2026-02-18
+
+### Alterado
+- Atualização de modelos, serviços de autenticação e storage
+- Melhorias de integração e persistência
+- Suporte aprimorado ao IndexedDB
+
 ## [0.2.0] - 2026-02-18
 
 ### Adicionado

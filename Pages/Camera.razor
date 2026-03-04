@@ -215,6 +215,22 @@ else
         isSaving = true;
         try
         {
+            // Busca item existente por código/Nutomb (carga total, independente da esfera)
+            InventoryItem? existing = null;
+            if (!string.IsNullOrWhiteSpace(itemModel.Code))
+            {
+                var allItems = await DbService.GetAllAsync<InventoryItem>("items");
+                existing = allItems.FirstOrDefault(i => i.Code == itemModel.Code || (!string.IsNullOrEmpty(itemModel.Nutomb) && i.Nutomb == itemModel.Nutomb));
+            }
+            if (existing != null && existing.Esfera != (appState.EsferaAtual ?? currentUser?.Esfera))
+            {
+                // Alerta impeditivo
+                var esferaMsg = existing.Esfera == "L" ? "Legislativa" : existing.Esfera == "E" ? "Executiva" : existing.Esfera;
+                ToastService.ShowError($"Item localizado (Placa: {existing.Nutomb ?? existing.Code}), porém pertence à Esfera {esferaMsg}. Acesso restrito para o seu perfil.");
+                isSaving = false;
+                return;
+            }
+
             itemModel.Photos = capturedPhotos;
             itemModel.IdOrgao = appState.CurrentOrgao?.IdOrgao;
             itemModel.IdUO = appState.CurrentUO?.IdUO;
@@ -223,6 +239,7 @@ else
             itemModel.CreatedBy = currentUser?.UsuarioNome ?? string.Empty; // Define o criador
             itemModel.Timestamp = DateTime.Now;
             itemModel.Synced = false;
+            itemModel.Esfera = appState.EsferaAtual ?? currentUser?.Esfera ?? string.Empty;
             await DbService.AddAsync("items", itemModel);
             appState.PendingSyncCount++;
             ToastService.ShowSuccess("Item salvo com sucesso!");

@@ -1,0 +1,88 @@
+@page "/tombamentos-sync"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@inject pwa_camera_poc_blazor.Services.Sync.SyncService SyncService
+@inject pwa_camera_poc_blazor.Services.Auth.IAuthService AuthService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+    <MudPaper Class="pa-6 rounded-lg">
+        <MudText Typo="Typo.h5" Class="mb-4 font-weight-bold">Baixando Lotes de Tombamentos</MudText>
+        <MudText Typo="Typo.body2" Class="mb-2">Por favor aguarde, estamos atualizando a base local...</MudText>
+        
+        <div class="d-flex align-center justify-space-between mb-1">
+            <MudText Typo="Typo.caption">Lote @current de @total</MudText>
+            <MudText Typo="Typo.caption">@((int)ProgressValue)%</MudText>
+        </div>
+        <MudProgressLinear Value="@ProgressValue" Color="Color.Primary" Class="mb-4" Striped="true" Size="Size.Large" />
+        
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="d-block">
+            Processando e validando integridade dos dados...
+        </MudText>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private int current = 0;
+    private int total = 1;
+    private bool IsRunning = false;
+    private bool _autoTriggered = false;
+    private double ProgressValue => total == 0 ? 0 : (double)current / total * 100;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_autoTriggered)
+        {
+            _autoTriggered = true;
+            await RunSync();
+        }
+    }
+
+    private async Task RunSync()
+    {
+        if (IsRunning) return;
+        IsRunning = true;
+        current = 0;
+        total = 1;
+        try
+        {
+            var user = await AuthService.GetCurrentUserAsync();
+            if (user == null || string.IsNullOrEmpty(user.Prefixo))
+            {
+                Snackbar.Add("Usuário não autenticado.", Severity.Warning);
+                return;
+            }
+
+            var progress = new Progress<pwa_camera_poc_blazor.Services.Sync.SyncProgress>(p =>
+            {
+                // Incrementa localmente para UI
+                if (p.Current > current) current = p.Current;
+                total = p.Total;
+                InvokeAsync(StateHasChanged);
+                // Pequeno delay para dar tempo da UI renderizar
+                Task.Delay(1); 
+            });
+
+            var result = await SyncService.SyncAsync(user.Prefixo, progress);
+            if (result == pwa_camera_poc_blazor.Services.Sync.SyncResult.Success)
+            {
+                Snackbar.Add("Sincronização concluída.", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Dados já sincronizados.", Severity.Info);
+            }
+
+            Navigation.NavigateTo("/configuracao-sessao");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            IsRunning = false;
+            StateHasChanged();
+        }
+    }
+}

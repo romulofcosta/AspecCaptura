@@ -318,6 +318,12 @@
     protected override async Task OnInitializedAsync()
     {
         appState.OnChange += HandleStateChange;
+        // Carrega esfera do usuário para o AppState (resiliente a reload)
+        if (string.IsNullOrEmpty(appState.EsferaAtual))
+        {
+            var esfera = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user-esfera");
+            appState.EsferaAtual = esfera;
+        }
         await LoadItems();
     }
 
@@ -332,21 +338,35 @@
         try
         {
             var user = await AuthService.GetCurrentUserAsync();
+            string esfera = appState.EsferaAtual ?? user?.Esfera ?? string.Empty;
             if (appState.CurrentUO?.IdUO != null)
             {
-                // Aqui ainda usamos GetItemsByUOAsync que carrega tudo.
-                // Se o usuário tiver muitos itens, isso será lento.
                 var allItems = await DbService.GetItemsByUOAsync(appState.CurrentUO.IdUO);
-                
-                // Filtra apenas os itens criados pelo usuário atual
-                items = allItems.Where(i => i.CreatedBy == user.UsuarioNome).ToList();
+                // Filtro por esfera
+                if (esfera == "A")
+                {
+                    items = allItems.ToList();
+                }
+                else if (!string.IsNullOrEmpty(esfera))
+                {
+                    items = allItems.Where(i => i.Esfera == esfera).ToList();
+                }
+                else
+                {
+                    items = allItems.ToList();
+                }
 
                 // If no items, load example item
                 if (!items.Any())
                 {
-                    await LoadExampleItem(appState.CurrentUO.IdUO, user.UsuarioNome);
+                    await LoadExampleItem(appState.CurrentUO.IdUO, user?.UsuarioNome ?? "");
                     allItems = await DbService.GetItemsByUOAsync(appState.CurrentUO.IdUO);
-                    items = allItems.Where(i => i.CreatedBy == user.UsuarioNome).ToList();
+                    if (esfera == "A")
+                        items = allItems.ToList();
+                    else if (!string.IsNullOrEmpty(esfera))
+                        items = allItems.Where(i => i.Esfera == esfera).ToList();
+                    else
+                        items = allItems.ToList();
                 }
             }
             else

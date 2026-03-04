@@ -54,8 +54,32 @@
 </MudContainer>
 
 @code {
-    private List<Orgao> Orgaos => _usuario?.Orgaos ?? new();
-    private List<UnidadeOrcamentaria> UnidadesOrcamentarias => SelectedOrgao?.UnidadesOrcamentarias ?? new();
+    private List<Orgao> Orgaos
+    {
+        get
+        {
+            if (_usuario == null) return new();
+            var esfera = appState.EsferaAtual ?? _usuario.Esfera;
+            if (string.IsNullOrEmpty(esfera) || esfera == "A")
+                return _usuario.Orgaos;
+            // Filtra orgaos pela esfera
+            return _usuario.Orgaos.Where(o => o.UnidadesOrcamentarias.Any(uo => uo.Areas.Any(a => a.Subareas.Any(s => esfera == "E" ? s.NomeSubarea.Contains("Executivo", StringComparison.OrdinalIgnoreCase) : esfera == "L" ? s.NomeSubarea.Contains("Legislativo", StringComparison.OrdinalIgnoreCase) : false)))).ToList();
+        }
+    }
+
+    private List<UnidadeOrcamentaria> UnidadesOrcamentarias
+    {
+        get
+        {
+            if (SelectedOrgao == null) return new();
+            var esfera = appState.EsferaAtual ?? _usuario?.Esfera;
+            if (string.IsNullOrEmpty(esfera) || esfera == "A")
+                return SelectedOrgao.UnidadesOrcamentarias;
+            // Filtra UOs pela esfera
+            return SelectedOrgao.UnidadesOrcamentarias.Where(uo => uo.Areas.Any(a => a.Subareas.Any(s => esfera == "E" ? s.NomeSubarea.Contains("Executivo", StringComparison.OrdinalIgnoreCase) : esfera == "L" ? s.NomeSubarea.Contains("Legislativo", StringComparison.OrdinalIgnoreCase) : false))).ToList();
+        }
+    }
+
     private List<Area> Areas => SelectedUO?.Areas ?? new();
     private List<Subarea> Subareas => SelectedArea?.Subareas ?? new();
 
@@ -71,7 +95,18 @@
         if (_usuario == null)
         {
             Navigation.NavigateTo("/login");
+            return;
         }
+
+        // CORREÇÃO BUG: Garantir que o AppState tenha a esfera atualizada
+        // Isso é necessário para que os dropdowns filtrem corretamente os dados
+        if (string.IsNullOrEmpty(appState.EsferaAtual))
+        {
+            appState.EsferaAtual = _usuario.Esfera;
+        }
+
+        // CORREÇÃO BUG: Forçar atualização da UI após carregar os dados
+        StateHasChanged();
     }
 
     private void OnOrgaoChanged(Orgao value)
