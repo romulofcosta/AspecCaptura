@@ -15,16 +15,16 @@ else
     OUTPUT_DIR="bin/Release/net8.0/publish/wwwroot"
 fi
 
-echo "Substituindo variáveis no appsettings.json..."
+# echo "Substituindo variáveis no appsettings.json..."
 
-# Se API_BASE_URL não estiver definida (ex: build local), usa localhost
-# Em produção (Render/Netlify), API_BASE_URL deve ser definida nas variáveis de ambiente
-if [ -z "$API_BASE_URL" ]; then
-    echo "Aviso: API_BASE_URL não definida. Usando padrão local: http://localhost:5069"
-    API_BASE_URL="http://localhost:5069"
-fi
+# # Se API_BASE_URL não estiver definida (ex: build local), usa localhost
+# # Em produção (Render/Netlify), API_BASE_URL deve ser definida nas variáveis de ambiente
+# if [ -z "$API_BASE_URL" ]; then
+#     echo "Aviso: API_BASE_URL não definida. Usando padrão local: http://localhost:5069"
+#     API_BASE_URL="http://localhost:5069"
+# fi
 
-sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" wwwroot/appsettings.json
+# sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" wwwroot/appsettings.json
 
 echo "=== Plataforma detectada: $PLATFORM ==="
 
@@ -44,6 +44,17 @@ echo "=== Restaurando e publicando ==="
 "$DOTNET_EXEC" restore
 rm -rf bin/Release/net8.0/publish
 "$DOTNET_EXEC" publish pwa-camera-poc-blazor.csproj -c Release -o bin/Release/net8.0/publish
+
+echo "Substituindo variáveis no appsettings.json..."
+
+# Se API_BASE_URL não estiver definida (ex: build local), usa localhost
+# Em produção (Render/Netlify), API_BASE_URL deve ser definida nas variáveis de ambiente
+if [ -z "$API_BASE_URL" ]; then
+    echo "Aviso: API_BASE_URL não definida. Usando padrão local: http://localhost:5069"
+    API_BASE_URL="http://localhost:5069"
+fi
+
+sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" wwwroot/appsettings.json
 
 # Ajustes específicos por plataforma
 if [ "$PLATFORM" = "netlify" ]; then
