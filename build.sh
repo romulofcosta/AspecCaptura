@@ -54,7 +54,9 @@ if [ -z "$API_BASE_URL" ]; then
     API_BASE_URL="http://localhost:5069"
 fi
 
-sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" wwwroot/appsettings.json
+#sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" wwwroot/appsettings.json
+sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" bin/Release/net8.0/publish/wwwroot/appsettings.json
+
 
 # Ajustes específicos por plataforma
 if [ "$PLATFORM" = "netlify" ]; then
