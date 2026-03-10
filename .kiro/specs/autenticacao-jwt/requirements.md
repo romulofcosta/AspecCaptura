@@ -2,12 +2,12 @@
 
 ## Introduction
 
-Este documento especifica os requisitos para implementação de um sistema de autenticação JWT completo na API BFF do ASPEC Capture PWA. O sistema substituirá a autenticação local atual (baseada em localStorage) por uma solução centralizada no servidor, utilizando tokens JWT com refresh tokens, proteção contra ataques de força bruta, e integração completa com o PWA Blazor existente.
+Este documento especifica os requisitos para implementação de um sistema de autenticação JWT completo na API BFF do Aspec Captura. O sistema substituirá a autenticação local atual (baseada em localStorage) por uma solução centralizada no servidor, utilizando tokens JWT com refresh tokens, proteção contra ataques de força bruta, e integração completa com o PWA Blazor existente.
 
 ## Glossary
 
 - **Sistema_Auth**: Sistema de autenticação JWT implementado na API BFF
-- **PWA**: Progressive Web Application Blazor WASM do ASPEC Capture
+- **PWA**: Progressive Web Application Blazor WASM do Aspec Captura
 - **Access_Token**: Token JWT de curta duração (1 hora) usado para autenticar requisições
 - **Refresh_Token**: Token de longa duração (7 dias) usado para renovar access tokens
 - **Usuario**: Entidade representando um usuário do sistema

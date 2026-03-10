@@ -1,10 +1,10 @@
-# Configuração PWA - ASPEC Capture
+# Configuração PWA - Aspec Captura
 
 Este documento detalha a configuração do Progressive Web App (PWA) para garantir a melhor experiência de instalação e identidade visual.
 
 ## 🎨 Identidade Visual e Ícones
 
-O aplicativo utiliza o logotipo oficial da ASPEC Informática, configurado para suportar múltiplos tamanhos e o recurso de ícones adaptativos (**Maskable**).
+O aplicativo utiliza o logotipo oficial da Aspec, configurado para suportar múltiplos tamanhos e o recurso de ícones adaptativos (**Maskable**).
 
 ### Arquivos de Ícone
 - **Localização**: `wwwroot/images/aspec_logo.png` (512x512 original)
@@ -13,9 +13,9 @@ O aplicativo utiliza o logotipo oficial da ASPEC Informática, configurado para 
 
 ### manifest.json
 O arquivo de manifesto foi atualizado com as seguintes definições:
-- **name**: "Aspec Capture"
-- **short_name**: "Aspec Capture"
-- **background_color**: `#003366` (Azul Escuro ASPEC)
+- **name**: "Aspec Captura"
+- **short_name**: "Aspec Captura"
+- **background_color**: `#003366` (Azul Escuro Aspec)
 - **theme_color**: `#003366`
 - **icons**:
   - Tamanhos: 72x72, 96x96, 128x128, 192x192, 512x512.

@@ -1,4 +1,4 @@
-# Arquitetura Técnica - ASPEC Capture
+# Arquitetura Técnica - Aspec Captura
 
 Esta documentação descreve a estrutura técnica e o fluxo de dados da aplicação Blazor WebAssembly.
 

@@ -1,0 +1,20 @@
+@inherits LayoutComponentBase
+
+<div class="shell-layout">
+    <div class="shell-content">
+        @Body
+    </div>
+    <BottomNavigation ActiveRoute="@CurrentRoute" OnNavigate="@HandleNavigation" />
+</div>
+
+@code {
+    private string CurrentRoute => NavigationManager.Uri;
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = default!;
+
+    private void HandleNavigation(string route)
+    {
+        NavigationManager.NavigateTo(route);
+    }
+}

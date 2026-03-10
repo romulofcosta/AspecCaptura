@@ -8,12 +8,24 @@
     <RootNamespace>pwa_camera_poc_blazor</RootNamespace>
   </PropertyGroup>
 
+  <!-- Production Build Optimizations -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <RunAOTCompilation>true</RunAOTCompilation>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>link</TrimMode>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <BlazorEnableCompression>true</BlazorEnableCompression>
+    <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.13" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.13" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.13" PrivateAssets="all" />
     <PackageReference Include="MudBlazor" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
+    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup>

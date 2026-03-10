@@ -1,6 +1,6 @@
-# PWA Camera POC - Blazor
+# Aspec Captura
 
-Este é um projeto de Prova de Conceito (POC) para uma Progressive Web App (PWA) de inventário utilizando câmera, desenvolvido com Blazor WebAssembly. O objetivo é demonstrar a integração de funcionalidades de câmera, acesso provisionado via API e armazenamento offline.
+Sistema de inventário patrimonial desenvolvido como Progressive Web App (PWA) com Blazor WebAssembly. Permite captura de fotos, funcionamento offline e sincronização em background.
 
 ## Objetivo
 

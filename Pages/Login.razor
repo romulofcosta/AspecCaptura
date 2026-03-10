@@ -1,178 +1,167 @@
 @page "/login"
-@layout AuthLayout
+@layout AuthMinimalLayout
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 @inject AppState appState
+@inject ILogger<Login> Logger
 @using System.ComponentModel.DataAnnotations
-@using System.Collections.Generic
 
-<PageTitle>Login - ASPEC Inventory</PageTitle>
+<PageTitle>Login - Aspec Captura</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-center justify-start pa-0">
-    <MudPaper id="login-card" Elevation="4" Class="@($"pa-8 pa-sm-10 rounded-lg premium-card w-100 mb-8 {loginContentClass}")"
-        Style="max-width: 440px;">
-        <div class="d-flex flex-column align-center mb-6">
-            <div class="d-flex justify-center mb-4">
-                <MudImage Src="images/aspec_logo.png" Alt="ASPEC Logo"
-                    Style="width: 100px; height: 100px; object-fit: contain; border-radius: 12px;"
-                    Class="logo-hover shadow-sm" />
-            </div>
-            <div class="d-flex justify-center mb-2">
-                <h1 class="app-title-login">Aspec Capture</h1>
-            </div>
-            <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true" Class="font-weight-bold">Bem-vindo
-            </MudText>
-            <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">Faça login para continuar</MudText>
+<div class="auth-card">
+    <!-- Logo e Título -->
+    <div class="app-logo">
+        <MudImage Src="images/aspec_logo.png" Alt="Aspec Logo" 
+                  Style="width: 64px; height: 64px; border-radius: 12px; object-fit: contain;" />
+    </div>
+    
+    <h1 class="app-title">Aspec Captura</h1>
+    <p class="app-subtitle">Inventário Patrimonial</p>
+    
+    <!-- Alerta de Erro/Sucesso -->
+    @if (!string.IsNullOrEmpty(alertMessage))
+    {
+        <div class="alert-minimal @(alertType == "success" ? "alert-success" : "alert-error")">
+            @alertMessage
         </div>
-
-        @if (!string.IsNullOrEmpty(alertMessage))
-        {
-            <MudAlert Severity="@(alertType == "success" ? Severity.Success : Severity.Error)" Class="mb-4">
-                @alertMessage
-            </MudAlert>
-        }
-
-        <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
-            <DataAnnotationsValidator />
-
-            <MudGrid Spacing="1">
-                <MudItem xs="12" Class="pb-4">
-                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Usuário</MudText>
-                    <MudTextField @bind-Value="loginModel.Usuario" Placeholder="Digite seu usuário (ex: CE305.joao.silva)"
-                        Variant="Variant.Outlined" InputType="InputType.Text" Adornment="Adornment.Start"
-                        AdornmentIcon="@Icons.Material.Filled.Person" For="@(() => loginModel.Usuario)"
-                        FullWidth="true" Class="mb-2" />
-                </MudItem>
-
-                <MudItem xs="12" Class="pb-4">
-                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Senha</MudText>
-                    <MudTextField @bind-Value="loginModel.Senha" Placeholder="Digite sua senha"
-                        Variant="Variant.Outlined" InputType="InputType.Password" Adornment="Adornment.Start"
-                        AdornmentIcon="@Icons.Material.Filled.Lock" For="@(() => loginModel.Senha)"
-                        FullWidth="true" Class="mb-2" />
-                </MudItem>
-
-                <MudItem xs="12">
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
-                        FullWidth="true" Disabled="@isLoading" Size="Size.Large" Class="mt-2 py-3 shadow-md">
-                        @if (isLoading)
-                        {
-                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                            <span class="ms-2">Entrando...</span>
-                        }
-                        else
-                        {
-                            <span>Entrar</span>
-                        }
-                    </MudButton>
-                </MudItem>
-            </MudGrid>
-        </EditForm>
-
-
-    </MudPaper>
-
-    <div class="d-flex justify-center mt-4">
-        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="version-indicator">Versão: v0.2.2 (Session Fix)</MudText>
+    }
+    
+    <!-- Formulário -->
+    <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
+        
+        <div class="form-group">
+            <label class="form-label">LOGIN</label>
+            <input class="form-input" 
+                   type="text" 
+                   placeholder="Usuário" 
+                   @bind="loginModel.Usuario" 
+                   disabled="@isLoading" />
+            <ValidationMessage For="@(() => loginModel.Usuario)" />
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">SENHA</label>
+            <div style="position: relative;">
+                <input class="form-input" 
+                       type="@(showPassword ? "text" : "password")" 
+                       placeholder="••••••••" 
+                       @bind="loginModel.Senha" 
+                       disabled="@isLoading"
+                       style="padding-right: 48px;" />
+                <button type="button" 
+                        @onclick="TogglePasswordVisibility"
+                        style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 8px; color: #94A3B8;">
+                    <MudIcon Icon="@(showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)" 
+                             Size="Size.Small" />
+                </button>
+            </div>
+            <ValidationMessage For="@(() => loginModel.Senha)" />
+        </div>
+        
+        <button type="submit" class="btn-login" disabled="@isLoading">
+            @if (isLoading)
+            {
+                <span class="loading-spinner"></span>
+                <span>Entrando...</span>
+            }
+            else
+            {
+                <span>Entrar</span>
+            }
+        </button>
+    </EditForm>
+    
+    <!-- Links de Ajuda -->
+    <div class="auth-links">
+        <a href="#" class="auth-link" @onclick:preventDefault="true" @onclick="ShowForgotPassword">
+            Esqueceu a senha?
+        </a>
     </div>
-</MudContainer>
-
-@if (showLoadingOverlay)
-{
-    <div class="loading-overlay show">
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" Class="mb-4" />
-        <MudText Color="Color.Primary" Typo="Typo.h6">@loadingMessage</MudText>
-    </div>
-}
+</div>
 
 @code {
     private LoginModel loginModel = new();
     private string? alertMessage;
     private string? alertType;
     private bool isLoading = false;
-    private bool showLoadingOverlay = false;
-    private string loadingMessage = "Entrando...";
-    private string loginContentClass = "fade-in";
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            try
-            {
-                await Task.Delay(500);
-                await JSRuntime.InvokeVoidAsync("appInterop.checkOverflow", "#login-card");
-            }
-            catch { }
-        }
-    }
+    private bool showPassword = false;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            Logger.LogInformation("Login page initialized");
             var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
             appState.IsDarkMode = theme == "dark";
+            Logger.LogInformation($"Theme loaded: {theme}");
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Error loading theme, using default");
+        }
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+        Logger.LogDebug($"Password visibility toggled: {showPassword}");
     }
 
     private async Task HandleLogin()
     {
         isLoading = true;
         alertMessage = null;
-        loadingMessage = "Entrando...";
-        showLoadingOverlay = true;
         StateHasChanged();
 
         try
         {
-            var user = await AuthService.LoginAsync(loginModel.Usuario, loginModel.Senha);
-            if (user != null)
+            Logger.LogInformation($"Login attempt for user: {loginModel.Usuario}");
+            
+            var result = await AuthService.LoginAsync(loginModel.Usuario, loginModel.Senha);
+            
+            if (result.Success && result.User != null)
             {
+                Logger.LogInformation($"Login successful for user: {loginModel.Usuario}");
                 alertMessage = "Login realizado com sucesso!";
                 alertType = "success";
-                loadingMessage = "Redirecionando...";
-                loginContentClass = "fade-out";
                 StateHasChanged();
                 await Task.Delay(1000);
-                Navigation.NavigateTo("/tombamentos-sync");
+                Navigation.NavigateTo("/configuracao-sessao");
             }
             else
             {
-                alertMessage = "Usuário ou senha inválidos.";
+                Logger.LogWarning($"Login failed for user: {loginModel.Usuario}. Error: {result.ErrorMessage}");
+                alertMessage = result.ErrorMessage ?? "Usuário ou senha inválidos.";
                 alertType = "error";
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, $"Login exception for user: {loginModel.Usuario}");
             alertMessage = "Erro ao realizar login. Verifique suas credenciais e tente novamente.";
             alertType = "error";
         }
         finally
         {
-            showLoadingOverlay = false;
             isLoading = false;
             StateHasChanged();
         }
     }
 
-    public class LoginModel : IValidatableObject
+    private async Task ShowForgotPassword()
     {
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
+        Logger.LogInformation("Forgot password requested");
+        await JSRuntime.InvokeVoidAsync("alert", "Funcionalidade 'Esqueceu a senha' será implementada em breve.");
+    }
+
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "Campo obrigatório")]
         public string Usuario { get; set; } = string.Empty;
 
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Campo obrigatório")]
+        [Required(ErrorMessage = "Campo obrigatório")]
         public string Senha { get; set; } = string.Empty;
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            var cleanUsername = Usuario?.Trim().ToLower();
-            if (!string.IsNullOrEmpty(cleanUsername) && cleanUsername != "admin" && !cleanUsername.Contains("."))
-            {
-                yield return new ValidationResult("Formato de usuário inválido (use PREFIXO.nome)", new[] { nameof(Usuario) });
-            }
-        }
     }
 }

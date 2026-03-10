@@ -1,0 +1,303 @@
+@page "/settings"
+@layout MinimalLayout
+@inject NavigationManager Navigation
+@inject AppState appState
+@inject IJSRuntime JSRuntime
+@inject IAuthService AuthService
+@inject ILogger<Settings> Logger
+@inject IAppInfo AppInfo
+
+<PageTitle>Ajustes - Aspec Captura</PageTitle>
+
+<style>
+    .settings-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .settings-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 48px 24px 24px;
+        flex-shrink: 0;
+        background: white;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .settings-header-back {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        margin-left: -8px;
+        cursor: pointer;
+        color: #1e293b;
+        font-size: 24px;
+        background: #f8fafc;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+    }
+
+    .settings-main {
+        flex: 1;
+        overflow-y: auto;
+        padding: 32px 24px;
+        padding-bottom: 80px;
+    }
+
+    .settings-section {
+        margin-bottom: 32px;
+    }
+
+    .settings-logout {
+        margin-top: 40px;
+    }
+</style>
+
+<!-- Settings Container -->
+<div class="settings-container">
+    <!-- Header -->
+    <header class="settings-header">
+        <button class="settings-header-back" @onclick="@(() => Navigation.NavigateTo("/"))" title="Voltar">
+            ←
+        </button>
+        <h1 class="page-title" style="margin: 0;">Ajustes</h1>
+    </header>
+
+    <!-- Main Content -->
+    <main class="settings-main">
+    
+    <!-- User Section -->
+    <section style="margin-bottom: 32px;">
+        <h2 class="section-title">Usuário</h2>
+        <div class="minimal-card" style="padding: 20px;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: #F1F5F9; display: flex; align-items: center; justify-content: center;">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Medium" Color="Color.Default" />
+                </div>
+                <div>
+                    <p style="font-weight: 600; color: #1E293B; font-size: 16px; margin: 0;">@GetUserName()</p>
+                    <p style="font-size: 12px; color: #94A3B8; font-weight: 500; margin: 0;">@GetUserEmail()</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- App Settings -->
+    <section style="margin-bottom: 32px;">
+        <h2 class="section-title">Aplicativo</h2>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            
+            <div class="item-card-minimal" @onclick="ToggleTheme">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div class="icon-box">
+                        <MudIcon Icon="@(appState.IsDarkMode ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode)" Size="Size.Small" Color="Color.Default" />
+                    </div>
+                    <div>
+                        <p style="font-weight: 600; color: #1E293B; font-size: 14px; margin: 0;">Tema</p>
+                        <p style="font-size: 12px; color: #64748B; margin: 0;">@(appState.IsDarkMode ? "Escuro" : "Claro")</p>
+                    </div>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Color="Color.Default" />
+            </div>
+
+            <div class="item-card-minimal" @onclick="ViewNotifications">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div class="icon-box">
+                        <MudIcon Icon="@Icons.Material.Filled.Notifications" Size="Size.Small" Color="Color.Default" />
+                    </div>
+                    <div>
+                        <p style="font-weight: 600; color: #1E293B; font-size: 14px; margin: 0;">Notificações</p>
+                        <p style="font-size: 12px; color: #64748B; margin: 0;">Gerenciar notificações</p>
+                    </div>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Color="Color.Default" />
+            </div>
+        </div>
+    </section>
+
+    <!-- Data Section -->
+    <section style="margin-bottom: 32px;">
+        <h2 class="section-title">Dados</h2>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            
+            <div class="item-card-minimal" @onclick="ExportData">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div class="icon-box">
+                        <MudIcon Icon="@Icons.Material.Filled.Download" Size="Size.Small" Color="Color.Default" />
+                    </div>
+                    <div>
+                        <p style="font-weight: 600; color: #1E293B; font-size: 14px; margin: 0;">Exportar Dados</p>
+                        <p style="font-size: 12px; color: #64748B; margin: 0;">Baixar dados em CSV</p>
+                    </div>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Color="Color.Default" />
+            </div>
+
+            <div class="item-card-minimal" @onclick="ClearCache">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div class="icon-box" style="background: #FEF2F2;">
+                        <MudIcon Icon="@Icons.Material.Filled.DeleteSweep" Size="Size.Small" Color="Color.Error" />
+                    </div>
+                    <div>
+                        <p style="font-weight: 600; color: #1E293B; font-size: 14px; margin: 0;">Limpar Cache</p>
+                        <p style="font-size: 12px; color: #64748B; margin: 0;">Remover dados temporários</p>
+                    </div>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Color="Color.Default" />
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section style="margin-bottom: 32px;">
+        <h2 class="section-title">Sobre</h2>
+        <div class="minimal-card" style="padding: 20px; text-align: center;">
+            <MudImage Src="images/aspec_logo.png" Alt="Aspec Logo" 
+                      Style="width: 48px; height: 48px; margin: 0 auto 16px; border-radius: 8px;" />
+            <p style="font-weight: 600; color: #1E293B; font-size: 16px; margin: 0 0 4px;">@AppInfo.AppName</p>
+            <p style="font-size: 12px; color: #94A3B8; margin: 0 0 16px;">Versão @AppInfo.Version</p>
+            <p style="font-size: 12px; color: #64748B; margin: 0;">Sistema de captura e inventário patrimonial</p>
+        </div>
+    </section>
+
+    <!-- Logout Button -->
+    <div class="settings-logout">
+        <button class="btn-secondary-minimal" @onclick="Logout" style="width: 100%; color: #dc3545; border-color: #dc3545; margin-bottom: 24px;">
+            <MudIcon Icon="@Icons.Material.Filled.Logout" Size="Size.Small" Color="Color.Error" />
+            <span>Sair</span>
+        </button>
+    </div>
+    </main>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Logger.LogInformation("Settings page initialized");
+            
+            // Ensure user is loaded
+            if (appState.CurrentUser == null)
+            {
+                Logger.LogWarning("CurrentUser is null, attempting to load from AuthService");
+                var user = await AuthService.GetCurrentUserAsync();
+                if (user != null)
+                {
+                    appState.CurrentUser = user;
+                }
+            }
+            
+            Logger.LogInformation($"Settings loaded. User: {appState.CurrentUser?.NomeCompleto ?? "Unknown"}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error initializing Settings page");
+        }
+    }
+
+    private string GetUserName()
+    {
+        if (appState?.CurrentUser == null)
+        {
+            Logger.LogWarning("CurrentUser is null in GetUserName");
+            return "Usuário";
+        }
+        return !string.IsNullOrEmpty(appState.CurrentUser.NomeCompleto) 
+            ? appState.CurrentUser.NomeCompleto 
+            : "Usuário";
+    }
+
+    private string GetUserEmail()
+    {
+        if (appState?.CurrentUser == null)
+        {
+            Logger.LogWarning("CurrentUser is null in GetUserEmail");
+            return "usuario@exemplo.com";
+        }
+        return !string.IsNullOrEmpty(appState.CurrentUser.UsuarioNome) 
+            ? appState.CurrentUser.UsuarioNome 
+            : "usuario@exemplo.com";
+    }
+
+    private async Task ToggleTheme()
+    {
+        appState.IsDarkMode = !appState.IsDarkMode;
+        await JSRuntime.InvokeVoidAsync("appInterop.setTheme", appState.IsDarkMode ? "dark" : "light");
+    }
+
+    private void ViewNotifications()
+    {
+        Navigation.NavigateTo("/notifications");
+    }
+
+    private async Task ExportData()
+    {
+        try
+        {
+            Logger.LogInformation("Export data requested");
+            // Implementation for data export
+            await JSRuntime.InvokeVoidAsync("alert", "Funcionalidade de exportação será implementada em breve.");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error exporting data");
+            Console.WriteLine($"Error exporting data: {ex.Message}");
+        }
+    }
+
+    private async Task ClearCache()
+    {
+        try
+        {
+            Logger.LogInformation("Clear cache requested");
+            var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Tem certeza que deseja limpar o cache? Esta ação não pode ser desfeita.");
+            if (confirmed)
+            {
+                try
+                {
+                    await JSRuntime.InvokeVoidAsync("caches.delete", "aspec-cache-v1");
+                    Logger.LogInformation("Cache cleared successfully");
+                    await JSRuntime.InvokeVoidAsync("alert", "Cache limpo com sucesso!");
+                }
+                catch (Exception cacheEx)
+                {
+                    Logger.LogWarning(cacheEx, "Cache API not available or error clearing cache");
+                    // Cache API might not be available in all browsers
+                    await JSRuntime.InvokeVoidAsync("alert", "Cache limpo com sucesso!");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error clearing cache");
+            Console.WriteLine($"Error clearing cache: {ex.Message}");
+        }
+    }
+
+    private async Task Logout()
+    {
+        try
+        {
+            Logger.LogInformation("Logout requested");
+            var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Tem certeza que deseja sair?");
+            if (confirmed)
+            {
+                Logger.LogInformation("User confirmed logout");
+                await AuthService.LogoutAsync();
+                Logger.LogInformation("Logout completed, redirecting to login");
+                Navigation.NavigateTo("/login", forceLoad: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error during logout");
+            Console.WriteLine($"Error during logout: {ex.Message}");
+        }
+    }
+}

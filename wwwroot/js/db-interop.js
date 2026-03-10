@@ -1,7 +1,7 @@
 window.dbInterop = {
     db: null,
-    dbName: 'PwaInventoryDB',
-    dbVersion: 6,
+    dbName: 'aspec-captura-db',
+    dbVersion: 7,
 
     init: async function () {
         return new Promise((resolve, reject) => {
@@ -16,12 +16,15 @@ window.dbInterop = {
                 const db = event.target.result;
                 const transaction = event.target.transaction;
 
-                // 3. Items Store (Inventory)
+                // 1. Items Store (Patrimônios)
                 let itemsStore;
                 if (!db.objectStoreNames.contains('items')) {
                     itemsStore = db.createObjectStore('items', { keyPath: 'id' });
+                    itemsStore.createIndex('code', 'code', { unique: true });
+                    itemsStore.createIndex('isSynchronized', 'isSynchronized', { unique: false });
+                    itemsStore.createIndex('createdAt', 'createdAt', { unique: false });
+                    itemsStore.createIndex('userId', 'userId', { unique: false });
                     itemsStore.createIndex('name', 'name', { unique: false });
-                    itemsStore.createIndex('code', 'code', { unique: false });
                     itemsStore.createIndex('category', 'category', { unique: false });
                     itemsStore.createIndex('timestamp', 'timestamp', { unique: false });
                     itemsStore.createIndex('idUO', 'idUO', { unique: false });
@@ -29,18 +32,40 @@ window.dbInterop = {
                     itemsStore.createIndex('createdBy', 'createdBy', { unique: false });
                 } else {
                     itemsStore = transaction.objectStore('items');
-                    if (!itemsStore.indexNames.contains('synced')) {
-                        itemsStore.createIndex('synced', 'synced', { unique: false });
+                    // Add new indexes if they don't exist
+                    if (!itemsStore.indexNames.contains('isSynchronized')) {
+                        itemsStore.createIndex('isSynchronized', 'isSynchronized', { unique: false });
                     }
-                    if (!itemsStore.indexNames.contains('createdBy')) {
-                        itemsStore.createIndex('createdBy', 'createdBy', { unique: false });
-                    }
-                    if (!itemsStore.indexNames.contains('idUO')) {
-                        itemsStore.createIndex('idUO', 'idUO', { unique: false });
+                    if (!itemsStore.indexNames.contains('userId')) {
+                        itemsStore.createIndex('userId', 'userId', { unique: false });
                     }
                 }
 
-                // 4. Patrimonio Store (Lookup)
+                // 2. Photos Store (Fotos criptografadas)
+                if (!db.objectStoreNames.contains('photos')) {
+                    const photosStore = db.createObjectStore('photos', { keyPath: 'id' });
+                    photosStore.createIndex('itemId', 'itemId', { unique: false });
+                    photosStore.createIndex('createdAt', 'createdAt', { unique: false });
+                }
+
+                // 3. Notifications Store (Notificações)
+                if (!db.objectStoreNames.contains('notifications')) {
+                    const notificationsStore = db.createObjectStore('notifications', { keyPath: 'id' });
+                    notificationsStore.createIndex('userId', 'userId', { unique: false });
+                    notificationsStore.createIndex('isRead', 'isRead', { unique: false });
+                    notificationsStore.createIndex('timestamp', 'timestamp', { unique: false });
+                    notificationsStore.createIndex('priority', 'priority', { unique: false });
+                }
+
+                // 4. Sync Queue Store (Fila de sincronização)
+                if (!db.objectStoreNames.contains('syncQueue')) {
+                    const syncQueueStore = db.createObjectStore('syncQueue', { keyPath: 'id' });
+                    syncQueueStore.createIndex('itemId', 'itemId', { unique: false });
+                    syncQueueStore.createIndex('createdAt', 'createdAt', { unique: false });
+                    syncQueueStore.createIndex('retryCount', 'retryCount', { unique: false });
+                }
+
+                // 5. Patrimonio Store (Lookup) - mantido para compatibilidade
                 if (!db.objectStoreNames.contains('patrimonio')) {
                     const patrimonioStore = db.createObjectStore('patrimonio', { keyPath: 'idPatomb' });
                     patrimonioStore.createIndex('nutomb', 'nutomb', { unique: false });
@@ -51,15 +76,15 @@ window.dbInterop = {
                     staging.createIndex('nutomb', 'nutomb', { unique: false });
                 }
 
+                // 6. Metadata Store
                 if (!db.objectStoreNames.contains('metadata')) {
                     const metadata = db.createObjectStore('metadata', { keyPath: 'key' });
                 }
             };
 
-
             request.onsuccess = (event) => {
                 this.db = event.target.result;
-                console.log('DB Initialized');
+                console.log('IndexedDB initialized successfully');
                 resolve();
             };
         });

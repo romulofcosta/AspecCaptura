@@ -1,0 +1,104 @@
+@namespace pwa_camera_poc_blazor.Components.Cards
+@using pwa_camera_poc_blazor.Models
+@using MudBlazor
+
+<MudCard Class="item-card" @onclick="HandleClick" Style="cursor: pointer;">
+    <MudCardContent>
+        <div class="d-flex align-center gap-3">
+            <MudAvatar Color="Color.Primary" Size="Size.Large">
+                <MudIcon Icon="@Icons.Material.Filled.Inventory" />
+            </MudAvatar>
+            <div class="flex-grow-1">
+                <MudText Typo="Typo.subtitle1" Class="font-weight-medium">@DisplayName</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@DisplayCode</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Tertiary">@DisplayDate</MudText>
+            </div>
+            <div>
+                @if (DisplaySynced)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Icon="@Icons.Material.Filled.CloudDone">Sincronizado</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Icon="@Icons.Material.Filled.CloudOff">Pendente</MudChip>
+                }
+            </div>
+        </div>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    // Support both Item parameter (from Home.razor) and individual parameters (from Dashboard.razor)
+    [Parameter]
+    public InventoryItem? Item { get; set; }
+    
+    [Parameter]
+    public string ItemName { get; set; } = string.Empty;
+    
+    [Parameter]
+    public string ItemCode { get; set; } = string.Empty;
+    
+    [Parameter]
+    public DateTime LastUpdate { get; set; }
+    
+    [Parameter]
+    public bool IsSynchronized { get; set; }
+    
+    [Parameter]
+    public string IconClass { get; set; } = "📦";
+    
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+    
+    [Parameter]
+    public EventCallback<InventoryItem> OnView { get; set; }
+    
+    [Parameter]
+    public bool IsListView { get; set; }
+    
+    // Computed properties that work with both parameter styles
+    private string DisplayName => Item?.Name ?? ItemName;
+    private string DisplayCode => Item?.Code ?? ItemCode;
+    private string DisplayDate
+    {
+        get
+        {
+            try
+            {
+                if (Item != null)
+                {
+                    return Item.UpdatedAt.ToString("dd/MM/yyyy HH:mm");
+                }
+                else if (LastUpdate != default)
+                {
+                    return LastUpdate.ToString("dd/MM/yyyy HH:mm");
+                }
+                return DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+            }
+            catch
+            {
+                return DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+            }
+        }
+    }
+    private bool DisplaySynced => Item?.Synced ?? IsSynchronized;
+    
+    private async Task HandleClick()
+    {
+        try
+        {
+            if (Item != null && OnView.HasDelegate)
+            {
+                await OnView.InvokeAsync(Item);
+            }
+            else if (OnClick.HasDelegate)
+            {
+                await OnClick.InvokeAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error in ItemCard click: {ex.Message}");
+        }
+    }
+}

@@ -1,0 +1,110 @@
+/* Responsive Breakpoints - Aspec Captura PWA */
+
+/* Mobile First - Base styles for 320px+ */
+/* Base styles are in app.css and components.css */
+
+/* Small Mobile: 320px - 479px */
+@media (min-width: 320px) {
+    .container {
+        padding: var(--spacing-md);
+    }
+    
+    .statistics-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+}
+
+/* Large Mobile / Small Tablet: 480px - 767px */
+@media (min-width: 480px) {
+    .statistics-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Tablet: 768px - 1023px */
+@media (min-width: 768px) {
+    .container {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: var(--spacing-lg);
+    }
+    
+    .dashboard-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .item-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* Hide bottom navigation on tablet+ */
+    .bottom-navigation {
+        display: none;
+    }
+    
+    /* Show sidebar navigation instead */
+    .sidebar-navigation {
+        display: flex;
+    }
+}
+
+/* Desktop: 1024px - 1439px */
+@media (min-width: 1024px) {
+    .container {
+        max-width: 960px;
+        padding: var(--spacing-xl);
+    }
+    
+    .item-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .item-details-form {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+}
+
+/* Large Desktop: 1440px+ */
+@media (min-width: 1440px) {
+    .container {
+        max-width: var(--max-content-width);
+    }
+    
+    .statistics-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-lg);
+    }
+    
+    .item-list {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .bottom-navigation,
+    .sidebar-navigation,
+    .floating-action-button {
+        display: none !important;
+    }
+    
+    .shell-content {
+        padding-bottom: 0;
+    }
+}

@@ -1,0 +1,24 @@
+@* Conservation State Chip Component *@
+
+<button 
+    type="button"
+    class="conservation-chip @(IsSelected ? "conservation-chip--selected" : "conservation-chip--unselected")"
+    @onclick="HandleClick">
+    @Label
+</button>
+
+@code {
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool IsSelected { get; set; }
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    private async Task HandleClick()
+    {
+        await OnClick.InvokeAsync();
+    }
+}

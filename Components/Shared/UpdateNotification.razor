@@ -1,0 +1,60 @@
+@using pwa_camera_poc_blazor.Services
+@inject IUpdateService UpdateService
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+@if (showUpdateNotification)
+{
+    <div class="update-notification">
+        <div class="update-notification-content">
+            <div class="update-notification-icon">
+                <span class="material-symbols-outlined">system_update</span>
+            </div>
+            <div class="update-notification-text">
+                <h3>Nova versão disponível</h3>
+                <p>Uma atualização do Aspec Captura está disponível. Clique para atualizar.</p>
+            </div>
+            <div class="update-notification-actions">
+                <button class="update-btn-primary" @onclick="HandleUpdate">
+                    Atualizar
+                </button>
+                <button class="update-btn-secondary" @onclick="HandleDismiss">
+                    Depois
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool showUpdateNotification = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        UpdateService.UpdateAvailable += OnUpdateAvailable;
+        await UpdateService.InitializeAsync();
+    }
+
+    private void OnUpdateAvailable(object? sender, UpdateAvailableEventArgs e)
+    {
+        showUpdateNotification = true;
+        StateHasChanged();
+    }
+
+    private async Task HandleUpdate()
+    {
+        showUpdateNotification = false;
+        await UpdateService.ReloadAppAsync();
+    }
+
+    private void HandleDismiss()
+    {
+        showUpdateNotification = false;
+    }
+
+    ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        UpdateService.UpdateAvailable -= OnUpdateAvailable;
+        return ValueTask.CompletedTask;
+    }
+}

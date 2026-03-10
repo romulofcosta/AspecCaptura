@@ -1,0 +1,239 @@
+@page "/notifications"
+@layout MinimalLayout
+@using pwa_camera_poc_blazor.Models
+@using pwa_camera_poc_blazor.Services.Notification
+@inject INotificationService NotificationService
+@inject NavigationManager Navigation
+
+<PageTitle>Notificações - Aspec Capture</PageTitle>
+
+<!-- Header -->
+<div class="minimal-header">
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" 
+                       Color="Color.Default" 
+                       Size="Size.Medium"
+                       Style="background: #F8FAFC; border-radius: 12px; width: 44px; height: 44px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" 
+                       OnClick="GoBack" />
+        <h1 class="page-title" style="margin: 0; flex: 1;">Notificações</h1>
+        @if (unreadCount > 0)
+        {
+            <button class="btn-change" @onclick="MarkAllAsRead">
+                Marcar todas como lidas
+            </button>
+        }
+    </div>
+</div>
+
+<!-- Main Content -->
+<div style="padding: 32px 24px;">
+    @if (isLoading)
+    {
+        <div style="display: flex; justify-content: center; padding: 40px 0;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </div>
+    }
+    else if (notifications.Count == 0)
+    {
+        <div style="text-align: center; padding: 40px 0; color: #94A3B8;">
+            <MudIcon Icon="@Icons.Material.Filled.NotificationsNone" Size="Size.Large" Style="opacity: 0.3; font-size: 64px;" />
+            <p style="margin-top: 16px; font-size: 14px;">Nenhuma notificação</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var group in GetGroupedNotifications())
+        {
+            <div style="margin-bottom: 32px;">
+                <h3 class="section-title">@group.Key</h3>
+                @foreach (var notification in group.Value)
+                {
+                    <div class="@(notification.IsRead ? "item-card-minimal" : "item-card-minimal")" 
+                         style="@(notification.IsRead ? "" : "border-left: 4px solid #003366;")"
+                         @onclick="@(() => MarkAsRead(notification.Id))">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div class="icon-box" style="@GetNotificationIconStyle(notification.Type)">
+                                <MudIcon Icon="@GetNotificationIcon(notification.Type)" Size="Size.Small" Color="Color.Surface" />
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                    <p style="font-weight: 600; color: #1E293B; font-size: 14px; margin: 0;">@notification.Title</p>
+                                    <span style="font-size: 10px; color: #94A3B8; font-weight: 500;">@GetRelativeTime(notification.Timestamp)</span>
+                                </div>
+                                <p style="font-size: 12px; color: #64748B; margin: 0;">@notification.Message</p>
+                                @if (notification.Priority == NotificationPriority.Critical)
+                                {
+                                    <span style="background: #dc3545; color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px; margin-top: 8px; display: inline-block;">CRÍTICA</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (hasMorePages)
+        {
+            <div style="display: flex; justify-content: center; margin-top: 24px;">
+                <button class="btn-secondary-minimal" @onclick="LoadMore">
+                    Carregar mais
+                </button>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private List<Models.Notification> notifications = new();
+    private int unreadCount = 0;
+    private bool isLoading = true;
+    private int currentPage = 1;
+    private const int pageSize = 20;
+    private bool hasMorePages = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadNotificationsAsync();
+    }
+
+    private async Task LoadNotificationsAsync()
+    {
+        isLoading = true;
+        try
+        {
+            var newNotifications = await NotificationService.GetNotificationsAsync(currentPage, pageSize);
+            notifications.AddRange(newNotifications);
+            hasMorePages = newNotifications.Count == pageSize;
+            unreadCount = await NotificationService.GetUnreadCountAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading notifications: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadMore()
+    {
+        currentPage++;
+        await LoadNotificationsAsync();
+    }
+
+    private async Task MarkAsRead(string notificationId)
+    {
+        await NotificationService.MarkAsReadAsync(notificationId);
+        var notification = notifications.FirstOrDefault(n => n.Id == notificationId);
+        if (notification != null)
+        {
+            notification.IsRead = true;
+            unreadCount = Math.Max(0, unreadCount - 1);
+        }
+    }
+
+    private async Task MarkAllAsRead()
+    {
+        await NotificationService.MarkAllAsReadAsync();
+        foreach (var notification in notifications)
+        {
+            notification.IsRead = true;
+        }
+        unreadCount = 0;
+    }
+
+    private Dictionary<string, List<Models.Notification>> GetGroupedNotifications()
+    {
+        var grouped = new Dictionary<string, List<Models.Notification>>();
+        
+        foreach (var notification in notifications)
+        {
+            var key = GetDateGroupKey(notification.Timestamp);
+            if (!grouped.ContainsKey(key))
+            {
+                grouped[key] = new List<Models.Notification>();
+            }
+            grouped[key].Add(notification);
+        }
+
+        return grouped;
+    }
+
+    private string GetDateGroupKey(DateTime timestamp)
+    {
+        var now = DateTime.UtcNow;
+        var diff = now - timestamp;
+
+        if (diff.TotalHours < 24)
+        {
+            return "Hoje";
+        }
+        else if (diff.TotalDays < 7)
+        {
+            return "Esta semana";
+        }
+        else if (diff.TotalDays < 30)
+        {
+            return "Este mês";
+        }
+        else
+        {
+            return "Mais antigas";
+        }
+    }
+
+    private string GetRelativeTime(DateTime timestamp)
+    {
+        var diff = DateTime.UtcNow - timestamp;
+
+        if (diff.TotalMinutes < 1)
+        {
+            return "Agora";
+        }
+        else if (diff.TotalHours < 1)
+        {
+            return $"{(int)diff.TotalMinutes}m atrás";
+        }
+        else if (diff.TotalDays < 1)
+        {
+            return $"{(int)diff.TotalHours}h atrás";
+        }
+        else
+        {
+            return timestamp.ToString("dd/MM/yyyy");
+        }
+    }
+
+    private string GetNotificationIcon(NotificationType type)
+    {
+        return type switch
+        {
+            NotificationType.SyncComplete => Icons.Material.Filled.CheckCircle,
+            NotificationType.SyncError => Icons.Material.Filled.Error,
+            NotificationType.SystemUpdate => Icons.Material.Filled.SystemUpdate,
+            NotificationType.SessionExpiring => Icons.Material.Filled.Schedule,
+            NotificationType.StorageLow => Icons.Material.Filled.Storage,
+            _ => Icons.Material.Filled.Notifications
+        };
+    }
+
+    private string GetNotificationIconStyle(NotificationType type)
+    {
+        var backgroundColor = type switch
+        {
+            NotificationType.SyncComplete => "#2e7d32",
+            NotificationType.SyncError => "#dc3545",
+            NotificationType.SystemUpdate => "#0066CC",
+            NotificationType.SessionExpiring => "#ed6c02",
+            NotificationType.StorageLow => "#ed6c02",
+            _ => "#64748B"
+        };
+        return $"background: {backgroundColor};";
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/dashboard");
+    }
+}

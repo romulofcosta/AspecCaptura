@@ -4,9 +4,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="ASPEC Camera Inventory - Sistema de inventário com captura de fotos" />
-    <meta name="theme-color" content="#0066CC" />
-    <title>ASPEC Camera Inventory</title>
+    <meta name="description" content="Aspec Captura - Sistema de inventário patrimonial com captura de fotos" />
+    <meta name="theme-color" content="#1B3A5F" />
+    <meta name="version" content="__APP_VERSION__" />
+    <title>Aspec Captura</title>
     <base href="/" />
     <!-- CSP: Allow inline styles for MudBlazor and WASM, plus http: for local dev API -->
     <meta http-equiv="Content-Security-Policy"
@@ -15,7 +16,7 @@
     <!-- Theme initialization -->
     <script>
         (function () {
-            const savedTheme = localStorage.getItem('pwa-inventory-theme') || 'light';
+            const savedTheme = localStorage.getItem('aspec-captura-theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
         })();
     </script>
@@ -34,7 +35,12 @@
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
 
     <!-- Custom App CSS -->
+    <link rel="stylesheet" href="css/theme.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    <link rel="stylesheet" href="css/app-global.css" />
     <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/update-notification.css" />
 
     <!-- PWA Icons -->
     <link rel="icon" type="image/png" href="images/aspec_logo.png" />
@@ -61,9 +67,44 @@
     <script src="js/app.js"></script>
     <script src="js/db-interop.js"></script>
     <script src="js/camera-interop.js"></script>
+    <script src="js/crypto.js"></script>
+    <script src="js/image-compressor.js"></script>
+    <script src="js/push.js"></script>
+    <script src="js/performance.js"></script>
+    <script src="js/update-service.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
-    <script>navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' });</script>
+    <script>
+        // Service Worker Registration with Update Notification
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' })
+                .then(registration => {
+                    console.log('[SW] Registered:', registration);
+                    
+                    // Check for updates every hour
+                    setInterval(() => {
+                        registration.update();
+                    }, 60 * 60 * 1000);
+                    
+                    // Listen for updates
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // New version available
+                                if (confirm('Nova versão disponível! Deseja atualizar agora?')) {
+                                    window.location.reload();
+                                }
+                            }
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('[SW] Registration failed:', error);
+                });
+        }
+    </script>
 </body>
 
 </html>

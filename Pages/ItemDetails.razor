@@ -1,223 +1,544 @@
 @page "/item/{Id}"
+@layout MinimalLayout
 @using pwa_camera_poc_blazor.Models
+@using pwa_camera_poc_blazor.Services.Storage
 @inject IIndexedDbService DbService
 @inject NavigationManager Navigation
-@inject CameraService CameraService
 @inject pwa_camera_poc_blazor.Services.ToastService ToastService
 @inject IJSRuntime JSRuntime
-@inject IDialogService DialogService
 @using MudBlazor
 @inject AppState appState
 @inject IAuthService AuthService
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
-<PageTitle>Detalhes do Item - ASPEC Capture</PageTitle>
+<PageTitle>Detalhes - Aspec Captura</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4 pb-20" Style="overflow-y: auto; height: 100%;">
-    @if (isLoading)
-    {
-        <div class="d-flex justify-center align-center" style="height: 50vh;">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-        </div>
+<style>
+    .details-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
     }
-    else if (item == null)
-    {
-        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-4">Item não encontrado ou removido.
-        </MudAlert>
-        <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="GoBack">Voltar</MudButton>
+
+    .details-header {
+        display: flex;
+        align-items: center;
+        padding: 48px 24px 24px;
+        flex-shrink: 0;
+        background: white;
+        border-bottom: 1px solid #f1f5f9;
     }
-    else
-    {
-        <MudCard Elevation="4" Class="mb-4">
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h5">@item.Name</MudText>
-                    <div class="d-flex gap-2 mt-2">
-                        <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Outlined">
-                            @item.Category</MudChip>
-                        <MudChip T="string" Color="Color.Secondary" Size="Size.Small" Variant="Variant.Outlined">@item.Code
-                        </MudChip>
-                    </div>
-                </CardHeaderContent>
-                <CardHeaderActions>
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Default" OnClick="EditItem" />
-                </CardHeaderActions>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudGrid>
-                    <MudItem xs="12" sm="6">
-                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Localização</MudText>
-                        <MudText Typo="Typo.body1" Class="mb-2">@item.Location</MudText>
-                    </MudItem>
-                    <MudItem xs="6" sm="6">
-                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Status</MudText>
-                        <MudText Typo="Typo.body1" Class="mb-2">@(item.Synced ? "Sincronizado" : "Pendente")</MudText>
-                        </MudItem>
-                        <MudItem xs="12">
-                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Observações</MudText>
-                            <MudText Typo="Typo.body1" Class="mb-2">@item.Observations</MudText>
-                        </MudItem>
-                        <MudItem xs="12" sm="6">
-                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Data Cadastro</MudText>
-                            <MudText Typo="Typo.body1">@item.Timestamp.ToString("dd/MM/yyyy HH:mm")</MudText>
-                        </MudItem>
-                        <MudItem xs="6" sm="6">
-                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">UO / Área</MudText>
-                            <MudText Typo="Typo.body1">@item.IdUO / @item.IdArea</MudText>
-                        </MudItem>
-                    </MudGrid>
-                </MudCardContent>
-            </MudCard>
 
-        <MudCard Elevation="4">
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Fotos (@(item.Photos.Any() ? item.Photos.Count : item.RemoteUrls.Count))
-                    </MudText>
-                </CardHeaderContent>
-                <CardHeaderActions>
-                    <MudButton StartIcon="@Icons.Material.Filled.AddAPhoto" Color="Color.Primary" OnClick="AddPhotos">
-                        Adicionar</MudButton>
-                </CardHeaderActions>
-            </MudCardHeader>
-            <MudCardContent>
-                @{
-                    var displayPhotos = item.Photos.Any() ? item.Photos : item.RemoteUrls;
-                }
-                @if (displayPhotos.Any())
-                {
-                    <MudGrid Spacing="2">
-                        @foreach (var (photo, index) in displayPhotos.Select((p, i) => (p, i)))
-                        {
-                            <MudItem xs="6" sm="4" md="3">
-                                <div style="position: relative; aspect-ratio: 1/1;">
-                                    <MudImage Src="@photo" ObjectFit="ObjectFit.Cover"
-                                        Style="width:100%; height:100%; border-radius: 4px; cursor: pointer;"
-                                    @onclick="() => ViewFullImage(photo)" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
-                                        Style="position: absolute; top: 4px; right: 4px; background: rgba(255,255,255,0.8);"
-                                        OnClick="() => ConfirmRemovePhoto(index)" />
-                                    @if (index == 0)
-                                    {
-                                        <MudChip T="string" Color="Color.Primary" Size="Size.Small"
-                                            Style="position: absolute; bottom: 4px; left: 4px;">Capa</MudChip>
-                                    }
-                                </div>
-                            </MudItem>
-                        }
-                    </MudGrid>
-                }
-                else
-                {
-                    <div class="d-flex justify-center align-center py-8">
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">Nenhuma foto cadastrada</MudText>
-                    </div>
-                }
-            </MudCardContent>
-        </MudCard>
-
-        <div class="mt-4">
-            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Variant="Variant.Outlined" OnClick="GoBack">Voltar para
-                Lista</MudButton>
-        </div>
+    .details-header-back {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        margin-left: -8px;
+        cursor: pointer;
+        color: #1e293b;
+        font-size: 24px;
     }
-</MudContainer>
 
-<!-- Camera Overlay - Custom Implementation -->
-@if (showCameraModal)
+    .details-header-content {
+        flex: 1;
+        padding: 0 16px;
+    }
+
+    .details-header-title {
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        color: #1e293b;
+    }
+
+    .details-header-subtitle {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        font-weight: 500;
+        color: #94a3b8;
+        margin-top: 4px;
+    }
+
+    .details-header-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .details-header-user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .details-header-user-name {
+        font-size: 11px;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .details-header-user-status {
+        font-size: 9px;
+        color: #22c55e;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .details-header-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .details-main {
+        flex: 1;
+        overflow-y: auto;
+        padding-bottom: 120px;
+    }
+
+    .details-image-container {
+        position: relative;
+        margin: 24px;
+    }
+
+    .details-image {
+        aspect-ratio: 16 / 10;
+        width: 100%;
+        overflow: hidden;
+        background: #f1f5f9;
+        border-radius: 0 0 24px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .details-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .details-image-dots {
+        position: absolute;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 6px;
+    }
+
+    .details-image-dot {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: white;
+    }
+
+    .details-image-dot.inactive {
+        opacity: 0.4;
+    }
+
+    .details-image-btn {
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: white;
+    }
+
+    .details-content {
+        padding: 24px;
+        space-y: 32px;
+    }
+
+    .details-section {
+        margin-bottom: 32px;
+    }
+
+    .field-container {
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 8px;
+        margin-bottom: 24px;
+    }
+
+    .field-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: #94a3b8;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .field-value {
+        font-size: 16px;
+        font-weight: 500;
+        color: #1e293b;
+    }
+
+    .field-input {
+        width: 100%;
+        font-size: 16px;
+        font-weight: 500;
+        color: #1e293b;
+        background: transparent;
+        border: none;
+        padding: 0;
+        resize: none;
+    }
+
+    .field-input:focus {
+        outline: none;
+    }
+
+    .field-select {
+        width: 100%;
+        font-size: 16px;
+        font-weight: 500;
+        color: #1e293b;
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
+
+    .field-select:focus {
+        outline: none;
+    }
+
+    .field-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+    }
+
+    .conservation-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .conservation-btn {
+        padding: 8px 20px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .conservation-btn.new {
+        background: #f0fdf4;
+        color: #16a34a;
+        border-color: #dcfce7;
+    }
+
+    .conservation-btn.good {
+        background: #eff6ff;
+        color: #2563eb;
+        border-color: #dbeafe;
+    }
+
+    .conservation-btn.regular {
+        background: #fffbeb;
+        color: #d97706;
+        border-color: #fef3c7;
+    }
+
+    .conservation-btn.recoverable {
+        background: #fef2f2;
+        color: #dc2626;
+        border-color: #fee2e2;
+    }
+
+    .conservation-btn.active {
+        font-weight: 700;
+        box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.2);
+    }
+
+    .history-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 16px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: #64748b;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .history-btn:hover {
+        background: #f8fafc;
+    }
+
+    .save-btn {
+        width: 100%;
+        padding: 16px;
+        border-radius: 12px;
+        background: #003366;
+        color: white;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: transform 0.2s ease;
+        box-shadow: 0 4px 12px rgba(0, 51, 102, 0.2);
+    }
+
+    .save-btn:active {
+        transform: scale(0.98);
+    }
+
+    .save-btn-container {
+        position: fixed;
+        bottom: 80px;
+        left: 24px;
+        right: 24px;
+        z-index: 30;
+        max-width: calc(100% - 48px);
+    }
+
+    .loading-spinner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 50vh;
+    }
+
+    .error-message {
+        padding: 16px;
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+        border-radius: 12px;
+        color: #dc2626;
+        margin: 24px;
+    }
+</style>
+
+@if (isLoading)
 {
-    <!-- Dark Background -->
-    <div @onclick="CloseCameraModal"
-        style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9998;"></div>
-
-    <!-- Modal Content -->
-    <div @onclick:stopPropagation
-        style="position: fixed; top: 70px; bottom: 85px; left: 50%; transform: translateX(-50%); z-index: 20000; width: 90vw; max-width: 600px;">
-        <MudPaper Class="d-flex flex-column" Style="height: 100%; padding: 0; position: relative;">
-            <!-- Header -->
-            <div class="d-flex justify-space-between align-center pa-4"
-                Style="border-bottom: 1px solid rgba(0,0,0,0.1); flex-shrink: 0;">
-                <MudText Typo="Typo.h6">Nova Foto</MudText>
-                <MudIconButton Icon="@Icons.Material.Filled.Close" OnClick="CloseCameraModal" />
-            </div>
-
-            <!-- Scrollable Content Area -->
-            <div Style="flex: 1; overflow-y: auto; padding: 16px; min-height: 0;">
-                <!-- Video Feed -->
-                <div class="width-100 mb-3" style="background: black; position: relative; height: 300px;">
-                    <video id="detail-camera-feed" autoplay playsinline
-                        style="width: 100%; height: 100%; object-fit: cover;"></video>
-                </div>
-
-                <!-- Camera Controls -->
-                <div class="d-flex gap-4 justify-center mb-3">
-                    <MudIconButton Icon="@Icons.Material.Filled.FlipCameraIos" Color="Color.Secondary"
-                        OnClick="SwitchCamera" Size="Size.Large" />
-                    <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Camera" OnClick="CaptureNewPhoto" />
-                </div>
-
-                <!-- Photo Thumbnails -->
-                @if (newPhotos.Any())
-                {
-                    <div class="d-flex gap-2 mb-3 overflow-x-auto width-100">
-                        @foreach (var p in newPhotos)
-                        {
-                            <MudImage Src="@p" Width="60" Height="60" ObjectFit="ObjectFit.Cover" Class="rounded" />
-                        }
-                    </div>
-                }
-            </div>
-
-            <!-- Fixed Save Button at Bottom -->
-            @if (newPhotos.Any())
-            {
-                <div
-                    Style="padding: 16px; border-top: 1px solid rgba(0,0,0,0.1); background: var(--mud-palette-surface); flex-shrink: 0; position: relative; z-index: 10;">
-                    <MudButton Variant="Variant.Filled" Color="Color.Success" FullWidth="true" OnClick="SaveNewPhotos">
-                        Salvar (@newPhotos.Count)</MudButton>
-                </div>
-            }
-        </MudPaper>
+    <div class="loading-spinner">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
     </div>
 }
-
-<!-- Full Image Overlay -->
-@if (showFullImage)
+else if (!string.IsNullOrEmpty(errorMessage))
 {
-    <MudOverlay Visible="true" DarkBackground="true" AutoClose="true" OnClick="CloseFullImage" ZIndex="3000">
-        <div class="d-flex justify-center align-center" style="width: 100vw; height: 100vh; padding: 20px;">
-            <MudImage Src="@fullImageSrc" ObjectFit="ObjectFit.Contain" Style="max-width: 100%; max-height: 100%;" />
-            <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Surface" Size="Size.Large"
-                Style="position: absolute; top: 20px; right: 20px;" OnClick="CloseFullImage" />
+    <div class="error-message">
+        @errorMessage
+    </div>
+    <div style="padding: 24px;">
+        <button class="history-btn" @onclick="GoBack">
+            ← Voltar
+        </button>
+    </div>
+}
+else if (item == null)
+{
+    <div class="error-message">
+        Item não encontrado ou removido.
+    </div>
+    <div style="padding: 24px;">
+        <button class="history-btn" @onclick="GoBack">
+            ← Voltar
+        </button>
+    </div>
+}
+else
+{
+    <div class="details-container">
+        <!-- Header -->
+        <header class="details-header">
+            <button class="details-header-back" @onclick="GoBack" title="Voltar">
+                ←
+            </button>
+            <div class="details-header-content">
+                <h1 class="details-header-title">Detalhes</h1>
+                <p class="details-header-subtitle">Patrimônio #@item.Code</p>
+            </div>
+            <div class="details-header-user">
+                <div class="details-header-user-info">
+                    <span class="details-header-user-name">Aspec Avatar</span>
+                    <span class="details-header-user-status">Online</span>
+                </div>
+                <div class="details-header-avatar">
+                    <span class="material-symbols-outlined">account_circle</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="details-main">
+            <!-- Image Section -->
+            <div class="details-image-container">
+                <div class="details-image">
+                    @if (!string.IsNullOrEmpty(item.CoverImage))
+                    {
+                        <img src="@item.CoverImage" alt="@item.Name" />
+                    }
+                    else
+                    {
+                        <span class="material-symbols-outlined" style="font-size: 48px; color: #cbd5e1;">image</span>
+                    }
+                </div>
+                <div class="details-image-dots">
+                    <div class="details-image-dot"></div>
+                    <div class="details-image-dot inactive"></div>
+                    <div class="details-image-dot inactive"></div>
+                </div>
+                <button class="details-image-btn" @onclick="AddPhotos">
+                    <span class="material-symbols-outlined">add_a_photo</span>
+                </button>
+            </div>
+
+            <!-- Content Section -->
+            <div class="details-content">
+                <div class="details-section">
+                    <!-- Description -->
+                    <div class="field-container">
+                        <label class="field-label">Descrição</label>
+                        <textarea class="field-input" placeholder="Descreva o item..." rows="4">@item.Name</textarea>
+                    </div>
+
+                    <!-- Value and Location Row -->
+                    <div class="field-row">
+                        <div class="field-container">
+                            <label class="field-label">Valor Estimado</label>
+                            <div style="display: flex; align-items: center;">
+                                <span style="color: #94a3b8; margin-right: 4px; font-size: 14px; font-weight: 500;">R$</span>
+                                <input type="text" class="field-input" value="@item.EstimatedValue.ToString("N2")" />
+                            </div>
+                        </div>
+                        <div class="field-container">
+                            <label class="field-label">Localização</label>
+                            <select class="field-select">
+                                <option selected>@item.Location</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Conservation State -->
+                    <div class="details-section">
+                        <label class="field-label">Estado de Conservação</label>
+                        <div class="conservation-buttons">
+                            <button class="conservation-btn new @(item.State == ConservationState.New ? "active" : "")" 
+                                @onclick="() => UpdateConservationState(ConservationState.New)">
+                                Novo
+                            </button>
+                            <button class="conservation-btn good @(item.State == ConservationState.Good ? "active" : "")" 
+                                @onclick="() => UpdateConservationState(ConservationState.Good)">
+                                Bom
+                            </button>
+                            <button class="conservation-btn regular @(item.State == ConservationState.Regular ? "active" : "")" 
+                                @onclick="() => UpdateConservationState(ConservationState.Regular)">
+                                Regular
+                            </button>
+                            <button class="conservation-btn recoverable @(item.State == ConservationState.Recoverable ? "active" : "")" 
+                                @onclick="() => UpdateConservationState(ConservationState.Recoverable)">
+                                Recuperável
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Observations -->
+                    <div class="field-container">
+                        <label class="field-label">Observações</label>
+                        <input type="text" class="field-input" placeholder="Adicionar nota..." value="@item.Observations" />
+                    </div>
+                </div>
+
+                <!-- History Button -->
+                <div>
+                    <button class="history-btn">
+                        <span class="material-symbols-outlined">history</span>
+                        Ver Histórico de Movimentações
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Save Button - Floating -->
+        <div class="save-btn-container">
+            <button class="save-btn" @onclick="SaveChanges">
+                <span>Salvar Alterações</span>
+            </button>
         </div>
-    </MudOverlay>
+    </div>
 }
 
 @code {
     [Parameter] public string Id { get; set; } = string.Empty;
     private InventoryItem? item;
     private bool isLoading = true;
-    private bool showCameraModal = false;
-    private bool useFrontCamera = false;
-    private List<string> newPhotos = new();
-    private bool showFullImage = false;
-    private string fullImageSrc = string.Empty;
+    private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadItem();
+        try
+        {
+            await LoadItem();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao inicializar página: {ex.Message}";
+            Console.Error.WriteLine($"ItemDetails OnInitializedAsync error: {ex}");
+            isLoading = false;
+        }
     }
 
     private async Task LoadItem()
     {
         isLoading = true;
+        errorMessage = null;
         try
         {
+            if (string.IsNullOrEmpty(Id))
+            {
+                errorMessage = "ID do item não fornecido";
+                isLoading = false;
+                return;
+            }
+
             item = await DbService.GetAsync<InventoryItem>("items", Id);
+            
+            if (item == null)
+            {
+                errorMessage = "Item não encontrado no banco de dados";
+            }
         }
         catch (Exception ex)
         {
-            ToastService.ShowError("Erro ao carregar item: " + ex.Message);
+            errorMessage = $"Erro ao carregar item: {ex.Message}";
+            Console.Error.WriteLine($"LoadItem error: {ex}");
+            ToastService.ShowError(errorMessage);
         }
         finally
         {
@@ -225,133 +546,40 @@
         }
     }
 
-    private async Task AddPhotos()
+    private void AddPhotos()
     {
-        showCameraModal = true;
-        appState.IsCameraActive = true;
-        newPhotos.Clear();
-        StateHasChanged();
-        await CameraService.StartCameraAsync("detail-camera-feed", useFrontCamera);
+        ToastService.ShowInfo("Funcionalidade de câmera em desenvolvimento");
     }
 
-    private async Task SwitchCamera()
+    private void UpdateConservationState(ConservationState state)
     {
-        useFrontCamera = !useFrontCamera;
-        await CameraService.StopCameraAsync("detail-camera-feed");
-        await CameraService.StartCameraAsync("detail-camera-feed", useFrontCamera);
-    }
-
-    private async Task CaptureNewPhoto()
-    {
-        try
+        if (item != null)
         {
-            var photo = await CameraService.TakePhotoAsync("detail-camera-feed");
-            if (!string.IsNullOrEmpty(photo))
-            {
-                newPhotos.Add(photo);
-                ToastService.ShowSuccess("Foto capturada!");
-            }
-        }
-        catch (Exception ex)
-        {
-            ToastService.ShowError("Erro ao capturar foto: " + ex.Message);
+            item.State = state;
+            StateHasChanged();
         }
     }
 
-    private async Task SaveNewPhotos()
-    {
-        if (item == null || !newPhotos.Any()) return;
-
-        try
-        {
-            item.Photos.AddRange(newPhotos);
-            await DbService.UpdateAsync("items", item);
-            await CloseCameraModal();
-            ToastService.ShowSuccess($"{newPhotos.Count} foto(s) adicionada(s) com sucesso!");
-            newPhotos.Clear();
-        }
-        catch (Exception ex)
-        {
-            ToastService.ShowError("Erro ao salvar fotos: " + ex.Message);
-        }
-    }
-
-    // Replaces the custom modal with MudDialog MessageBox
-    private async Task ConfirmRemovePhoto(int index)
-    {
-        bool? result = await DialogService.ShowMessageBox(
-        "Confirmar Remoção",
-        "Deseja realmente remover esta foto?",
-        yesText: "Remover", cancelText: "Cancelar");
-
-        if (result == true)
-        {
-            await RemovePhoto(index);
-        }
-    }
-
-    private async Task RemovePhoto(int index)
+    private async Task SaveChanges()
     {
         if (item == null) return;
+
         try
         {
-            // Determinar se é remota ou local com base na exibição (prioridade para Photos)
-            if (item.Photos.Any())
-            {
-                if (index < item.Photos.Count)
-                {
-                    item.Photos.RemoveAt(index);
-                }
-            }
-            else
-            {
-                if (index < item.RemoteUrls.Count)
-                {
-                    item.RemoteUrls.RemoveAt(index);
-                }
-            }
-
+            item.UpdatedAt = DateTime.UtcNow;
             await DbService.UpdateAsync("items", item);
-            ToastService.ShowSuccess("Foto removida com sucesso!");
+            ToastService.ShowSuccess("Item atualizado com sucesso!");
         }
         catch (Exception ex)
         {
-            ToastService.ShowError("Erro ao remover foto: " + ex.Message);
+            errorMessage = $"Erro ao salvar alterações: {ex.Message}";
+            ToastService.ShowError(errorMessage);
+            Console.Error.WriteLine($"SaveChanges error: {ex}");
         }
-    }
-
-    private void ViewFullImage(string photo)
-    {
-        fullImageSrc = photo;
-        showFullImage = true;
-    }
-
-    private void CloseFullImage()
-    {
-        showFullImage = false;
-        fullImageSrc = string.Empty;
-    }
-
-    private async Task CloseCameraModal()
-    {
-        await CameraService.StopCameraAsync("detail-camera-feed");
-        showCameraModal = false;
-        appState.IsCameraActive = false;
-        newPhotos.Clear();
-    }
-
-    private void EditItem()
-    {
-        ToastService.Show("Funcionalidade de edição em desenvolvimento", "info");
     }
 
     private void GoBack()
     {
-        Navigation.NavigateTo("/home");
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await CameraService.StopCameraAsync("detail-camera-feed");
+        Navigation.NavigateTo("/dashboard");
     }
 }

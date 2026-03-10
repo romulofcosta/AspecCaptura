@@ -1,11 +1,15 @@
-﻿<CascadingAuthenticationState>
+﻿@using pwa_camera_poc_blazor.Components.Shared
+@using pwa_camera_poc_blazor.Components
+
+<CascadingAuthenticationState>
+    <pwa_camera_poc_blazor.Components.Shared.UpdateNotification />
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MinimalLayout)">
                 <Authorizing>
-                    <div class="d-flex justify-center align-center" style="height: 100vh;">
+                    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #FFFFFF;">
                         <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-                        <MudText Class="ml-4">Verificando autorização...</MudText>
+                        <span style="margin-left: 16px; color: #64748B;">Verificando autorização...</span>
                     </div>
                 </Authorizing>
                 <NotAuthorized>
@@ -23,8 +27,11 @@
         </Found>
         <NotFound>
             <PageTitle>Not found</PageTitle>
-            <LayoutView Layout="@typeof(MainLayout)">
-                <p role="alert">Desculpe, não há nada neste endereço.</p>
+            <LayoutView Layout="@typeof(MinimalLayout)">
+                <div style="text-align: center; padding: 40px 24px; color: #94A3B8;">
+                    <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Style="opacity: 0.3; font-size: 64px;" />
+                    <p style="margin-top: 16px; font-size: 14px;">Desculpe, não há nada neste endereço.</p>
+                </div>
             </LayoutView>
         </NotFound>
     </Router>

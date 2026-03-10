@@ -1,0 +1,58 @@
+@using pwa_camera_poc_blazor.Models
+
+@* Hierarchical Dropdown Component *@
+
+<div class="hierarchical-dropdown">
+    <label class="hierarchical-dropdown__label">@Label</label>
+    <div class="hierarchical-dropdown__wrapper">
+        <select 
+            class="hierarchical-dropdown__select @(IsLoading ? "loading" : "")"
+            value="@SelectedValue"
+            disabled="@(!IsEnabled || IsLoading)"
+            @onchange="HandleValueChanged">
+            <option value="">@Placeholder</option>
+            @if (Options != null)
+            {
+                @foreach (var option in Options)
+                {
+                    <option value="@option.Id">@option.Name</option>
+                }
+            }
+        </select>
+        @if (IsLoading)
+        {
+            <div class="hierarchical-dropdown__spinner">
+                <div class="loading-spinner loading-spinner-small"></div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Placeholder { get; set; } = "Selecione...";
+
+    [Parameter]
+    public List<HierarchyNode>? Options { get; set; }
+
+    [Parameter]
+    public string? SelectedValue { get; set; }
+
+    [Parameter]
+    public bool IsEnabled { get; set; } = true;
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnValueChanged { get; set; }
+
+    private async Task HandleValueChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? string.Empty;
+        await OnValueChanged.InvokeAsync(value);
+    }
+}

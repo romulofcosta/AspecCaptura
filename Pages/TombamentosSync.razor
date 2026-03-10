@@ -1,5 +1,6 @@
 @page "/tombamentos-sync"
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using MudBlazor
 @inject pwa_camera_poc_blazor.Services.Sync.SyncService SyncService
 @inject pwa_camera_poc_blazor.Services.Auth.IAuthService AuthService
 @inject ISnackbar Snackbar
@@ -50,6 +51,7 @@
             if (user == null || string.IsNullOrEmpty(user.Prefixo))
             {
                 Snackbar.Add("Usuário não autenticado.", Severity.Warning);
+                Navigation.NavigateTo("/login");
                 return;
             }
 
@@ -75,9 +77,27 @@
 
             Navigation.NavigateTo("/configuracao-sessao");
         }
+        catch (HttpRequestException ex)
+        {
+            Console.Error.WriteLine($"Erro de conexão: {ex.Message}");
+            Snackbar.Add("Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.", Severity.Error);
+            // Aguarda 2 segundos e redireciona para configuração de sessão (modo offline)
+            await Task.Delay(2000);
+            Navigation.NavigateTo("/configuracao-sessao");
+        }
+        catch (TaskCanceledException ex)
+        {
+            Console.Error.WriteLine($"Timeout na sincronização: {ex.Message}");
+            Snackbar.Add("A sincronização demorou muito. Tente novamente mais tarde.", Severity.Warning);
+            await Task.Delay(2000);
+            Navigation.NavigateTo("/configuracao-sessao");
+        }
         catch (Exception ex)
         {
-            Snackbar.Add(ex.Message, Severity.Error);
+            Console.Error.WriteLine($"Erro na sincronização: {ex.Message}");
+            Snackbar.Add($"Erro ao sincronizar: {ex.Message}", Severity.Error);
+            await Task.Delay(2000);
+            Navigation.NavigateTo("/configuracao-sessao");
         }
         finally
         {

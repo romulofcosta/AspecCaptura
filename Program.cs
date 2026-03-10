@@ -1,21 +1,28 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.Extensions.DependencyInjection;
 using pwa_camera_poc_blazor;
 using pwa_camera_poc_blazor.Services;
 using pwa_camera_poc_blazor.Services.Auth;
 using pwa_camera_poc_blazor.Services.Camera;
 using pwa_camera_poc_blazor.Services.Storage;
 using pwa_camera_poc_blazor.Services.AWS;
+using pwa_camera_poc_blazor.Services.Crypto;
+using pwa_camera_poc_blazor.Services.Image;
+using pwa_camera_poc_blazor.Services.Notification;
+using pwa_camera_poc_blazor.Services.Sync;
 using pwa_camera_poc_blazor.Models;
 using MudBlazor.Services;
 using MudBlazor;
-using pwa_camera_poc_blazor.Services.Sync;
+using LocalStorageService = pwa_camera_poc_blazor.Services.Storage.LocalStorageService;
+using ILocalStorageService = pwa_camera_poc_blazor.Services.Storage.ILocalStorageService;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+
+// Configure logging
+builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
@@ -30,15 +37,37 @@ builder.Services.AddHttpClient("BackendApi", client =>
     client.BaseAddress = new Uri(apiBaseUrl);
 });
 
+// Storage Services
 builder.Services.AddScoped<IIndexedDbService, IndexedDbService>();
 builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
+
+// Core Services
+builder.Services.AddScoped<AppState>();
+builder.Services.AddScoped<ToastService>();
+builder.Services.AddSingleton<IAppInfo, AppInfo>();
+builder.Services.AddScoped<IUpdateService, UpdateService>();
+
+// Auth Services
+builder.Services.AddScoped<BruteForceProtection>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<CameraService>();
+
+// Crypto Services
+builder.Services.AddScoped<ICryptoService, CryptoService>();
+
+// Camera and Image Services
+builder.Services.AddScoped<IImageCompressor, ImageCompressor>();
+builder.Services.AddScoped<ICameraService, CameraService>();
+
+// Sync Services
+builder.Services.AddScoped<SyncService>(); // Legacy patrimonio sync
+builder.Services.AddScoped<ISyncService, ItemSyncService>(); // New item sync
+
+// Notification Services
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+// AWS Services (legacy)
 builder.Services.AddScoped<AwsConfig>();
 builder.Services.AddScoped<IAwsStorageService, AwsStorageService>();
-builder.Services.AddScoped<pwa_camera_poc_blazor.Services.ToastService>();
-builder.Services.AddScoped<AppState>();
-builder.Services.AddScoped<SyncService>();
 
 // UI Component Library
 // MudBlazor: Material Design component library (free & open-source)

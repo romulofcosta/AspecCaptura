@@ -1,30 +1,61 @@
-<div id="toast" class="toast @(IsVisible ? "" : "hidden") @TypeClass"
-    style="@(IsVisible ? "display:block;" : "display:none;")">
-    <div id="toast-message">@Message</div>
-</div>
+@using pwa_camera_poc_blazor.Services
+@inject ToastService ToastService
+@implements IDisposable
+
+@* Toast Notification Component *@
+
+@if (IsVisible)
+{
+    <div class="toast toast-@Type">
+        <div class="toast__content">
+            <i class="material-icons toast__icon">@GetIcon()</i>
+            <span class="toast__message">@Message</span>
+        </div>
+    </div>
+}
 
 @code {
-    private bool IsVisible = false;
-    private string Message = "";
-    private string TypeClass = ""; // success, error, info
+    private bool IsVisible { get; set; }
+    private string Message { get; set; } = string.Empty;
+    private string Type { get; set; } = "info";
+    private System.Threading.Timer? _dismissTimer;
 
-    public void Show(string message, string type = "info")
+    protected override void OnInitialized()
+    {
+        ToastService.OnShow += ShowToast;
+    }
+
+    private void ShowToast(string message, string type)
     {
         Message = message;
-        TypeClass = type == "success" ? "success" : (type == "error" ? "error" : ""); // Map to CSS classes if needed
-                                                                                      // Assuming CSS handles .success etc on .toast or .auth-alert logic
-                                                                                      // Original JS: showToast('...', 'success').
-                                                                                      // CSS likely has .toast.success or similar.
-                                                                                      // I will just pass the type as class.
-        TypeClass = type;
-
+        Type = type;
         IsVisible = true;
         StateHasChanged();
 
-        Task.Delay(3000).ContinueWith(_ =>
+        // Auto-dismiss after 5 seconds
+        _dismissTimer?.Dispose();
+        _dismissTimer = new System.Threading.Timer(_ =>
         {
             IsVisible = false;
             InvokeAsync(StateHasChanged);
-        });
+        }, null, TimeSpan.FromSeconds(5), Timeout.InfiniteTimeSpan);
+    }
+
+    private string GetIcon()
+    {
+        return Type switch
+        {
+            "success" => "check_circle",
+            "error" => "error",
+            "warning" => "warning",
+            "info" => "info",
+            _ => "info"
+        };
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnShow -= ShowToast;
+        _dismissTimer?.Dispose();
     }
 }

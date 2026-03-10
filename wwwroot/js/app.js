@@ -1,10 +1,10 @@
 window.appInterop = {
     setTheme: (theme) => {
         document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('pwa-inventory-theme', theme);
+        localStorage.setItem('aspec-captura-theme', theme);
     },
     getTheme: () => {
-        return localStorage.getItem('pwa-inventory-theme') || 'light';
+        return localStorage.getItem('aspec-captura-theme') || 'light';
     },
     downloadFile: (fileName, base64Content) => {
         const link = document.createElement('a');

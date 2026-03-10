@@ -1,4 +1,4 @@
-# Relatório de Análise Técnica: PWA Camera POC
+# Relatório de Análise Técnica: Aspec Captura
 **Data:** 18/02/2026
 **Status:** ✅ RESOLVIDO - Migração para BFF e Acesso Provisionado concluída.
 **Autor:** Antigravity Agent

@@ -2,6 +2,14 @@
 # Build script universal - Netlify e Cloudflare Pages
 set -e
 
+# Obter versão do último commit com tag de versão
+VERSION=$(git log --oneline | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+if [ -z "$VERSION" ]; then
+    VERSION="v0.2.2"  # Fallback para versão padrão
+fi
+
+echo "=== Versão detectada: $VERSION ==="
+
 # Detectar plataforma
 if [ -n "$NETLIFY" ]; then
     PLATFORM="netlify"
@@ -56,6 +64,10 @@ fi
 
 #sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" wwwroot/appsettings.json
 sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" bin/Release/net8.0/publish/wwwroot/appsettings.json
+
+# Substituir versão no index.html
+echo "Substituindo versão no index.html..."
+sed -i "s|__APP_VERSION__|$VERSION|g" bin/Release/net8.0/publish/wwwroot/index.html
 
 
 # Ajustes específicos por plataforma

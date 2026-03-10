@@ -1,4 +1,6 @@
-﻿@page "/home"
+﻿@page "/"
+@page "/home"
+@layout MinimalLayout
 @using pwa_camera_poc_blazor.Models
 @inject IAuthService AuthService
 @inject IIndexedDbService DbService
@@ -11,319 +13,137 @@
 @implements IDisposable
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
-<PageTitle>Inventário - ASPEC Capture</PageTitle>
+<PageTitle>Aspec Captura</PageTitle>
 
-<MudContainer id="home-container" MaxWidth="MaxWidth.Large" Class="mt-4 pb-20" Style="overflow-y: auto; height: 100%;">
-    <MudGrid Spacing="2">
-        <!-- Search and Filter Bar -->
-        <MudItem xs="12">
-            <MudPaper Elevation="0" Class="d-flex gap-2 align-center pa-2 mud-background-gray rounded-lg">
-                <MudTextField @bind-Value="searchQuery" Placeholder="Buscar por nome, código ou categoria..."
-                    Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined"
-                    Class="flex-grow-1" Clearable="true" OnClearButtonClick="ClearSearch" Margin="Margin.Dense"
-                    UserAttributes="@(new Dictionary<string, object> { { "id", "search-input" } })" />
-
-                <div class="d-flex gap-2">
-                    <MudIconButton Icon="@Icons.Material.Filled.FilterList"
-                        Color="@(showFilters ? Color.Primary : Color.Default)" OnClick="ToggleFilters" title="Filtros" />
-
-                    <MudIconButton Icon="@Icons.Material.Filled.Sync"
-                        Color="@(isSyncing ? Color.Warning : Color.Primary)" 
-                        OnClick="@(() => SyncPendingItems(false))" 
-                        Disabled="@isSyncing"
-                        title="@(isSyncing ? "Sincronizando..." : "Sincronizar")" />
-
-                    <MudIconButton
-                        Icon="@(viewMode == "grid" ? Icons.Material.Filled.GridView : Icons.Material.Filled.ViewList)"
-                        Color="@(viewMode == "grid" ? Color.Primary : Color.Default)" OnClick="ToggleViewMode"
-                        title="Alternar Visualização" />
+<!-- Header -->
+<div class="minimal-header">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: #F1F5F9; display: flex; align-items: center; justify-content: center;">
+                <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Medium" Color="Color.Default" />
+            </div>
+            <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <h1 style="font-size: 18px; font-weight: 600; color: #003366; margin: 0;">
+                        Olá, @GetFirstName()
+                    </h1>
                 </div>
-            </MudPaper>
-        </MudItem>
+                <p style="font-size: 12px; color: #94A3B8; font-weight: 500; margin: 0;">Aspec Captura</p>
+            </div>
+        </div>
+        <MudIconButton Icon="@Icons.Material.Filled.Notifications" 
+                       Color="Color.Default" 
+                       Style="background: #F8FAFC; border-radius: 50%;" 
+                       OnClick="@(() => Navigation.NavigateTo("/notifications"))" />
+    </div>
+    
+    <div class="context-info" style="justify-content: space-between;">
+        <div class="context-info">
+            <MudIcon Icon="@Icons.Material.Filled.BusinessCenter" Size="Size.Small" Color="Color.Default" />
+            <span class="context-text">@GetContextName()</span>
+        </div>
+        <button class="btn-change" @onclick="ChangeContext">Alterar</button>
+    </div>
+</div>
 
-        <!-- Filter Panel -->
-        @if (showFilters)
-        {
-            <MudItem xs="12">
-                <MudPaper Class="pa-4" Elevation="1">
-                    <MudGrid Spacing="2">
-                        <MudItem xs="12" md="8">
-                            <MudText Typo="Typo.subtitle2" Class="mb-2">Categoria</MudText>
-                            <div class="d-flex gap-2 flex-wrap">
-                                @foreach (var category in categories)
-                                {
-                                    <MudChip T="string" Color="@(selectedCategory == category ? Color.Primary : Color.Default)"
-                                        OnClick="() => SelectCategory(category)"
-                                        Variant="@(selectedCategory == category ? Variant.Filled : Variant.Outlined)">
-                                        @category
-                                    </MudChip>
-                                }
-                            </div>
-                        </MudItem>
-                        <MudItem xs="12" md="4">
-                            <MudSelect T="string" @bind-Value="SortOrderProperty" Label="Ordenar por" Variant="Variant.Outlined"
-                                AnchorOrigin="Origin.BottomCenter" Margin="Margin.Dense" Dense="true"
-                                UserAttributes="@(new Dictionary<string, object> { { "id", "sort-select" } })">
-                                <MudSelectItem Value="@("newest")">Mais recentes</MudSelectItem>
-                                <MudSelectItem Value="@("oldest")">Mais antigos</MudSelectItem>
-                                <MudSelectItem Value="@("name-asc")">Nome (A-Z)</MudSelectItem>
-                                <MudSelectItem Value="@("name-desc")">Nome (Z-A)</MudSelectItem>
-                                <MudSelectItem Value="@("code-asc")">Código (A-Z)</MudSelectItem>
-                            </MudSelect>
-                        </MudItem>
-                    </MudGrid>
-                </MudPaper>
-            </MudItem>
-        }
-
+<!-- Main Content -->
+<div style="padding: 32px 24px;">
+    
+    <!-- Statistics Cards -->
+    <section style="margin-bottom: 40px;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+            <div class="minimal-card stat-card">
+                <span class="stat-label">Total</span>
+                <span class="stat-value" style="color: #003366;">@items.Count</span>
+            </div>
+            <div class="minimal-card stat-card">
+                <span class="stat-label">Sincro.</span>
+                <span class="stat-value" style="color: #2e7d32;">@items.Count(i => i.Synced)</span>
+            </div>
+            <div class="minimal-card stat-card">
+                <span class="stat-label">Pend.</span>
+                <span class="stat-value" style="color: #ed6c02;">@items.Count(i => !i.Synced)</span>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Search and Capture -->
+    <section style="margin-bottom: 40px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="position: relative;">
+            <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                <MudIcon Icon="@Icons.Material.Filled.Search" Size="Size.Small" Color="Color.Default" />
+            </div>
+            <input class="search-minimal" 
+                   placeholder="Buscar patrimônio..." 
+                   type="text" 
+                   @bind="searchQuery"
+                   @bind:event="oninput" />
+        </div>
+        
+        <button class="btn-primary-minimal" @onclick="StartCapture">
+            <MudIcon Icon="@Icons.Material.Filled.PhotoCamera" Size="Size.Small" Color="Color.Surface" />
+            <span>Iniciar Captura</span>
+        </button>
+    </section>
+    
+    <!-- Recent Items -->
+    <section>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+            <h2 class="section-title">Itens Recentes</h2>
+            <button class="btn-change" @onclick="ViewAll">Ver todos</button>
+        </div>
+        
         @if (isLoading)
         {
-            <MudItem xs="12" Class="d-flex justify-center my-16">
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-            </MudItem>
+            <div style="display: flex; justify-content: center; padding: 40px 0;">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            </div>
         }
         else if (!filteredItems.Any())
         {
-            <MudItem xs="12" Class="d-flex flex-column align-center my-16">
-                <MudIcon Icon="@Icons.Material.Filled.CameraAlt" Size="Size.Large" Color="Color.Default"
-                    Style="font-size: 6rem; opacity: 0.1;" />
-                <MudText Typo="Typo.h5" Class="mt-4">Nenhum item encontrado</MudText>
-                <MudText Typo="Typo.body1" Color="Color.Secondary">Tente mudar os filtros ou capture novos itens.</MudText>
-            </MudItem>
+            <div style="text-align: center; padding: 40px 0; color: #94A3B8;">
+                <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Large" Style="opacity: 0.3; font-size: 64px;" />
+                <p style="margin-top: 16px; font-size: 14px;">Nenhum item encontrado</p>
+            </div>
         }
         else
         {
-            @foreach (var item in pagedItems)
+            @foreach (var item in filteredItems.Take(10))
             {
-                <MudItem Class="inventory-grid-item" xs="12" sm="@(viewMode == "list" ? 12 : 6)" md="@(viewMode == "list" ? 12 : 6)"
-                    lg="@(viewMode == "list" ? 12 : 6)">
-                    <ItemCard Item="item" OnView="NavigateToItemCallback" IsListView="@(viewMode == "list")" />
-                </MudItem>
-            }
-
-            @if (totalPages > 1)
-            {
-                <MudItem xs="12" Class="d-flex justify-center align-center gap-4 my-8">
-                    <MudButton Variant="Variant.Outlined" Disabled="@(currentPage == 1)" OnClick="PrevPage"
-                        StartIcon="@Icons.Material.Filled.ChevronLeft">Anterior</MudButton>
-                    <MudText Typo="Typo.body2">Página @currentPage de @totalPages</MudText>
-                    <MudButton Variant="Variant.Outlined" Disabled="@(currentPage == totalPages)" OnClick="NextPage"
-                        EndIcon="@Icons.Material.Filled.ChevronRight">Próxima</MudButton>
-                </MudItem>
+                <div class="item-card-minimal" @onclick="@(() => NavigateToItem(item))">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div class="icon-box">
+                            <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Small" Color="Color.Default" />
+                        </div>
+                        <div>
+                            <p style="font-weight: 600; color: #1E293B; font-size: 14px; margin: 0;">@item.Name</p>
+                            <p style="font-size: 10px; color: #94A3B8; font-weight: 500; margin: 0;">
+                                #@item.Code • @item.UpdatedAt.ToString("dd/MM HH:mm")
+                            </p>
+                        </div>
+                    </div>
+                    @if (item.Synced)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Color="Color.Success" />
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.CloudOff" Size="Size.Small" Color="Color.Default" Style="opacity: 0.3;" />
+                    }
+                </div>
             }
         }
-    </MudGrid>
-</MudContainer>
+    </section>
+</div>
 
 @code {
     private List<InventoryItem> items = new();
     private string searchQuery = "";
-    private string selectedCategory = "Todas";
-    private string sortOrder = "newest";
-    private string viewMode = "list";
-    private bool showFilters = false;
     private bool isLoading = true;
-    private bool isSyncing = false;
-
-    // Pagination
-    private int currentPage = 1;
-    private int pageSize = 12;
-
-    private readonly string[] categories = { "Todas", "Móveis", "Eletrônicos", "Equipamentos", "Ferramentas", "Materiais",
-"Outros" };
-
-    // Property binding for Sort Order to handle page reset
-    private string SortOrderProperty
-    {
-        get => sortOrder;
-        set
-        {
-            if (sortOrder != value)
-            {
-                sortOrder = value;
-                currentPage = 1;
-            }
-        }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            try
-            {
-                await Task.Delay(500);
-                await JSRuntime.InvokeVoidAsync("appInterop.checkOverflow", "#home-container");
-                
-                // Tenta sincronizar automaticamente ao carregar (mas sem bloquear UI ou forçar re-upload agressivo)
-                _ = SyncPendingItems(autoSync: true);
-            }
-            catch { /* Log or handle JS interop errors if necessary */ }
-        }
-    }
-
-    private async Task SyncPendingItems(bool autoSync = false)
-    {
-        if (isSyncing) return;
-        
-        // Se for autoSync, não bloqueamos UI com loading global, apenas processamos
-        if (!autoSync) 
-        {
-            isSyncing = true;
-            await InvokeAsync(StateHasChanged);
-        }
-
-        try
-        {
-            var user = await AuthService.GetCurrentUserAsync();
-            var username = user?.UsuarioNome ?? "unknown";
-
-            // CORREÇÃO OTIMIZADA: Buscar apenas IDs dos itens pendentes para evitar carregar fotos pesadas
-            // Usa índice 'synced' (false = 0)
-            List<string> pendingIds = new();
-            try {
-                pendingIds = await DbService.GetAllKeysFromIndexAsync<string>("items", "synced", 0);
-            }
-            catch {
-                 // Fallback: se índice não existir
-                 Console.WriteLine("Fallback sync: buscando todos os itens (lento)");
-                 var allItems = await DbService.GetAllAsync<InventoryItem>("items");
-                 if (allItems != null)
-                    pendingIds = allItems.Where(i => !i.Synced).Select(i => i.Id).ToList();
-            }
-
-            if (!pendingIds.Any()) 
-            {
-                if (!autoSync) isSyncing = false;
-                await InvokeAsync(StateHasChanged);
-                return;
-            }
-            
-            bool stateChanged = false;
-
-            // Processa um por um para economizar memória
-            foreach (var id in pendingIds)
-            {
-                // Carrega o item completo (com fotos)
-                var item = await DbService.GetAsync<InventoryItem>("items", id);
-                
-                // Filtra usuário
-                if (item == null || item.CreatedBy != username) continue;
-                if (item.Synced) continue;
-
-                bool itemSyncSuccess = false;
-
-                // 1. Verifica se já existe no S3 (evita re-upload desnecessário)
-                bool exists = await AwsService.ItemExistsInS3Async(item.Id);
-                
-                if (exists)
-                {
-                    itemSyncSuccess = true;
-                }
-                else
-                {
-                    // 2. Se não existe, tenta fazer o upload
-                    
-                    // A. Upload da Foto (se houver)
-                    bool photoSuccess = true;
-                    if (item.Photos != null && item.Photos.Any())
-                    {
-                        var firstPhoto = item.Photos.FirstOrDefault();
-                        if (!string.IsNullOrEmpty(firstPhoto))
-                        {
-                            var (success, url) = await AwsService.UploadPhotoAsync(item.Id, item.Code, firstPhoto);
-                            if (success && !string.IsNullOrEmpty(url))
-                            {
-                                if (item.RemoteUrls == null) item.RemoteUrls = new List<string>();
-                                if (!item.RemoteUrls.Contains(url))
-                                {
-                                    item.RemoteUrls.Add(url);
-                                }
-                            }
-                            else
-                            {
-                                photoSuccess = false;
-                                Console.WriteLine($"Falha ao enviar foto do item {item.Name}");
-                            }
-                        }
-                    }
-
-                    // B. Upload dos Metadados (apenas se foto ok ou se não tiver foto)
-                    if (photoSuccess)
-                    {
-                        var metadata = ItemMetadata.FromInventoryItem(item, username);
-                        var (metaSuccess, _) = await AwsService.UploadMetadataAsync(item.Id, metadata);
-                        
-                        if (metaSuccess)
-                        {
-                            itemSyncSuccess = true;
-                        }
-                        else
-                        {
-                             Console.WriteLine($"Falha ao enviar metadados do item {item.Name}");
-                        }
-                    }
-                }
-
-                // 3. Atualiza estado local se sucesso (seja por já existir ou por upload novo)
-                if (itemSyncSuccess)
-                {
-                    // Tenta garantir que temos a URL remota para exibição
-                    var imageUrl = await AwsService.GetItemImageUrlAsync(item);
-                    if (!string.IsNullOrEmpty(imageUrl))
-                    {
-                        if (item.RemoteUrls == null) item.RemoteUrls = new List<string>();
-                        if (!item.RemoteUrls.Contains(imageUrl))
-                        {
-                            item.RemoteUrls.Add(imageUrl);
-                        }
-                    }
-
-                    item.Synced = true;
-                    // item.Photos = new List<string>(); // MANTÉM fotos locais
-                    
-                    await DbService.UpdateAsync("items", item);
-                    stateChanged = true;
-                }
-            }
-
-            if (stateChanged)
-            {
-                // Atualiza contadores globais
-                if (user != null)
-                {
-                    // Como não temos 'synced' E 'createdBy' juntos, é difícil contar pendentes sem carregar.
-                    // Ignora contagem precisa por enquanto para evitar lentidão
-                }
-                
-                // Recarrega lista para refletir status
-                await LoadItems(); 
-                await InvokeAsync(StateHasChanged);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erro na sincronização: {ex.Message}");
-        }
-        finally
-        {
-            isSyncing = false;
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-    // Mantendo compatibilidade com o nome antigo caso algum outro componente chame, mas redirecionando
-    private async Task CheckRemoteSyncStatus() => await SyncPendingItems();
 
     protected override async Task OnInitializedAsync()
     {
         appState.OnChange += HandleStateChange;
-        // Carrega esfera do usuário para o AppState (resiliente a reload)
-        if (string.IsNullOrEmpty(appState.EsferaAtual))
-        {
-            var esfera = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user-esfera");
-            appState.EsferaAtual = esfera;
-        }
         await LoadItems();
     }
 
@@ -339,10 +159,11 @@
         {
             var user = await AuthService.GetCurrentUserAsync();
             string esfera = appState.EsferaAtual ?? user?.Esfera ?? string.Empty;
+            
             if (appState.CurrentUO?.IdUO != null)
             {
                 var allItems = await DbService.GetItemsByUOAsync(appState.CurrentUO.IdUO);
-                // Filtro por esfera
+                
                 if (esfera == "A")
                 {
                     items = allItems.ToList();
@@ -355,23 +176,23 @@
                 {
                     items = allItems.ToList();
                 }
-
-                // If no items, load example item
-                if (!items.Any())
-                {
-                    await LoadExampleItem(appState.CurrentUO.IdUO, user?.UsuarioNome ?? "");
-                    allItems = await DbService.GetItemsByUOAsync(appState.CurrentUO.IdUO);
-                    if (esfera == "A")
-                        items = allItems.ToList();
-                    else if (!string.IsNullOrEmpty(esfera))
-                        items = allItems.Where(i => i.Esfera == esfera).ToList();
-                    else
-                        items = allItems.ToList();
-                }
             }
             else
             {
                 items = new List<InventoryItem>();
+            }
+
+            // If no items, load example item
+            if (!items.Any())
+            {
+                await LoadExampleItem(appState.CurrentUO?.IdUO ?? "", user?.UsuarioNome ?? "");
+                var allItems = await DbService.GetItemsByUOAsync(appState.CurrentUO?.IdUO ?? "");
+                if (esfera == "A")
+                    items = allItems.ToList();
+                else if (!string.IsNullOrEmpty(esfera))
+                    items = allItems.Where(i => i.Esfera == esfera).ToList();
+                else
+                    items = allItems.ToList();
             }
         }
         catch (Exception ex)
@@ -396,7 +217,7 @@
                 exampleItem.IdUO = idUO;
                 exampleItem.IdArea = appState.CurrentArea?.IdArea;
                 exampleItem.IdSubarea = appState.CurrentSubarea?.IdSubarea;
-                exampleItem.CreatedBy = username; // Define o criador
+                exampleItem.CreatedBy = username;
                 await DbService.AddAsync("items", exampleItem);
             }
         }
@@ -406,56 +227,52 @@
         }
     }
 
-    private void ToggleFilters() => showFilters = !showFilters;
-    private void ToggleViewMode() => viewMode = viewMode == "grid" ? "list" : "grid";
-    private void ClearSearch() => searchQuery = "";
-
-    private void SelectCategory(string category)
-    {
-        selectedCategory = category;
-        currentPage = 1;
-    }
-
     private IEnumerable<InventoryItem> filteredItems
     {
         get
         {
             var result = items.AsEnumerable();
 
-            if (selectedCategory != "Todas")
-            {
-                result = result.Where(i => i.Category == selectedCategory);
-            }
-
             if (!string.IsNullOrWhiteSpace(searchQuery))
             {
                 result = result.Where(i =>
-                i.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                i.Code.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                i.Category.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+                    i.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    i.Code.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
                 );
             }
 
-            result = sortOrder switch
-            {
-                "oldest" => result.OrderBy(i => i.Timestamp),
-                "name-asc" => result.OrderBy(i => i.Name),
-                "name-desc" => result.OrderByDescending(i => i.Name),
-                "code-asc" => result.OrderBy(i => i.Code),
-                _ => result.OrderByDescending(i => i.Timestamp)
-            };
-
-            return result;
+            return result.OrderByDescending(i => i.UpdatedAt);
         }
     }
 
-    private int totalPages => (int)Math.Ceiling((double)filteredItems.Count() / pageSize);
-    private IEnumerable<InventoryItem> pagedItems => filteredItems.Skip((currentPage - 1) * pageSize).Take(pageSize);
+    private string GetFirstName()
+    {
+        if (appState.CurrentUser == null) return "Usuário";
+        var parts = appState.CurrentUser.NomeCompleto?.Split(' ');
+        return parts?.FirstOrDefault() ?? "Usuário";
+    }
 
-    private void PrevPage() { if (currentPage > 1) currentPage--; }
-    private void NextPage() { if (currentPage < totalPages) currentPage++; }
+    private string GetContextName()
+    {
+        return appState.CurrentUO?.NomeUO ?? "Selecione uma unidade";
+    }
 
-    private void NavigateToItemCallback(InventoryItem item)
+    private void ChangeContext()
+    {
+        Navigation.NavigateTo("/configuracao-sessao");
+    }
+
+    private void StartCapture()
+    {
+        Navigation.NavigateTo("/camera");
+    }
+
+    private void ViewAll()
+    {
+        Navigation.NavigateTo("/items");
+    }
+
+    private void NavigateToItem(InventoryItem item)
     {
         Navigation.NavigateTo($"/item/{item.Id}");
     }
