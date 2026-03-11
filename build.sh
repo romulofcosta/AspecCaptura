@@ -2,6 +2,7 @@
 # Build script universal - Netlify e Cloudflare Pages
 set -e
 
+# Detectar versão do último commit com tag
 VERSION=$(git log --oneline | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1)
 if [ -z "$VERSION" ]; then
     VERSION="v0.2.2"
@@ -9,6 +10,7 @@ fi
 
 echo "=== Versão detectada: $VERSION ==="
 
+# Detectar plataforma
 if [ -n "$NETLIFY" ]; then
     PLATFORM="netlify"
     OUTPUT_DIR="bin/Release/net8.0/publish"
@@ -22,6 +24,7 @@ fi
 
 echo "=== Plataforma detectada: $PLATFORM ==="
 
+# Instalar .NET se necessário
 if ! command -v dotnet &> /dev/null; then
     echo "Instalando .NET SDK 8.0.416..."
     curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.416 --install-dir "$PWD/.dotnet"
@@ -50,21 +53,22 @@ sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" bin/Release/net8.0/publish/wwwroot/a
 echo "Substituindo versão no index.html..."
 sed -i "s|__APP_VERSION__|$VERSION|g" bin/Release/net8.0/publish/wwwroot/index.html
 
+# Ajustes específicos por plataforma
 if [ "$PLATFORM" = "netlify" ]; then
     echo "=== Ajustando para Netlify ==="
     cp -rv bin/Release/net8.0/publish/wwwroot/* bin/Release/net8.0/publish/
     cat > bin/Release/net8.0/publish/_redirects << 'EOF'
 /*    /index.html   200
 EOF
-elif [ "$PLATFORM" = "cloudflare" ]; then
+
+elif [ "$PLATFORM" = "cloudflare" ] || [ "$PLATFORM" = "local" ]; then
     echo "=== Ajustando para Cloudflare Pages ==="
-    # Criar arquivo _redirects para Cloudflare Pages
+    # Garante que manifest.json e service-worker.js sejam servidos diretamente
     cat > bin/Release/net8.0/publish/wwwroot/_redirects << 'EOF'
+/manifest.json   /manifest.json   200
+/service-worker.js   /service-worker.js   200
 /*   /index.html   200
 EOF
-    echo "✓ Arquivo _redirects criado em bin/Release/net8.0/publish/wwwroot/"
-elif [ "$PLATFORM" = "local" ]; then
-    echo "=== Build local concluído ==="
 fi
 
 echo "=== Build concluído! Saída: $OUTPUT_DIR ==="
