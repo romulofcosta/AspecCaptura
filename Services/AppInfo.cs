@@ -14,25 +14,12 @@ public interface IAppInfo
 
 public class AppInfo : IAppInfo
 {
-    public string Version { get; } = "0.2.2";
+    public string Version { get; private set; } = "0.2.3";
     public string AppName { get; } = "Aspec Captura";
-    public DateTime BuildDate { get; } = new DateTime(2026, 3, 10);
+    public DateTime BuildDate { get; } = new DateTime(2026, 3, 11);
 
     public AppInfo()
     {
-        // Tenta obter a versão do assembly
-        try
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            var version = assembly.GetName().Version;
-            if (version != null)
-            {
-                Version = $"{version.Major}.{version.Minor}.{version.Build}";
-            }
-        }
-        catch
-        {
-            // Usa a versão padrão se não conseguir obter do assembly
-        }
+        // Versão fixa definida acima - não obtém do assembly
     }
 }

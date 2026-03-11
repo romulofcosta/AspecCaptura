@@ -4,52 +4,142 @@
 @inject NavigationManager Navigation
 @inject AppState appState
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
-    <MudPaper Class="pa-6 rounded-lg premium-card">
-        <MudText Typo="Typo.h5" Class="mb-4 font-weight-bold">Configuração da Sessão</MudText>
-        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-6">
+<style>
+    /* Restaurar cores claras */
+    .sessao-container {
+        background: #FFFFFF;
+        min-height: 100vh;
+        padding: 32px 24px 120px;
+    }
+
+    .sessao-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Garantir alinhamento e largura dos MudSelect */
+    ::deep .mud-select {
+        width: 100%;
+    }
+
+    ::deep .mud-input-control {
+        width: 100%;
+    }
+
+    ::deep .mud-select-input {
+        text-align: left;
+    }
+
+    /* Garantir que o popover do dropdown fique alinhado com o campo */
+    ::deep .mud-popover {
+        min-width: 100% !important;
+    }
+
+    ::deep .mud-popover-open {
+        width: 100% !important;
+    }
+
+    ::deep .mud-list {
+        width: 100%;
+    }
+</style>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="sessao-container">
+    <MudPaper Class="sessao-card" Elevation="0">
+        <MudText Typo="Typo.h5" Class="mb-2" Style="font-weight: 700; color: #1E293B;">Configuração da Sessão</MudText>
+        <MudText Typo="Typo.body2" Class="mb-6" Style="color: #64748B;">
             Selecione as informações contábeis para iniciar o trabalho.
         </MudText>
 
-        <MudStack Spacing="4">
-            <MudSelect T="Orgao" Label="Órgão" Value="@SelectedOrgao" ValueChanged="OnOrgaoChanged"
-                Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
-                @foreach (var orgao in Orgaos)
-                {
-                    <MudSelectItem Value="@orgao">@orgao.NomeOrgao</MudSelectItem>
-                }
-            </MudSelect>
+        <MudForm>
+            <MudGrid Spacing="3">
+                <MudItem xs="12">
+                    <MudSelect T="Orgao" 
+                               Label="Órgão" 
+                               Value="@SelectedOrgao" 
+                               ValueChanged="OnOrgaoChanged"
+                               Variant="Variant.Outlined" 
+                               Margin="Margin.Dense"
+                               FullWidth="true"
+                               AnchorOrigin="Origin.BottomLeft"
+                               TransformOrigin="Origin.TopLeft">
+                        @foreach (var orgao in Orgaos)
+                        {
+                            <MudSelectItem Value="@orgao">@orgao.NomeOrgao</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
 
-            <MudSelect T="UnidadeOrcamentaria" Label="Unidade Orçamentária" Value="@SelectedUO"
-                ValueChanged="OnUOChanged" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter"
-                Disabled="@(SelectedOrgao == null)">
-                @foreach (var uo in UnidadesOrcamentarias)
-                {
-                    <MudSelectItem Value="@uo">@uo.NomeUO</MudSelectItem>
-                }
-            </MudSelect>
+                <MudItem xs="12">
+                    <MudSelect T="UnidadeOrcamentaria" 
+                               Label="Unidade Orçamentária" 
+                               Value="@SelectedUO"
+                               ValueChanged="OnUOChanged" 
+                               Variant="Variant.Outlined" 
+                               Margin="Margin.Dense"
+                               FullWidth="true"
+                               AnchorOrigin="Origin.BottomLeft"
+                               TransformOrigin="Origin.TopLeft"
+                               Disabled="@(SelectedOrgao == null)">
+                        @foreach (var uo in UnidadesOrcamentarias)
+                        {
+                            <MudSelectItem Value="@uo">@uo.NomeUO</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
 
-            <MudSelect T="Area" Label="Área" Value="@SelectedArea" ValueChanged="OnAreaChanged"
-                Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Disabled="@(SelectedUO == null)">
-                @foreach (var area in Areas)
-                {
-                    <MudSelectItem Value="@area">@area.NomeArea</MudSelectItem>
-                }
-            </MudSelect>
+                <MudItem xs="12">
+                    <MudSelect T="Area" 
+                               Label="Área" 
+                               Value="@SelectedArea" 
+                               ValueChanged="OnAreaChanged"
+                               Variant="Variant.Outlined" 
+                               Margin="Margin.Dense"
+                               FullWidth="true"
+                               AnchorOrigin="Origin.BottomLeft"
+                               TransformOrigin="Origin.TopLeft"
+                               Disabled="@(SelectedUO == null)">
+                        @foreach (var area in Areas)
+                        {
+                            <MudSelectItem Value="@area">@area.NomeArea</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
 
-            <MudSelect T="Subarea" Label="Subárea" Value="@SelectedSubarea" ValueChanged="OnSubareaChanged"
-                Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Disabled="@(SelectedArea == null)">
-                @foreach (var sub in Subareas)
-                {
-                    <MudSelectItem Value="@sub">@sub.NomeSubarea</MudSelectItem>
-                }
-            </MudSelect>
+                <MudItem xs="12">
+                    <MudSelect T="Subarea" 
+                               Label="Subárea" 
+                               Value="@SelectedSubarea" 
+                               ValueChanged="OnSubareaChanged"
+                               Variant="Variant.Outlined" 
+                               Margin="Margin.Dense"
+                               FullWidth="true"
+                               AnchorOrigin="Origin.BottomLeft"
+                               TransformOrigin="Origin.TopLeft"
+                               Disabled="@(SelectedArea == null)">
+                        @foreach (var sub in Subareas)
+                        {
+                            <MudSelectItem Value="@sub">@sub.NomeSubarea</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
 
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" Class="mt-4 py-3"
-                Disabled="@(SelectedSubarea == null)" OnClick="ConfirmarSessao">
-                Confirmar Seleção
-            </MudButton>
-        </MudStack>
+                <MudItem xs="12" Class="mt-4">
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               Size="Size.Large" 
+                               FullWidth="true"
+                               Disabled="@(SelectedSubarea == null)" 
+                               OnClick="ConfirmarSessao"
+                               Style="padding: 16px; border-radius: 12px; text-transform: none; font-weight: 600;">
+                        Confirmar Seleção
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
     </MudPaper>
 </MudContainer>
 

@@ -9,49 +9,151 @@
 
 <PageTitle>Perfil - Aspec Captura</PageTitle>
 
-<MudContainer id="profile-container" MaxWidth="MaxWidth.Small" Class="mt-4 pb-20" Style="overflow-y: auto; height: 100%;">
-    <MudPaper Elevation="4" Class="pa-8 rounded-lg premium-card">
-        <div class="d-flex flex-column align-center mb-6">
-            <MudAvatar Color="Color.Primary" Size="Size.Large"
-                Class="mb-4 shadow-md border-white border-2 profile-avatar-lg">
+<style>
+    .profile-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 32px 24px;
+        padding-bottom: 120px;
+    }
+
+    .profile-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 24px;
+    }
+
+    .profile-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 16px;
+    }
+
+    .profile-name {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1E293B;
+        margin: 0;
+    }
+
+    .profile-email {
+        font-size: 14px;
+        color: #64748B;
+        margin: 4px 0 0;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        display: block;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        font-size: 14px;
+        background: white;
+        transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #003366;
+        box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
+    }
+
+    .btn-save {
+        width: 100%;
+        background: #003366;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        border: none;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 24px;
+    }
+
+    .btn-save:hover {
+        background: #002244;
+    }
+
+    .btn-back {
+        width: 100%;
+        background: transparent;
+        color: #003366;
+        padding: 12px 24px;
+        border: none;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 16px;
+    }
+
+    .btn-back:hover {
+        background: #F8FAFC;
+    }
+
+    .divider {
+        height: 1px;
+        background: #E2E8F0;
+        margin: 24px 0;
+    }
+</style>
+
+<div class="profile-container">
+    <div class="profile-card">
+        <div class="profile-header">
+            <MudAvatar Color="Color.Primary" Size="Size.Large" Class="profile-avatar">
                 @UserInitials
             </MudAvatar>
-            <MudText Typo="Typo.h5" Class="font-weight-bold">@FullName</MudText>
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@Email</MudText>
+            <p class="profile-name">@FullName</p>
+            <p class="profile-email">@Email</p>
         </div>
 
-        <MudDivider Class="my-6" />
+        <div class="divider"></div>
 
         <EditForm Model="@profileModel" OnValidSubmit="HandleUpdateProfile">
             <DataAnnotationsValidator />
 
-            <MudGrid Spacing="2">
-                <MudItem xs="12">
-                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Nome Completo</MudText>
-                    <MudTextField @bind-Value="profileModel.NomeCompleto" Placeholder="Seu nome completo" Variant="Variant.Outlined"
-                        For="@(() => profileModel.NomeCompleto)" FullWidth="true" />
-                </MudItem>
-                <MudItem xs="12">
-                    <MudText Typo="Typo.caption" Class="mb-1 ml-1" Color="Color.Secondary">Usuário</MudText>
-                    <MudTextField @bind-Value="profileModel.Usuario" Variant="Variant.Outlined" Disabled="true"
-                        FullWidth="true" />
-                </MudItem>
+            <div class="form-group">
+                <label class="form-label">Nome Completo</label>
+                <input class="form-input" type="text" @bind="profileModel.NomeCompleto" placeholder="Seu nome completo" />
+            </div>
 
-                <MudItem xs="12" Class="mt-4">
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
-                        Class="py-3 shadow-md" Size="Size.Large">
-                        Salvar Alterações
-                    </MudButton>
-                </MudItem>
-            </MudGrid>
+            <div class="form-group">
+                <label class="form-label">Usuário</label>
+                <input class="form-input" type="text" @bind="profileModel.Usuario" disabled />
+            </div>
+
+            <button type="submit" class="btn-save">Salvar Alterações</button>
         </EditForm>
 
-        <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true" Class="mt-4"
-            OnClick="@(() => Navigation.NavigateTo("/home"))">
+        <button class="btn-back" @onclick="@(() => Navigation.NavigateTo("/home"))">
             Voltar para Home
-        </MudButton>
-    </MudPaper>
-</MudContainer>
+        </button>
+    </div>
+</div>
 
 @code {
     private ProfileModel profileModel = new();

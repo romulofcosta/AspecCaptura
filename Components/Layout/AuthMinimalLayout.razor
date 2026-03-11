@@ -1,6 +1,7 @@
 @inherits LayoutComponentBase
 @inject IJSRuntime JSRuntime
 @inject ILogger<AuthMinimalLayout> Logger
+@inject IAppInfo AppInfo
 @using MudBlazor
 
 <MudThemeProvider />
@@ -206,25 +207,19 @@
 </div>
 
 <div class="version-info">
-    @(appVersion ?? "v0.2.2")
+    Versão v@(AppInfo?.Version ?? "0.2.3")
 </div>
 
 @code {
-    private string? appVersion;
-
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         try
         {
-            Logger.LogInformation("AuthMinimalLayout initialized");
-            // Load app version from meta tag
-            appVersion = await JSRuntime.InvokeAsync<string>("eval", "document.querySelector('meta[name=\"version\"]')?.getAttribute('content') || 'v0.2.2'");
-            Logger.LogInformation($"App version loaded: {appVersion}");
+            Logger.LogInformation($"AuthMinimalLayout initialized with version: {AppInfo?.Version ?? "0.2.3"}");
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "Error loading app version, using default");
-            appVersion = "v0.2.2";
+            Logger.LogWarning(ex, "Error initializing AuthMinimalLayout");
         }
     }
 }
