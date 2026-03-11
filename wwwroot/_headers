@@ -9,6 +9,13 @@
 /service-worker.js
   Cache-Control: no-cache
   Content-Type: application/javascript
+  Access-Control-Allow-Origin: *
+
+/service-worker-assets.js
+  Cache-Control: no-cache
+  Content-Type: application/javascript
+  Access-Control-Allow-Origin: *
 
 /manifest.json
   Content-Type: application/json
+  Access-Control-Allow-Origin: *
