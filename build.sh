@@ -56,8 +56,15 @@ if [ "$PLATFORM" = "netlify" ]; then
     cat > bin/Release/net8.0/publish/_redirects << 'EOF'
 /*    /index.html   200
 EOF
-elif [ "$PLATFORM" = "cloudflare" ] || [ "$PLATFORM" = "local" ]; then
+elif [ "$PLATFORM" = "cloudflare" ]; then
     echo "=== Ajustando para Cloudflare Pages ==="
+    # Criar arquivo _redirects para Cloudflare Pages
+    cat > bin/Release/net8.0/publish/wwwroot/_redirects << 'EOF'
+/*   /index.html   200
+EOF
+    echo "✓ Arquivo _redirects criado em bin/Release/net8.0/publish/wwwroot/"
+elif [ "$PLATFORM" = "local" ]; then
+    echo "=== Build local concluído ==="
 fi
 
 echo "=== Build concluído! Saída: $OUTPUT_DIR ==="
