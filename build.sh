@@ -36,22 +36,22 @@ else
     DOTNET_EXEC="dotnet"
 fi
 
+echo "=== Substituindo variáveis ANTES do build ==="
+if [ -z "$API_BASE_URL" ]; then
+    echo "Aviso: API_BASE_URL não definida. Usando padrão local: http://localhost:5069"
+    API_BASE_URL="http://localhost:5069"
+fi
+
+# Substituir nos arquivos FONTE (antes do publish)
+sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" wwwroot/appsettings.json
+sed -i "s|__APP_VERSION__|$VERSION|g" wwwroot/index.html
+
 echo "=== Restaurando pacotes e workloads ==="
 "$DOTNET_EXEC" restore
 "$DOTNET_EXEC" workload install wasm-tools --skip-manifest-update
 
 rm -rf bin/Release/net8.0/publish
 "$DOTNET_EXEC" publish pwa-camera-poc-blazor.csproj -c Release -o bin/Release/net8.0/publish
-
-echo "Substituindo variáveis no appsettings.json..."
-if [ -z "$API_BASE_URL" ]; then
-    echo "Aviso: API_BASE_URL não definida. Usando padrão local: http://localhost:5069"
-    API_BASE_URL="http://localhost:5069"
-fi
-sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" bin/Release/net8.0/publish/wwwroot/appsettings.json
-
-echo "Substituindo versão no index.html..."
-sed -i "s|__APP_VERSION__|$VERSION|g" bin/Release/net8.0/publish/wwwroot/index.html
 
 # Ajustes específicos por plataforma
 if [ "$PLATFORM" = "netlify" ]; then
@@ -63,10 +63,29 @@ EOF
 
 elif [ "$PLATFORM" = "cloudflare" ] || [ "$PLATFORM" = "local" ]; then
     echo "=== Ajustando para Cloudflare Pages ==="
-    # Garante que manifest.json e service-worker.js sejam servidos diretamente
+    
+    cat > bin/Release/net8.0/publish/wwwroot/_headers << 'EOF'
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/_framework/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/service-worker.js
+  Cache-Control: no-cache
+  Content-Type: application/javascript
+
+/service-worker-assets.js
+  Cache-Control: no-cache
+  Content-Type: application/javascript
+
+/manifest.json
+  Content-Type: application/json
+EOF
+    
     cat > bin/Release/net8.0/publish/wwwroot/_redirects << 'EOF'
-/manifest.json   /manifest.json   200
-/service-worker.js   /service-worker.js   200
 /*   /index.html   200
 EOF
 fi
