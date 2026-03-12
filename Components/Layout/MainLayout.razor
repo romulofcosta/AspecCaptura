@@ -106,6 +106,9 @@
         appState.OnChange += HandleAppStateChange;
         Navigation.LocationChanged += HandleLocationChanged;
 
+        // Load saved app state
+        await appState.LoadStateAsync();
+
         UpdateActiveTab();
 
         try

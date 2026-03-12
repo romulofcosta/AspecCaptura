@@ -173,7 +173,12 @@ public class AppState : INotifyPropertyChanged
                 SynchronizedItems,
                 PendingItems,
                 UnreadNotifications,
-                CurrentRoute
+                CurrentRoute,
+                EsferaAtual,
+                CurrentOrgao,
+                CurrentUO,
+                CurrentArea,
+                CurrentSubarea
             };
             await _localStorage.SetItemAsync("app_state", state);
         }
@@ -187,11 +192,37 @@ public class AppState : INotifyPropertyChanged
     {
         try
         {
-            var state = await _localStorage.GetItemAsync<dynamic>("app_state");
-            if (state != null)
+            var state = await _localStorage.GetItemAsync<System.Text.Json.JsonElement?>("app_state");
+            if (state.HasValue && state.Value.ValueKind != System.Text.Json.JsonValueKind.Null)
             {
-                // Load state properties
-                // Note: This is a simplified version, proper deserialization would be needed
+                var stateObj = state.Value;
+                
+                // Load session properties
+                if (stateObj.TryGetProperty("EsferaAtual", out var esferaElement) && esferaElement.ValueKind == System.Text.Json.JsonValueKind.String)
+                {
+                    EsferaAtual = esferaElement.GetString();
+                }
+                
+                if (stateObj.TryGetProperty("CurrentOrgao", out var orgaoElement) && orgaoElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+                {
+                    CurrentOrgao = System.Text.Json.JsonSerializer.Deserialize<Models.Orgao>(orgaoElement.GetRawText());
+                }
+                
+                if (stateObj.TryGetProperty("CurrentUO", out var uoElement) && uoElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+                {
+                    CurrentUO = System.Text.Json.JsonSerializer.Deserialize<Models.UnidadeOrcamentaria>(uoElement.GetRawText());
+                }
+                
+                if (stateObj.TryGetProperty("CurrentArea", out var areaElement) && areaElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+                {
+                    CurrentArea = System.Text.Json.JsonSerializer.Deserialize<Models.Area>(areaElement.GetRawText());
+                }
+                
+                if (stateObj.TryGetProperty("CurrentSubarea", out var subareaElement) && subareaElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+                {
+                    CurrentSubarea = System.Text.Json.JsonSerializer.Deserialize<Models.Subarea>(subareaElement.GetRawText());
+                }
+                
                 OnPropertyChanged(string.Empty); // Notify all properties changed
             }
         }
@@ -211,6 +242,15 @@ public class AppState : INotifyPropertyChanged
         CurrentArea = null;
         CurrentSubarea = null;
         EsferaAtual = null;
+        NotifyStateChanged();
+    }
+
+    public void ClearSessionConfiguration()
+    {
+        CurrentOrgao = null;
+        CurrentUO = null;
+        CurrentArea = null;
+        CurrentSubarea = null;
         NotifyStateChanged();
     }
 

@@ -6,6 +6,7 @@
 @inject IJSRuntime JSRuntime
 @inject ILogger<MinimalLayout> Logger
 @using MudBlazor
+@using System.Diagnostics.CodeAnalysis
 @inject ISnackbar Snackbar
 
 <MudThemeProvider Theme="currentTheme" @bind-IsDarkMode="appState.IsDarkMode" />
@@ -313,7 +314,11 @@
 </nav>
 
 @code {
-    public MinimalLayout() { }
+    // Construtor público explícito para evitar problemas com IL trimming
+    public MinimalLayout()
+    {
+        // Construtor vazio necessário para instanciação do Blazor
+    }
 
     // ASPEC Identity Theme Configuration
     private MudTheme currentTheme = new MudTheme()
@@ -355,6 +360,9 @@
             ToastService.OnShow += HandleToastShow;
             appState.OnChange += HandleAppStateChange;
             Navigation.LocationChanged += HandleLocationChanged;
+
+            // Load saved app state
+            await appState.LoadStateAsync();
 
             var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
             appState.IsDarkMode = theme == "dark";

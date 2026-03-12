@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<linker>
+  <!-- Preserve all layout components and their constructors -->
+  <assembly fullname="pwa-camera-poc-blazor" preserve="all">
+    <type fullname="pwa_camera_poc_blazor.Components.Layout.MinimalLayout" preserve="all">
+      <method signature="System.Void .ctor()" />
+    </type>
+    <type fullname="pwa_camera_poc_blazor.App" preserve="all" />
+    <namespace fullname="pwa_camera_poc_blazor.Services" preserve="all" />
+    <namespace fullname="pwa_camera_poc_blazor.Components" preserve="all" />
+    <namespace fullname="pwa_camera_poc_blazor.Pages" preserve="all" />
+    <namespace fullname="pwa_camera_poc_blazor.Models" preserve="all" />
+  </assembly>
+  
+  <!-- Preserve MudBlazor components -->
+  <assembly fullname="MudBlazor" preserve="all" />
+  
+  <!-- Preserve Blazor core components -->
+  <assembly fullname="Microsoft.AspNetCore.Components" preserve="all" />
+  <assembly fullname="Microsoft.AspNetCore.Components.Web" preserve="all" />
+  <assembly fullname="Microsoft.AspNetCore.Components.WebAssembly" preserve="all" />
+  <assembly fullname="Microsoft.AspNetCore.Components.Authorization" preserve="all" />
+  
+  <!-- Preserve System.Text.Json for configuration -->
+  <assembly fullname="System.Text.Json" preserve="all" />
+  
+  <!-- Preserve HTTP client extensions -->
+  <assembly fullname="System.Net.Http.Json" preserve="all" />
+  
+  <!-- Preserve LocalStorage -->
+  <assembly fullname="Blazored.LocalStorage" preserve="all" />
+</linker>

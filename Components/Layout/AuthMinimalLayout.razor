@@ -274,7 +274,10 @@
     {
         try
         {
-            Logger.LogInformation($"AuthMinimalLayout initialized with version: {AppInfo?.Version ?? "0.2.4"}");
+            Logger.LogInformation($"AuthMinimalLayout initialized with version: {AppInfo?.Version ?? "0.2.5"}");
+            
+            // Load saved app state
+            await appState.LoadStateAsync();
             
             var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
             appState.IsDarkMode = theme == "dark";

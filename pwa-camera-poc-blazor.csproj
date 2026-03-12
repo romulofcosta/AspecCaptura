@@ -6,22 +6,34 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
     <RootNamespace>pwa_camera_poc_blazor</RootNamespace>
-    <Version>0.2.4</Version>
-    <AssemblyVersion>0.2.4.0</AssemblyVersion>
-    <FileVersion>0.2.4.0</FileVersion>
-    <InformationalVersion>0.2.4</InformationalVersion>
+    <Version>0.2.5</Version>
+    <AssemblyVersion>0.2.5.0</AssemblyVersion>
+    <FileVersion>0.2.5.0</FileVersion>
+    <InformationalVersion>0.2.5</InformationalVersion>
   </PropertyGroup>
 
   <!-- Production Build Optimizations -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <RunAOTCompilation>true</RunAOTCompilation>
+    <RunAOTCompilation Condition="'$(DisableAOT)' != 'true'">true</RunAOTCompilation>
     <PublishTrimmed>true</PublishTrimmed>
-    <TrimMode>link</TrimMode>
+    <TrimMode>partial</TrimMode>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <BlazorEnableCompression>true</BlazorEnableCompression>
     <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
     <InvariantGlobalization>false</InvariantGlobalization>
+    <!-- Preserve constructors and layout components -->
+    <TrimmerDefaultAction>link</TrimmerDefaultAction>
   </PropertyGroup>
+
+  <!-- Preserve layout components and their constructors from trimming -->
+  <ItemGroup>
+    <TrimmerRootAssembly Include="pwa-camera-poc-blazor" />
+  </ItemGroup>
+
+  <!-- Preserve specific types that might be trimmed -->
+  <ItemGroup>
+    <LinkerConfig Include="linker.xml" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.13" />

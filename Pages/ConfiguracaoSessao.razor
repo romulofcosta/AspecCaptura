@@ -225,15 +225,18 @@
         SelectedSubarea = value;
     }
 
-    private void ConfirmarSessao()
+    private async Task ConfirmarSessao()
     {
         if (SelectedOrgao != null && SelectedUO != null && SelectedArea != null && SelectedSubarea != null)
         {
-            // Salvar no AppState (a ser implementado no AppState.cs)
+            // Salvar no AppState
             appState.CurrentOrgao = SelectedOrgao;
             appState.CurrentUO = SelectedUO;
             appState.CurrentArea = SelectedArea;
             appState.CurrentSubarea = SelectedSubarea;
+
+            // Salvar o estado para persistir a sessão
+            await appState.SaveStateAsync();
 
             Navigation.NavigateTo("/home");
         }

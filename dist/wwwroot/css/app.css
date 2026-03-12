@@ -1,0 +1,314 @@
+/* ASPEC Custom Theme - Managed via MudBlazor ThemeProvider */
+/* Only essential overrides for non-MudBlazor elements (e.g. raw video feed) */
+
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+    /* Prevent external scroll */
+    font-family: 'Roboto', sans-serif;
+    scroll-behavior: smooth;
+}
+
+.has-overflow {
+    overflow-y: auto !important;
+    scroll-behavior: smooth;
+}
+
+/* Fallback for responsiveness */
+/* .mud-container {
+    max-height: 100vh;
+    overflow-y: auto;
+} */
+
+.smooth-scroll {
+    scroll-behavior: smooth;
+}
+
+#camera-feed {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Custom scrollbar for webkit */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+/* Logo Styling */
+.logo-hover:hover {
+    transform: scale(1.05);
+}
+
+.shadow-sm {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.shadow-md {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.premium-card {
+    border-radius: 32px !important;
+    box-shadow: 0 40px 80px rgba(0, 51, 102, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(20px);
+}
+
+.app-title-login {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 2.6rem;
+    background: linear-gradient(135deg, #0066CC 0%, #004C99 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -2px;
+    margin-bottom: 0.5rem;
+}
+
+[data-theme='dark'] .app-title-login {
+    background: linear-gradient(135deg, #4A90E2 0%, #FFFFFF 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Fix for outlined label notch overlapping border */
+.mud-input-outlined-border {
+    border-radius: 16px !important;
+    transition: all 0.3s ease !important;
+}
+
+.mud-input-label-outlined {
+    padding: 0 10px !important;
+    margin-left: -5px !important;
+    border-radius: 4px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* Global fix for outlined label focus/active state */
+.mud-input-label-outlined.mud-input-label-active {
+    background-color: var(--mud-palette-surface) !important;
+    padding: 0 8px !important;
+    border-radius: 4px;
+    z-index: 10;
+}
+
+/* Ensure the notch and label align perfectly */
+.mud-input-outlined-border legend {
+    margin-left: 8px !important;
+}
+
+.label-fix .mud-input-label-outlined {
+    font-weight: 500;
+}
+
+[data-theme='dark'] .premium-card {
+    background: rgba(30, 30, 30, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+.auth-background {
+    background: radial-gradient(circle at top left, #f0f7ff 0%, #ffffff 50%, #f9f9f9 100%);
+}
+
+[data-theme='dark'] .auth-background {
+    background: radial-gradient(circle at top left, #1a2238 0%, #121212 100%);
+}
+
+/* Rounded inputs override */
+.mud-input-focus .mud-input-outlined-border {
+    border-width: 2px !important;
+    box-shadow: 0 0 10px rgba(0, 102, 204, 0.1) !important;
+}
+
+.mud-button-filled {
+    border-radius: 16px !important;
+    text-transform: none !important;
+    font-weight: 600 !important;
+    padding: 12px 24px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.mud-button-filled:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 102, 204, 0.2) !important;
+}
+
+.premium-card .mud-card-header {
+    padding-top: 32px !important;
+}
+
+/* Mobile specific fixes */
+@media (max-width: 600px) {
+    .premium-card {
+        padding: 1.25rem !important;
+        border-radius: 16px !important;
+        margin-bottom: 24px;
+    }
+
+    .app-title-login {
+        font-size: 1.8rem;
+    }
+
+    .mud-card-actions {
+        padding-bottom: 24px !important;
+    }
+}
+
+.profile-section {
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    padding: 12px;
+    width: 100%;
+}
+
+.profile-section:hover {
+    background-color: rgba(var(--mud-palette-primary-rgb), 0.05);
+    transform: translateY(-2px);
+}
+
+/* Profile Avatar Responsive Sizes */
+.profile-avatar {
+    width: 60px !important;
+    height: 60px !important;
+}
+
+.profile-avatar-lg {
+    width: 80px !important;
+    height: 80px !important;
+}
+
+@media (min-width: 960px) {
+    .profile-avatar {
+        width: 80px !important;
+        height: 80px !important;
+    }
+
+    .profile-avatar-lg {
+        width: 120px !important;
+        height: 120px !important;
+    }
+}
+
+.border-white {
+    border: 3px solid var(--mud-palette-surface) !important;
+}
+
+.border-2 {
+    border-width: 2px !important;
+}
+
+/* Ensure accessible button height and focus */
+.mud-button {
+    min-height: 48px;
+}
+
+.mud-button:focus-visible {
+    outline: 2px solid var(--mud-palette-primary) !important;
+    outline-offset: 2px;
+}
+
+/* Highlight active item in NavMenu */
+.mud-nav-link.active {
+    background-color: rgba(var(--mud-palette-primary-rgb), 0.1) !important;
+    color: var(--mud-palette-primary) !important;
+    font-weight: 600 !important;
+}
+
+.mud-nav-link {
+    border-radius: 0 24px 24px 0 !important;
+    margin-right: 8px !important;
+    transition: all 0.2s ease !important;
+}
+
+.inventory-grid-item {
+    display: flex;
+    padding: 4px 0;
+}
+
+.inventory-grid-item .mud-card {
+    width: 100%;
+    margin: 0;
+}
+
+/* Animation Classes */
+.fade-out {
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+}
+
+.fade-in {
+    opacity: 1;
+    transition: opacity 0.3s ease-in;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+}
+
+.loading-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.full-screen-center {
+    height: 100vh;
+}
+
+/* Bottom Navigation Bar Spacing */
+/* The footer has a fixed height of 64px, so we need to account for it */
+.safe-bottom-padding {
+    padding-bottom: 80px !important;
+    /* 64px footer + 16px extra space */
+}
+
+.safe-bottom-margin {
+    margin-bottom: 80px !important;
+}
+
+/* For modals and overlays that should not extend behind the bottom nav */
+.modal-safe-height {
+    max-height: calc(100vh - 100px) !important;
+    overflow-y: auto !important;
+}
+
+/* Ensure MudOverlay and modals are always above the footer */
+/* .mud-overlay {
+    z-index: 9999 !important;
+}
+
+.mud-overlay .mud-paper {
+    z-index: 10000 !important;
+} */

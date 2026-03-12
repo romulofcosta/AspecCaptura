@@ -1,7 +1,7 @@
 // Service Worker for Aspec Captura PWA
-// Version: 0.2.4
+// Version: 0.2.5
 
-const APP_VERSION = '0.2.4';
+const APP_VERSION = '0.2.5';
 const CACHE_NAME = `aspec-captura-v${APP_VERSION.replace(/\./g, '-')}`;
 const API_CACHE_NAME = `aspec-captura-api-v${APP_VERSION.replace(/\./g, '-')}`;
 

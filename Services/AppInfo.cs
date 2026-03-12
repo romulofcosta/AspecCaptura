@@ -14,7 +14,7 @@ public interface IAppInfo
 
 public class AppInfo : IAppInfo
 {
-    public string Version { get; private set; } = "0.2.4";
+    public string Version { get; private set; } = "0.2.5";
     public string AppName { get; } = "Aspec Captura";
     public DateTime BuildDate { get; } = new DateTime(2026, 3, 12);
 

@@ -5,6 +5,37 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [0.2.5] - 2026-03-12
+
+### Corrigido
+- **Bug de Navegação e Estado da Sessão**: Corrigidos problemas críticos que impediam o funcionamento correto da aplicação.
+  - Tela de detalhes não carregava, redirecionando incorretamente para configuração de sessão
+  - Estado da sessão era perdido ao navegar entre páginas
+  - Botões do bottom navigation redirecionavam para configuração de sessão
+  - Dados de sessão não eram persistidos no localStorage
+  - Ordem incorreta de limpeza/definição de dados no login
+
+### Adicionado
+- **Persistência Completa do Estado**: Implementado sistema robusto de salvamento/carregamento de estado.
+  - `SaveStateAsync()` agora inclui todas as propriedades de sessão (`CurrentOrgao`, `CurrentUO`, `CurrentArea`, `CurrentSubarea`)
+  - `LoadStateAsync()` implementado em todos os layouts (MinimalLayout, AuthMinimalLayout, MainLayout)
+  - Método `ClearSessionConfiguration()` para limpeza seletiva de dados de sessão
+  - Salvamento automático após login e configuração de sessão
+
+- **Dashboard Redesenhado**: Nova interface moderna seguindo design system sugerido.
+  - Header limpo com avatar e botão de logout
+  - Barra de pesquisa com ícone integrado e design arredondado
+  - Sistema de filtros por abas (Todos, Pendentes, Sincronizados)
+  - Cards de itens redesenhados com ícones específicos por categoria
+  - FAB (Floating Action Button) para adicionar novos itens
+  - Background em tom mais suave e navegação bottom melhorada
+
+### Alterado
+- **Fluxo de Login/Logout**: Corrigida ordem de operações para evitar perda de dados.
+  - Login agora limpa apenas configuração anterior, mantendo dados do usuário
+  - Logout limpa completamente localStorage e AppState
+  - Método `ConfirmarSessao()` convertido para assíncrono
+
 ## [0.2.4] - 2026-03-12
 
 ### Corrigido

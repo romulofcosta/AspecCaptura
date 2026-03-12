@@ -155,11 +155,16 @@ public class AuthService : IAuthService
                 }
             }
 
+            // Clear previous session configuration (but keep user data)
+            _appState.ClearSessionConfiguration();
+            
             // Update app state
             _appState.CurrentUser = user;
             _appState.IsAuthenticated = true;
             _appState.EsferaAtual = user.Esfera;
-            _appState.ClearSessionData();
+
+            // Save the state to persist user data
+            await _appState.SaveStateAsync();
 
             // Store current token and user
             _currentToken = token;
@@ -220,6 +225,7 @@ public class AuthService : IAuthService
             await _localStorage.RemoveItemAsync(USER_KEY);
             await _localStorage.RemoveItemAsync(SESSION_KEY);
             await _localStorage.RemoveItemAsync("session-config");
+            await _localStorage.RemoveItemAsync("app_state");
             await _localStorage.RemoveItemAsync(LAST_ACTIVITY_KEY);
 
             // Clear app state
