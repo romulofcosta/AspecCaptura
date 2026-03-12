@@ -147,6 +147,13 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        // Verificar se a sessão está configurada
+        if (!appState.IsSessionConfigured())
+        {
+            Navigation.NavigateTo("/configuracao-sessao");
+            return;
+        }
+        
         appState.IsCameraActive = true;
         currentUser = await AuthService.GetCurrentUserAsync();
     }

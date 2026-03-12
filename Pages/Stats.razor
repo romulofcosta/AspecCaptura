@@ -2,6 +2,8 @@
 @using pwa_camera_poc_blazor.Models
 @inject IIndexedDbService DbService
 @inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@inject AppState appState
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Estatísticas - Aspec Captura</PageTitle>
@@ -111,6 +113,13 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Verificar se a sessão está configurada
+        if (!appState.IsSessionConfigured())
+        {
+            Navigation.NavigateTo("/configuracao-sessao");
+            return;
+        }
+        
         items = await DbService.GetAllAsync<InventoryItem>("items");
         todayCount = items.Count(i => i.Timestamp.Date == DateTime.Today);
 

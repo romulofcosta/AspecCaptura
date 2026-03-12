@@ -5,6 +5,37 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [0.2.4] - 2026-03-12
+
+### Corrigido
+- **Bug de Redirecionamento após Logout**: Corrigido problema crítico onde o usuário não era redirecionado para a tela de login após fazer logout.
+  - `NavMenu.razor`: Adicionado `forceLoad: true` no `NavigateTo` após logout para forçar reload completo da página
+  - `RedirectToLogin.razor`: Corrigido URL de `"login"` para `"/login"` e adicionado `forceLoad: true`
+  - Garantia de limpeza completa do estado da aplicação após logout
+  
+- **Erros de Integridade do Service Worker**: Resolvidos erros de SRI (Subresource Integrity) no console do navegador.
+  - Service Worker agora ignora arquivos `.pdb`, `.wasm` e `_framework/` do Blazor
+  - Esses arquivos são gerenciados diretamente pelo navegador, evitando conflitos de cache
+  - Eliminados erros "Failed to find a valid digest" e "SRI's integrity checks failed"
+  - Versão do Service Worker atualizada de 0.2.3 para 0.2.4
+
+### Melhorado
+- **Fluxo de Logout**: Experiência de logout mais consistente e confiável
+- **Performance**: Redução de tentativas de cache desnecessárias pelo Service Worker
+- **Console do Navegador**: Eliminação de ruído de erros relacionados ao framework
+- **Versionamento**: Corrigido esquema de versionamento (0.2.3 → 0.2.4) para seguir Semantic Versioning
+
+### Documentação
+- Adicionado `BUGFIX_LOGOUT_REDIRECT.md` com análise detalhada do problema e solução
+- Documentados testes de validação para o fluxo de logout
+- Instruções de limpeza de cache para testar as correções
+
+## [0.2.3] - 2026-03-11
+
+### Corrigido
+- **Correções de UI**: Melhorias na interface do usuário
+- **Atualização de versão**: Sincronização de versões entre componentes
+
 ## [0.2.2] - 2026-03-04
 
 ### Corrigido

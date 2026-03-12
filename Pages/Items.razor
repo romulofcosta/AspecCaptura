@@ -158,6 +158,13 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Verificar se a sessão está configurada
+        if (!appState.IsSessionConfigured())
+        {
+            Navigation.NavigateTo("/configuracao-sessao");
+            return;
+        }
+        
         appState.OnChange += HandleStateChange;
         await LoadItems();
     }

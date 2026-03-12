@@ -94,7 +94,7 @@
     {
         await AuthService.LogoutAsync();
         await OnMenuItemClick.InvokeAsync();
-        Navigation.NavigateTo("/login");
+        Navigation.NavigateTo("/login", forceLoad: true);
     }
 
     private async Task NavigateToProfile()

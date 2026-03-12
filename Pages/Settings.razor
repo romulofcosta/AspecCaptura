@@ -182,6 +182,13 @@
         {
             Logger.LogInformation("Settings page initialized");
             
+            // Verificar se a sessão está configurada
+            if (!appState.IsSessionConfigured())
+            {
+                Navigation.NavigateTo("/configuracao-sessao");
+                return;
+            }
+            
             // Ensure user is loaded
             if (appState.CurrentUser == null)
             {

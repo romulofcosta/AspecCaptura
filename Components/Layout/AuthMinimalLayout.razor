@@ -2,11 +2,13 @@
 @inject IJSRuntime JSRuntime
 @inject ILogger<AuthMinimalLayout> Logger
 @inject IAppInfo AppInfo
+@inject AppState appState
 @using MudBlazor
 
-<MudThemeProvider />
+<MudThemeProvider Theme="currentTheme" @bind-IsDarkMode="appState.IsDarkMode" />
 <MudDialogProvider />
 <MudSnackbarProvider />
+<MudPopoverProvider />
 
 <style>
     body {
@@ -96,6 +98,19 @@
     
     .form-input::placeholder {
         color: #94A3B8;
+    }
+    
+    /* Remove botão nativo de mostrar senha do navegador (Edge/Chrome) */
+    .form-input::-ms-reveal,
+    .form-input::-ms-clear {
+        display: none;
+    }
+    
+    .form-input::-webkit-credentials-auto-fill-button {
+        visibility: hidden;
+        pointer-events: none;
+        position: absolute;
+        right: 0;
     }
     
     .btn-login {
@@ -207,15 +222,63 @@
 </div>
 
 <div class="version-info">
-    Versão v@(AppInfo?.Version ?? "0.2.3")
+    Versão v@(AppInfo?.Version ?? "0.2.4")
 </div>
 
 @code {
-    protected override void OnInitialized()
+    private MudTheme currentTheme = new MudTheme()
+    {
+        LayoutProperties = new LayoutProperties()
+        {
+            DefaultBorderRadius = "12px"
+        },
+        Typography = new Typography()
+        {
+            Default = new DefaultTypography()
+            {
+                FontFamily = new[] { "Inter", "Roboto", "Helvetica", "Arial", "sans-serif" },
+                FontSize = "0.875rem",
+                FontWeight = "400",
+                LineHeight = "1.5"
+            }
+        },
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#003366",
+            Secondary = "#64748B",
+            Success = "#2e7d32",
+            Info = "#0066CC",
+            Warning = "#ed6c02",
+            Error = "#dc3545",
+            Background = "#FFFFFF",
+            Surface = "#FFFFFF",
+            TextPrimary = "#1E293B",
+            TextSecondary = "#64748B"
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Primary = "#4da3ff",
+            Secondary = "#adb5bd",
+            Success = "#34ce57",
+            Info = "#2dbbd2",
+            Warning = "#ffcd39",
+            Error = "#e35d6a",
+            Background = "#121212",
+            Surface = "#1e1e1e",
+            TextPrimary = "#FFFFFF",
+            TextSecondary = "#B0BEC5"
+        }
+    };
+
+    protected override async Task OnInitializedAsync()
     {
         try
         {
-            Logger.LogInformation($"AuthMinimalLayout initialized with version: {AppInfo?.Version ?? "0.2.3"}");
+            Logger.LogInformation($"AuthMinimalLayout initialized with version: {AppInfo?.Version ?? "0.2.4"}");
+            
+            var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
+            appState.IsDarkMode = theme == "dark";
+            Logger.LogInformation($"Theme loaded: {theme}");
         }
         catch (Exception ex)
         {

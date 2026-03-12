@@ -215,6 +215,14 @@ public class AppState : INotifyPropertyChanged
     }
 
     // Helper methods
+    public bool IsSessionConfigured()
+    {
+        return CurrentOrgao != null && 
+               CurrentUO != null && 
+               CurrentArea != null && 
+               CurrentSubarea != null;
+    }
+
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

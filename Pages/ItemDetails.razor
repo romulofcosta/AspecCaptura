@@ -504,6 +504,13 @@ else
     {
         try
         {
+            // Verificar se a sessão está configurada
+            if (!appState.IsSessionConfigured())
+            {
+                Navigation.NavigateTo("/configuracao-sessao");
+                return;
+            }
+            
             await LoadItem();
         }
         catch (Exception ex)

@@ -4,6 +4,7 @@
 @using pwa_camera_poc_blazor.Services.Notification
 @inject INotificationService NotificationService
 @inject NavigationManager Navigation
+@inject AppState appState
 
 <PageTitle>Notificações - Aspec Capture</PageTitle>
 
@@ -93,6 +94,13 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Verificar se a sessão está configurada
+        if (!appState.IsSessionConfigured())
+        {
+            Navigation.NavigateTo("/configuracao-sessao");
+            return;
+        }
+        
         await LoadNotificationsAsync();
     }
 

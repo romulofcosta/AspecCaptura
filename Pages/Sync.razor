@@ -10,6 +10,7 @@
 @inject AppState appState
 @inject ISnackbar Snackbar
 @inject IAwsStorageService AwsService
+@inject NavigationManager Navigation
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Sincronização - Aspec Captura</PageTitle>
@@ -109,6 +110,13 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Verificar se a sessão está configurada
+        if (!appState.IsSessionConfigured())
+        {
+            Navigation.NavigateTo("/configuracao-sessao");
+            return;
+        }
+        
         await LoadStats();
     }
 

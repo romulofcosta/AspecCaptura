@@ -1,7 +1,7 @@
 // Service Worker for Aspec Captura PWA
-// Version: 0.2.2
+// Version: 0.2.4
 
-const APP_VERSION = '0.2.2';
+const APP_VERSION = '0.2.4';
 const CACHE_NAME = `aspec-captura-v${APP_VERSION.replace(/\./g, '-')}`;
 const API_CACHE_NAME = `aspec-captura-api-v${APP_VERSION.replace(/\./g, '-')}`;
 
@@ -62,6 +62,14 @@ self.addEventListener('fetch', event => {
 
     // Skip non-GET requests
     if (request.method !== 'GET') {
+        return;
+    }
+
+    // Skip .pdb, .wasm files and framework files (let browser handle them)
+    if (url.pathname.endsWith('.pdb') || 
+        url.pathname.endsWith('.wasm') || 
+        url.pathname.includes('_framework/') ||
+        url.pathname.includes('blazor.')) {
         return;
     }
 

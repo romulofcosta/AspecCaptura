@@ -32,7 +32,7 @@
     </MudMainContent>
 
     <Footer ActiveTab="@activeTab" PendingSyncCount="@appState.PendingSyncCount" OnTabChanged="HandleTabChanged"
-        OnCaptureClick="HandleCaptureClick" OnExportClick="HandleExportClick" IsHidden="@appState.IsCameraActive" />
+        OnCaptureClick="HandleCaptureClick" OnExportClick="HandleExportClick" IsHidden="@(appState.IsCameraActive || !appState.IsSessionConfigured())" />
 </MudLayout>
 
 @code {
