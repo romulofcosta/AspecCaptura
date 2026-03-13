@@ -290,17 +290,17 @@ body {
 /* Bottom Navigation Bar Spacing */
 /* The footer has a fixed height of 64px, so we need to account for it */
 .safe-bottom-padding {
-    padding-bottom: 80px !important;
-    /* 64px footer + 16px extra space */
+    padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+    /* 64px footer + 16px extra space + safe area */
 }
 
 .safe-bottom-margin {
-    margin-bottom: 80px !important;
+    margin-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
 }
 
 /* For modals and overlays that should not extend behind the bottom nav */
 .modal-safe-height {
-    max-height: calc(100vh - 100px) !important;
+    max-height: calc(100vh - 100px - env(safe-area-inset-bottom)) !important;
     overflow-y: auto !important;
 }
 

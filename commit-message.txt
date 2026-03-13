@@ -1,0 +1,22 @@
+v0.2.7 - Correção de design: Padronização de ícones e menu inferior consistente
+
+## Mudanças Principais
+- Removido menu inferior customizado do Dashboard
+- Padronização de ícones via MinimalLayout
+- Ícone do Dashboard atualizado para "Inventory"
+- Design visual consistente entre todas as páginas
+- Safe-area aplicado corretamente via componente unificado
+
+## Arquivos Modificados
+- Pages/Dashboard.razor - Removido menu customizado inline
+- Components/Layout/MinimalLayout.razor - Ícone atualizado
+- Versioning: service-worker.js, manifest.json, AppInfo.cs, .csproj
+
+## Impacto
+- Experiência visual coesa em todas as telas
+- Ícones apropriados e consistentes
+- Cache invalidado para aplicação imediata das correções
+- Manutenção simplificada com componente unificado
+
+Fixes: Inconsistência de design identificada após v0.2.6
+Type: patch - correção de design e UX

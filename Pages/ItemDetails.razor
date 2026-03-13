@@ -103,7 +103,7 @@
     .details-main {
         flex: 1;
         overflow-y: auto;
-        padding-bottom: 120px;
+        padding-bottom: calc(120px + env(safe-area-inset-bottom));
     }
 
     .details-image-container {
@@ -320,7 +320,7 @@
 
     .save-btn-container {
         position: fixed;
-        bottom: 80px;
+        bottom: calc(80px + env(safe-area-inset-bottom));
         left: 24px;
         right: 24px;
         z-index: 30;

@@ -1,6 +1,6 @@
 .dashboard {
     padding: var(--spacing-md);
-    padding-bottom: calc(var(--bottom-nav-height) + var(--spacing-md));
+    padding-bottom: calc(var(--bottom-nav-height) + var(--spacing-md) + var(--safe-area-inset-bottom));
 }
 
 .dashboard__header {

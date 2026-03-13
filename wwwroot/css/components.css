@@ -180,9 +180,9 @@
 /* Toast Notifications */
 .toast {
     position: fixed;
-    bottom: calc(var(--bottom-nav-height) + var(--spacing-md));
-    left: var(--spacing-md);
-    right: var(--spacing-md);
+    bottom: calc(var(--bottom-nav-height) + var(--spacing-md) + var(--safe-area-inset-bottom));
+    left: calc(var(--spacing-md) + var(--safe-area-inset-left));
+    right: calc(var(--spacing-md) + var(--safe-area-inset-right));
     padding: var(--spacing-md);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-lg);

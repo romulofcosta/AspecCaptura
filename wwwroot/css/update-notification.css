@@ -1,13 +1,13 @@
 .update-notification {
     position: fixed;
-    bottom: 80px;
+    bottom: calc(80px + env(safe-area-inset-bottom, 20px));
     left: 16px;
     right: 16px;
     background: white;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    z-index: 10001;
     animation: slideUp 0.3s ease-out;
 }
 
@@ -105,7 +105,7 @@
     .update-notification {
         left: 12px;
         right: 12px;
-        bottom: 72px;
+        bottom: calc(72px + env(safe-area-inset-bottom, 20px));
     }
 
     .update-notification-content {

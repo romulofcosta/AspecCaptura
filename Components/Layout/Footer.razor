@@ -1,5 +1,5 @@
 <MudPaper Elevation="8" Class="@($"d-flex justify-space-around align-center py-1 width-100 {(IsHidden ? "d-none" : "")}")"
-    Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; height: 64px;">
+    Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; height: 64px; padding-bottom: env(safe-area-inset-bottom);">
     <MudIconButton Icon="@Icons.Material.Filled.Home" Color="@(ActiveTab == "home" ? Color.Primary : Color.Default)"
         OnClick='() => OnTabChanged.InvokeAsync("home")' Size="Size.Large" />
     <MudIconButton Icon="@Icons.Material.Filled.BarChart" Color="@(ActiveTab == "stats" ? Color.Primary : Color.Default)"

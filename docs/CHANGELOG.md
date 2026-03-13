@@ -5,6 +5,40 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [0.2.7] - 2026-03-13
+
+### Corrigido
+- **Inconsistência de Design no Menu Inferior**: Corrigido problema onde o Dashboard usava menu customizado diferente das outras páginas.
+  - Removido menu inferior customizado inline do Dashboard
+  - Dashboard agora usa o componente MinimalLayout padrão para consistência visual
+  - Ícones padronizados em todas as páginas (Início, Lista, Sinc, Ajustes)
+  - Ícone do Dashboard atualizado de "Assignment" para "Inventory" (mais apropriado)
+  - Design visual consistente com transparência, blur e safe-area aplicado corretamente
+
+### Melhorado
+- **Consistência Visual**: Todas as páginas agora seguem o mesmo padrão de design do MinimalLayout
+- **Ícones Apropriados**: Ícones mais representativos para cada funcionalidade
+- **Cache Invalidation**: Nova versão garante aplicação imediata das correções visuais
+
+## [0.2.6] - 2026-03-13
+
+### Corrigido
+- **Bug Crítico de UI/UX no iPhone**: Corrigido problema onde o menu inferior cobria parcialmente botões em dispositivos iPhone.
+  - Botão "Sair" na tela de ajustes agora totalmente acessível
+  - Botão flutuante (+) no Dashboard posicionado corretamente
+  - Botão "Salvar Alterações" não é mais coberto pelo menu
+  - Implementado suporte completo ao `env(safe-area-inset-bottom)` para iPhone 15, 14, 13, 12, 11, XR
+  - Criado arquivo `mobile-safe-area.css` com regras específicas para dispositivos móveis
+  - Z-index otimizado para garantir hierarquia correta de elementos
+
+### Adicionado
+- **Classes CSS Utilitárias**: Novas classes para melhor suporte a dispositivos móveis.
+  - `.dashboard-fab` para botão flutuante do Dashboard
+  - `.floating-action-button` e `.floating-save-button` para botões flutuantes genéricos
+  - `.safe-area-bottom` e `.page-with-bottom-nav` para páginas com menu inferior
+- **Media Queries Específicas**: Regras CSS otimizadas para diferentes modelos de iPhone
+- **Cache Invalidation**: Nova versão força atualização do cache para aplicar correções
+
 ## [0.2.5] - 2026-03-12
 
 ### Corrigido

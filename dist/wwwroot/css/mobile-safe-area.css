@@ -1,0 +1,153 @@
+/* Mobile Safe Area Support - Aspec Captura PWA */
+/* Específico para iPhone e dispositivos com safe-area */
+
+/* Suporte global para safe-area */
+@supports (padding: max(0px)) {
+    /* Aplicar safe-area apenas em dispositivos que suportam */
+    .safe-area-bottom {
+        padding-bottom: max(var(--spacing-lg), env(safe-area-inset-bottom)) !important;
+    }
+    
+    .safe-area-top {
+        padding-top: max(var(--spacing-md), env(safe-area-inset-top)) !important;
+    }
+    
+    .safe-area-left {
+        padding-left: max(var(--spacing-md), env(safe-area-inset-left)) !important;
+    }
+    
+    .safe-area-right {
+        padding-right: max(var(--spacing-md), env(safe-area-inset-right)) !important;
+    }
+}
+
+/* Específico para iPhone com home indicator */
+@media screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) {
+    /* iPhone 15 */
+    .bottom-navigation,
+    .footer-component {
+        padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
+    }
+    
+    .page-content {
+        padding-bottom: calc(80px + max(16px, env(safe-area-inset-bottom))) !important;
+    }
+}
+
+@media screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) {
+    /* iPhone 11, XR */
+    .bottom-navigation,
+    .footer-component {
+        padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
+    }
+    
+    .page-content {
+        padding-bottom: calc(80px + max(16px, env(safe-area-inset-bottom))) !important;
+    }
+}
+
+@media screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) {
+    /* iPhone 12, 13, 14 */
+    .bottom-navigation,
+    .footer-component {
+        padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
+    }
+    
+    .page-content {
+        padding-bottom: calc(80px + max(16px, env(safe-area-inset-bottom))) !important;
+    }
+}
+
+/* Fallback para dispositivos iOS sem safe-area específica */
+@media (hover: none) and (pointer: coarse) {
+    /* Dispositivos touch (mobile) */
+    .ios-safe-bottom {
+        padding-bottom: calc(var(--bottom-nav-height) + 20px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+}
+
+/* Garantir que elementos fixos no bottom respeitem safe-area */
+.fixed-bottom {
+    bottom: env(safe-area-inset-bottom, 0) !important;
+}
+
+/* Classe utilitária para páginas que precisam de espaço extra no bottom */
+.page-with-bottom-nav {
+    padding-bottom: calc(var(--bottom-nav-height) + var(--spacing-md) + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* Botões flutuantes (FAB) */
+.floating-action-button {
+    position: fixed !important;
+    bottom: calc(100px + env(safe-area-inset-bottom, 20px)) !important;
+    right: 16px !important;
+    z-index: 10002 !important;
+}
+
+.floating-save-button {
+    position: fixed !important;
+    bottom: calc(100px + env(safe-area-inset-bottom, 20px)) !important;
+    left: 24px !important;
+    right: 24px !important;
+    z-index: 10001 !important;
+}
+
+/* Regras específicas para iPhone com safe-area */
+@supports (padding: max(0px)) {
+    /* iPhone com safe-area */
+    .floating-action-button {
+        bottom: max(100px, calc(80px + env(safe-area-inset-bottom))) !important;
+    }
+    
+    .floating-save-button {
+        bottom: max(100px, calc(80px + env(safe-area-inset-bottom))) !important;
+    }
+}
+
+/* Classe específica para o botão FAB do Dashboard */
+.dashboard-fab {
+    position: fixed !important;
+    bottom: calc(100px + env(safe-area-inset-bottom, 34px)) !important;
+    right: 16px !important;
+    z-index: 10002 !important;
+    pointer-events: auto !important;
+}
+
+/* Media query específica para iPhone 15 */
+@media screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) {
+    .dashboard-fab {
+        bottom: calc(120px + max(34px, env(safe-area-inset-bottom))) !important;
+    }
+}
+
+/* Media query para iPhone 14/13/12 */
+@media screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) {
+    .dashboard-fab {
+        bottom: calc(120px + max(34px, env(safe-area-inset-bottom))) !important;
+    }
+}
+
+/* Media query para iPhone 11/XR */
+@media screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) {
+    .dashboard-fab {
+        bottom: calc(120px + max(34px, env(safe-area-inset-bottom))) !important;
+    }
+}
+
+/* Fallback para todos os dispositivos móveis */
+@media (max-width: 768px) {
+    .dashboard-fab {
+        bottom: calc(120px + env(safe-area-inset-bottom, 34px)) !important;
+    }
+}
+
+/* Ajuste específico para modais e overlays */
+.modal-content,
+.overlay-content {
+    margin-bottom: env(safe-area-inset-bottom, 0) !important;
+}
+
+/* Garantir que toasts e notificações não fiquem atrás do safe-area */
+.toast-container {
+    bottom: calc(var(--bottom-nav-height) + var(--spacing-md) + env(safe-area-inset-bottom, 0px)) !important;
+}

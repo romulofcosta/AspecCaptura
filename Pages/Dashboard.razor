@@ -59,7 +59,7 @@
         </div>
 
         <!-- Items List -->
-        <div style="padding: 0 16px 80px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="padding: 0 16px; padding-bottom: calc(80px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px;">
             @if (isLoading)
             {
                 <div style="display: flex; justify-content: center; padding: 40px 0;">
@@ -114,34 +114,8 @@
         </div>
     </main>
 
-    <!-- Bottom Navigation -->
-    <nav style="position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e2e8f0; padding-bottom: env(safe-area-inset-bottom);">
-        <div style="display: flex; height: 64px; align-items: center; justify-content: space-around; padding: 0 8px;">
-            <a @onclick="@(() => Navigation.NavigateTo("/"))" 
-               style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 4px; color: #94a3b8; text-decoration: none; cursor: pointer;">
-                <MudIcon Icon="@Icons.Material.Outlined.GridView" Size="Size.Medium" />
-                <span style="font-size: 10px; font-weight: 500; text-transform: uppercase;">Início</span>
-            </a>
-            <a @onclick="@(() => Navigation.NavigateTo("/dashboard"))" 
-               style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 4px; color: #003366; text-decoration: none; cursor: pointer;">
-                <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Medium" />
-                <span style="font-size: 10px; font-weight: 700; text-transform: uppercase;">Lista</span>
-            </a>
-            <a @onclick="@(() => Navigation.NavigateTo("/sync"))" 
-               style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 4px; color: #94a3b8; text-decoration: none; cursor: pointer;">
-                <MudIcon Icon="@Icons.Material.Outlined.Sync" Size="Size.Medium" />
-                <span style="font-size: 10px; font-weight: 500; text-transform: uppercase;">Sinc</span>
-            </a>
-            <a @onclick="@(() => Navigation.NavigateTo("/settings"))" 
-               style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 4px; color: #94a3b8; text-decoration: none; cursor: pointer;">
-                <MudIcon Icon="@Icons.Material.Outlined.Person" Size="Size.Medium" />
-                <span style="font-size: 10px; font-weight: 500; text-transform: uppercase;">Perfil</span>
-            </a>
-        </div>
-    </nav>
-
     <!-- Floating Action Button -->
-    <div style="position: fixed; bottom: 80px; right: 16px;">
+    <div class="dashboard-fab">
         <button @onclick="StartCapture"
                 style="width: 56px; height: 56px; border-radius: 50%; background: #003366; color: white; border: none; box-shadow: 0 4px 12px rgba(0,51,102,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer;">
             <MudIcon Icon="@Icons.Material.Filled.Add" Size="Size.Large" />
