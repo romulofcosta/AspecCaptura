@@ -1,0 +1,483 @@
+/* Recognition UI Styles */
+.recognition-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.recognition-status {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    pointer-events: auto;
+}
+
+.recognition-result {
+    position: absolute;
+    top: 60px;
+    left: 20px;
+    right: 20px;
+    pointer-events: auto;
+}
+
+.qr-detection-box {
+    position: absolute;
+    border: 3px solid #4caf50;
+    border-radius: 8px;
+    background: rgba(76, 175, 80, 0.1);
+    animation: qr-pulse 1s infinite;
+}
+
+.qr-corners::before,
+.qr-corners::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #4caf50;
+}
+
+.qr-corners::before {
+    top: -3px;
+    left: -3px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.qr-corners::after {
+    bottom: -3px;
+    right: -3px;
+    border-left: none;
+    border-top: none;
+}
+
+.ocr-text-region {
+    position: absolute;
+    border: 2px solid #2196f3;
+    background: rgba(33, 150, 243, 0.1);
+    border-radius: 4px;
+    animation: ocr-highlight 2s infinite;
+}
+
+.ocr-text {
+    position: absolute;
+    bottom: -25px;
+    left: 0;
+    background: rgba(33, 150, 243, 0.9);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+/* Barcode Detection Styles */
+.barcode-detection-box {
+    position: absolute;
+    border-radius: 6px;
+    animation: barcode-pulse 1.5s infinite;
+}
+
+.barcode-detection-box.barcode-valid {
+    border: 3px solid #4caf50;
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.barcode-detection-box.barcode-invalid {
+    border: 3px solid #ff9800;
+    background: rgba(255, 152, 0, 0.1);
+}
+
+.barcode-corners::before,
+.barcode-corners::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+}
+
+.barcode-valid .barcode-corners::before,
+.barcode-valid .barcode-corners::after {
+    border: 3px solid #4caf50;
+}
+
+.barcode-invalid .barcode-corners::before,
+.barcode-invalid .barcode-corners::after {
+    border: 3px solid #ff9800;
+}
+
+.barcode-corners::before {
+    top: -3px;
+    left: -3px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.barcode-corners::after {
+    bottom: -3px;
+    right: -3px;
+    border-left: none;
+    border-top: none;
+}
+
+.barcode-format-label {
+    position: absolute;
+    top: -30px;
+    left: 0;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.barcode-valid .barcode-format-label {
+    background: rgba(76, 175, 80, 0.9);
+}
+
+.barcode-invalid .barcode-format-label {
+    background: rgba(255, 152, 0, 0.9);
+}
+
+.auto-filled-field {
+    background: linear-gradient(45deg, transparent 49%, rgba(76, 175, 80, 0.1) 50%, transparent 51%);
+}
+
+@keyframes qr-pulse {
+    0%, 100% { 
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); 
+    }
+    50% { 
+        box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); 
+    }
+}
+
+@keyframes ocr-highlight {
+    0%, 100% { 
+        border-color: #2196f3; 
+    }
+    50% { 
+        border-color: #64b5f6; 
+    }
+}
+
+@keyframes barcode-pulse {
+    0%, 100% { 
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% { 
+        transform: scale(1.02);
+        opacity: 0.8;
+    }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .recognition-status {
+        top: 10px;
+        left: 10px;
+    }
+    
+    .recognition-result {
+        top: 50px;
+        left: 10px;
+        right: 10px;
+    }
+    
+    .ocr-text {
+        font-size: 10px;
+        padding: 1px 4px;
+    }
+    
+    .barcode-format-label {
+        font-size: 10px;
+        padding: 1px 6px;
+        top: -25px;
+    }
+    
+    .barcode-corners::before,
+    .barcode-corners::after {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+
+/* ─── Scanner Screen Layout ──────────────────────────────────────────────── */
+
+.scanner-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100dvh;
+    background: #000;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.scanner-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Dark vignette to improve readability of overlaid UI */
+.scanner-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.65) 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────── */
+
+.scanner-header {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+    background: linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, transparent 100%);
+}
+
+.scanner-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: background 0.2s;
+}
+
+.scanner-back-btn:active {
+    background: rgba(255,255,255,0.3);
+}
+
+.scanner-title-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.scanner-title {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0.3px;
+}
+
+.scanner-subtitle {
+    color: rgba(255,255,255,0.65);
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.scanner-flip-btn {
+    color: white !important;
+}
+
+/* ─── Viewfinder Area ────────────────────────────────────────────────────── */
+
+.scanner-viewfinder-area {
+    position: relative;
+    z-index: 10;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 0 24px;
+}
+
+.scanner-viewfinder {
+    position: relative;
+    width: min(72vw, 280px);
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+}
+
+/* Corner brackets */
+.vf-corner {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+}
+
+.vf-tl { top: 0; left: 0; border-top: 3px solid; border-left: 3px solid; border-radius: 4px 0 0 0; }
+.vf-tr { top: 0; right: 0; border-top: 3px solid; border-right: 3px solid; border-radius: 0 4px 0 0; }
+.vf-bl { bottom: 0; left: 0; border-bottom: 3px solid; border-left: 3px solid; border-radius: 0 0 0 4px; }
+.vf-br { bottom: 0; right: 0; border-bottom: 3px solid; border-right: 3px solid; border-radius: 0 0 4px 0; }
+
+.viewfinder-active .vf-corner { border-color: #fff; }
+.viewfinder-idle .vf-corner { border-color: rgba(255,255,255,0.4); }
+.viewfinder-success .vf-corner { border-color: #4caf50; }
+
+/* Scan line */
+.scanner-scan-line {
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    height: 2px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.9), transparent);
+    animation: scan-sweep 2s ease-in-out infinite;
+    border-radius: 1px;
+}
+
+@keyframes scan-sweep {
+    0%   { top: 8%; opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { top: 88%; opacity: 0; }
+}
+
+/* Success icon */
+.scanner-success-icon {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.35);
+    animation: success-pop 0.3s ease-out;
+}
+
+@keyframes success-pop {
+    from { transform: scale(0.6); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ─── Mode Badges ────────────────────────────────────────────────────────── */
+
+.scanner-mode-badges {
+    display: flex;
+    gap: 8px;
+}
+
+.scanner-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+
+.badge-active {
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.35);
+    backdrop-filter: blur(4px);
+}
+
+.badge-off {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.35);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ─── Instruction Text ───────────────────────────────────────────────────── */
+
+.scanner-instruction {
+    color: rgba(255,255,255,0.85);
+    font-size: 13px;
+    text-align: center;
+    margin: 0;
+    padding: 0 8px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    line-height: 1.4;
+    max-width: 280px;
+}
+
+/* ─── Bottom Action Bar ──────────────────────────────────────────────────── */
+
+.scanner-bottom-bar {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+}
+
+.scanner-toggle-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 12px;
+    transition: background 0.2s;
+    width: 80px;
+}
+
+.scanner-toggle-btn span {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.toggle-on {
+    color: #fff;
+}
+
+.toggle-off {
+    color: rgba(255,255,255,0.4);
+}
+
+.scanner-toggle-btn:active {
+    background: rgba(255,255,255,0.1);
+}
+
+.scanner-capture-btn {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: 4px solid #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, background 0.15s;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.scanner-capture-btn:active {
+    transform: scale(0.93);
+    background: rgba(255,255,255,0.35);
+}

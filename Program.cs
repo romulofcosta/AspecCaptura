@@ -5,12 +5,15 @@ using pwa_camera_poc_blazor;
 using pwa_camera_poc_blazor.Services;
 using pwa_camera_poc_blazor.Services.Auth;
 using pwa_camera_poc_blazor.Services.Camera;
+using pwa_camera_poc_blazor.Services.Recognition;
 using pwa_camera_poc_blazor.Services.Storage;
 using pwa_camera_poc_blazor.Services.AWS;
 using pwa_camera_poc_blazor.Services.Crypto;
 using pwa_camera_poc_blazor.Services.Image;
 using pwa_camera_poc_blazor.Services.Notification;
 using pwa_camera_poc_blazor.Services.Sync;
+using pwa_camera_poc_blazor.Services.Configuration;
+using pwa_camera_poc_blazor.Services.Capture;
 using pwa_camera_poc_blazor.Models;
 using MudBlazor.Services;
 using MudBlazor;
@@ -58,6 +61,21 @@ builder.Services.AddScoped<ICryptoService, CryptoService>();
 builder.Services.AddScoped<IImageCompressor, ImageCompressor>();
 builder.Services.AddScoped<ICameraService, CameraService>();
 
+// Recognition Services
+builder.Services.AddScoped<IQRCodeService, QRCodeRecognitionService>();
+builder.Services.AddScoped<IOCRService, OCRRecognitionService>();
+builder.Services.AddScoped<IBarcodeService, BarcodeRecognitionService>();
+builder.Services.AddScoped<IPatrimonioSearchService, PatrimonioSearchService>();
+builder.Services.AddScoped<IValidationService, ValidationService>();
+builder.Services.AddScoped<IRecognitionService, RecognitionService>();
+
+// Configuration Services
+builder.Services.AddScoped<IConfigurationService, ConfigurationService>();
+builder.Services.AddScoped<IConfigurationIntegrationService, ConfigurationIntegrationService>();
+
+// Capture API Services
+builder.Services.AddScoped<ICaptureApiService, CaptureApiService>();
+
 // Sync Services
 builder.Services.AddScoped<SyncService>(); // Legacy patrimonio sync
 builder.Services.AddScoped<ISyncService, ItemSyncService>(); // New item sync
@@ -96,6 +114,18 @@ catch (Exception ex)
 {
     Console.Error.WriteLine($"Failed to initialize IndexedDB: {ex.Message}");
     // Continue running the app even if DB fails
+}
+
+try
+{
+    var configIntegrationService = host.Services.GetRequiredService<IConfigurationIntegrationService>();
+    await configIntegrationService.InitializeAsync();
+    Console.WriteLine("Configuration integration service initialized successfully.");
+}
+catch (Exception ex)
+{
+    Console.Error.WriteLine($"Failed to initialize configuration integration service: {ex.Message}");
+    // Continue running the app even if configuration integration fails
 }
 
 await host.RunAsync();

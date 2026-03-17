@@ -1,0 +1,470 @@
+@using pwa_camera_poc_blazor.Models
+@using pwa_camera_poc_blazor.Services.Configuration
+@inject IConfigurationService ConfigurationService
+@inject ILogger<BarcodeConfigurationComponent> Logger
+
+<div class="barcode-config-container">
+    <div class="config-section">
+        <div class="config-header">
+            <h3>Configuração de Códigos de Barras</h3>
+            <p class="config-description">Configure as opções de detecção de códigos de barras</p>
+        </div>
+
+        @if (_isLoading)
+        {
+            <div class="loading-container">
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                <span>Carregando configurações...</span>
+            </div>
+        }
+        else if (_configuration != null)
+        {
+            <div class="config-content">
+                <!-- Enable/Disable Barcode Detection -->
+                <div class="config-item">
+                    <div class="config-item-header">
+                        <MudSwitch T="bool" Checked="_configuration.Enabled" 
+                                   CheckedChanged="@((bool value) => { _configuration.Enabled = value; OnConfigurationChanged(); })"
+                                   Color="Color.Primary" 
+                                   Label="Habilitar Detecção de Códigos de Barras" />
+                    </div>
+                    <p class="config-item-description">
+                        Ativa ou desativa a detecção automática de códigos de barras
+                    </p>
+                </div>
+
+                @if (_configuration.Enabled)
+                {
+                    <!-- Enabled Formats -->
+                    <div class="config-item">
+                        <div class="config-item-header">
+                            <h4>Formatos Habilitados</h4>
+                        </div>
+                        <p class="config-item-description">
+                            Selecione quais formatos de códigos de barras devem ser detectados
+                        </p>
+                        <div class="format-checkboxes">
+                            @foreach (var format in _availableFormats)
+                            {
+                                <MudCheckBox T="bool" Checked="@GetFormatEnabled(format)"
+                                             CheckedChanged="@((bool enabled) => SetFormatEnabled(format, enabled))"
+                                             Label="@GetFormatDisplayName(format)"
+                                             Color="Color.Primary" />
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Confidence Settings -->
+                    <div class="config-item">
+                        <div class="config-item-header">
+                            <h4>Configurações de Confiança</h4>
+                        </div>
+                        <p class="config-item-description">
+                            Ajuste os limites mínimos de confiança para detecção
+                        </p>
+                        
+                        <div class="confidence-settings">
+                            <div class="confidence-item">
+                                <label>Confiança Mínima Geral: @(_configuration.MinConfidence.ToString("P0"))</label>
+                                <MudSlider @bind-Value="_configuration.MinConfidence"
+                                           Min="0.1f" Max="1.0f" Step="0.05f"
+                                           Color="Color.Primary"
+                                           @onchange="OnConfigurationChanged" />
+                            </div>
+
+                            @foreach (var format in _configuration.EnabledFormats)
+                            {
+                                <div class="confidence-item">
+                                    <label>@GetFormatDisplayName(format): @(GetFormatConfidence(format).ToString("P0"))</label>
+                                    <MudSlider T="float" Value="@GetFormatConfidence(format)"
+                                               ValueChanged="@(value => OnFormatConfidenceChanged(format, value))"
+                                               Min="0.1f" Max="1.0f" Step="0.05f"
+                                               Color="Color.Primary" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Advanced Settings -->
+                    <div class="config-item">
+                        <div class="config-item-header">
+                            <h4>Configurações Avançadas</h4>
+                        </div>
+                        
+                        <div class="advanced-settings">
+                            <MudCheckBox T="bool" Checked="_configuration.ChecksumValidation"
+                                         CheckedChanged="@((bool value) => { _configuration.ChecksumValidation = value; OnConfigurationChanged(); })"
+                                         Label="Validação de Checksum"
+                                         Color="Color.Primary" />
+                            <p class="setting-description">Valida checksums para códigos EAN e UPC</p>
+
+                            <MudCheckBox T="bool" Checked="_configuration.TryHarder"
+                                         CheckedChanged="@((bool value) => { _configuration.TryHarder = value; OnConfigurationChanged(); })"
+                                         Label="Processamento Intensivo"
+                                         Color="Color.Primary" />
+                            <p class="setting-description">Usa mais recursos para melhor detecção</p>
+
+                            <div class="numeric-setting">
+                                <label>Timeout (ms): @_configuration.TimeoutMs</label>
+                                <MudSlider @bind-Value="_configuration.TimeoutMs"
+                                           Min="500" Max="5000" Step="100"
+                                           Color="Color.Primary"
+                                           @onchange="OnConfigurationChanged" />
+                            </div>
+
+                            <div class="numeric-setting">
+                                <label>Máximo de Tentativas: @_configuration.MaxRetries</label>
+                                <MudSlider @bind-Value="_configuration.MaxRetries"
+                                           Min="1" Max="5" Step="1"
+                                           Color="Color.Primary"
+                                           @onchange="OnConfigurationChanged" />
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Action Buttons -->
+                <div class="config-actions">
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               @onclick="SaveConfiguration"
+                               Disabled="_isSaving">
+                        @if (_isSaving)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                            <span>Salvando...</span>
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Save" />
+                            <span>Salvar</span>
+                        }
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Outlined" 
+                               Color="Color.Secondary" 
+                               @onclick="ResetToDefaults"
+                               Disabled="_isSaving">
+                        <MudIcon Icon="@Icons.Material.Filled.RestartAlt" />
+                        <span>Restaurar Padrões</span>
+                    </MudButton>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@if (_showSuccessMessage)
+{
+    <MudAlert Severity="Severity.Success" 
+              ShowCloseIcon="true" 
+              CloseIconClicked="() => _showSuccessMessage = false"
+              Class="config-alert">
+        Configurações salvas com sucesso!
+    </MudAlert>
+}
+
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <MudAlert Severity="Severity.Error" 
+              ShowCloseIcon="true" 
+              CloseIconClicked="() => _errorMessage = string.Empty"
+              Class="config-alert">
+        @_errorMessage
+    </MudAlert>
+}
+
+<style>
+    .barcode-config-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 16px;
+    }
+
+    .config-section {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .config-header h3 {
+        margin: 0 0 8px 0;
+        color: #1e293b;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    .config-description {
+        margin: 0 0 24px 0;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .loading-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: center;
+        padding: 40px;
+        color: #64748b;
+    }
+
+    .config-item {
+        margin-bottom: 32px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .config-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .config-item-header h4 {
+        margin: 0 0 8px 0;
+        color: #1e293b;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .config-item-description {
+        margin: 0 0 16px 0;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .format-checkboxes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+    }
+
+    .confidence-settings {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .confidence-item label {
+        display: block;
+        margin-bottom: 8px;
+        color: #374151;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .advanced-settings {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .setting-description {
+        margin: 4px 0 0 32px;
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .numeric-setting {
+        margin-top: 16px;
+    }
+
+    .numeric-setting label {
+        display: block;
+        margin-bottom: 8px;
+        color: #374151;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .config-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .config-alert {
+        margin-top: 16px;
+    }
+
+    @@media (max-width: 640px) {
+        .barcode-config-container {
+            padding: 8px;
+        }
+        
+        .config-section {
+            padding: 16px;
+        }
+        
+        .config-actions {
+            flex-direction: column;
+        }
+        
+        .format-checkboxes {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@code {
+    private BarcodeConfiguration? _configuration;
+    private bool _isLoading = true;
+    private bool _isSaving = false;
+    private bool _showSuccessMessage = false;
+    private string _errorMessage = string.Empty;
+
+    private readonly BarcodeFormat[] _availableFormats = 
+    {
+        BarcodeFormat.CODE_128,
+        BarcodeFormat.CODE_39,
+        BarcodeFormat.EAN_13,
+        BarcodeFormat.EAN_8,
+        BarcodeFormat.UPC_A,
+        BarcodeFormat.UPC_E
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadConfiguration();
+    }
+
+    private async Task LoadConfiguration()
+    {
+        try
+        {
+            _isLoading = true;
+            _configuration = await ConfigurationService.LoadBarcodeConfigurationAsync();
+            Logger.LogInformation("Barcode configuration loaded successfully");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading barcode configuration");
+            _errorMessage = "Erro ao carregar configurações";
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SaveConfiguration()
+    {
+        if (_configuration == null) return;
+
+        try
+        {
+            _isSaving = true;
+            _errorMessage = string.Empty;
+            
+            await ConfigurationService.SaveBarcodeConfigurationAsync(_configuration);
+            
+            _showSuccessMessage = true;
+            Logger.LogInformation("Barcode configuration saved successfully");
+            
+            // Hide success message after 3 seconds
+            _ = Task.Delay(3000).ContinueWith(_ => 
+            {
+                _showSuccessMessage = false;
+                InvokeAsync(StateHasChanged);
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error saving barcode configuration");
+            _errorMessage = "Erro ao salvar configurações";
+        }
+        finally
+        {
+            _isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ResetToDefaults()
+    {
+        try
+        {
+            _isSaving = true;
+            _errorMessage = string.Empty;
+            
+            await ConfigurationService.ResetToDefaultsAsync();
+            await LoadConfiguration();
+            
+            _showSuccessMessage = true;
+            Logger.LogInformation("Configuration reset to defaults");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error resetting configuration to defaults");
+            _errorMessage = "Erro ao restaurar configurações padrão";
+        }
+        finally
+        {
+            _isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OnConfigurationChanged()
+    {
+        StateHasChanged();
+    }
+
+    private bool GetFormatEnabled(BarcodeFormat format)
+    {
+        return _configuration?.EnabledFormats?.Contains(format) ?? false;
+    }
+
+    private void SetFormatEnabled(BarcodeFormat format, bool enabled)
+    {
+        if (_configuration?.EnabledFormats == null) return;
+
+        var enabledFormats = _configuration.EnabledFormats.ToList();
+        
+        if (enabled && !enabledFormats.Contains(format))
+        {
+            enabledFormats.Add(format);
+        }
+        else if (!enabled && enabledFormats.Contains(format))
+        {
+            enabledFormats.Remove(format);
+        }
+
+        _configuration.EnabledFormats = enabledFormats.ToArray();
+        StateHasChanged();
+    }
+
+    private float GetFormatConfidence(BarcodeFormat format)
+    {
+        return _configuration?.FormatConfidenceThresholds?.GetValueOrDefault(format, 0.7f) ?? 0.7f;
+    }
+
+    private void OnFormatConfidenceChanged(BarcodeFormat format, float confidence)
+    {
+        if (_configuration?.FormatConfidenceThresholds == null) return;
+
+        _configuration.FormatConfidenceThresholds[format] = confidence;
+        StateHasChanged();
+    }
+
+    private static string GetFormatDisplayName(BarcodeFormat format)
+    {
+        return format switch
+        {
+            BarcodeFormat.CODE_128 => "CODE 128",
+            BarcodeFormat.CODE_39 => "CODE 39",
+            BarcodeFormat.EAN_13 => "EAN-13",
+            BarcodeFormat.EAN_8 => "EAN-8",
+            BarcodeFormat.UPC_A => "UPC-A",
+            BarcodeFormat.UPC_E => "UPC-E",
+            BarcodeFormat.ITF => "ITF",
+            BarcodeFormat.CODABAR => "CODABAR",
+            _ => format.ToString()
+        };
+    }
+}

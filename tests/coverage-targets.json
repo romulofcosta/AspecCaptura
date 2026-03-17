@@ -1,0 +1,36 @@
+{
+  "coverageTargets": {
+    "global": {
+      "line": 80,
+      "branch": 75,
+      "method": 85
+    },
+    "critical": {
+      "line": 90,
+      "branch": 85,
+      "method": 95,
+      "modules": [
+        "Services.Recognition.*",
+        "Services.Camera.*",
+        "Services.Validation.*"
+      ]
+    },
+    "interop": {
+      "line": 95,
+      "branch": 90,
+      "method": 100,
+      "modules": [
+        "*JSInvokable*",
+        "*Interop*"
+      ]
+    }
+  },
+  "excludeFromCoverage": [
+    "Program.cs",
+    "Startup.cs",
+    "*.Designer.cs",
+    "*Migrations*",
+    "*Tests*",
+    "wwwroot/**"
+  ]
+}

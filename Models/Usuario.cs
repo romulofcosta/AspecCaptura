@@ -47,8 +47,18 @@ namespace pwa_camera_poc_blazor.Models
     {
         public long IdPatomb { get; set; }
         public string Nutomb { get; set; } = string.Empty;
+        public string Code => Nutomb; // Alias para compatibilidade
         public string Esfera { get; set; } = string.Empty;
         public string Deprod { get; set; } = string.Empty;
+        public string? Descricao { get; set; }
+        public string? Localizacao { get; set; }
+        public decimal? ValorEstimado { get; set; }
+        public ConservationState? Estado { get; set; }
+        
+        // Metadados de reconhecimento
+        public DateTime? LastRecognized { get; set; }
+        public RecognitionSource? RecognitionSource { get; set; }
+        public float? RecognitionConfidence { get; set; }
     }
 }
 

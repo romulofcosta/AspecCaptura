@@ -1,12 +1,17 @@
 @page "/camera"
 @using pwa_camera_poc_blazor.Models
 @using pwa_camera_poc_blazor.Services.Camera
-@inject CameraService CameraService
+@using pwa_camera_poc_blazor.Services.Recognition
+@using pwa_camera_poc_blazor.Services.Capture
+@inject ICameraService CameraService
+@inject IRecognitionService RecognitionService
 @inject IIndexedDbService DbService
 @inject IAuthService AuthService
+@inject ICaptureApiService CaptureApiService
 @inject NavigationManager Navigation
 @inject pwa_camera_poc_blazor.Services.ToastService ToastService
 @inject AppState appState
+@implements IAsyncDisposable
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Capturar - Aspec Captura</PageTitle>
@@ -114,24 +119,139 @@
 }
 else
 {
-    <div
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: black; z-index: 2000; display: flex; flex-direction: column;">
-        <video id="camera-feed" autoplay playsinline style="width: 100%; flex: 1; object-fit: cover;"></video>
+    <div class="scanner-screen">
+        <video id="camera-feed" autoplay playsinline class="scanner-video"></video>
 
-        <MudPaper Class="d-flex justify-space-between align-center px-8 py-6"
-            Style="background: rgba(0,0,0,0.8); width: 100%; padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;">
-            <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Surface" Size="Size.Large"
-                OnClick="CloseCamera" />
+        <!-- Dark vignette overlay -->
+        <div class="scanner-vignette"></div>
 
-            <div class="d-flex justify-center align-center" style="flex: 1;">
-                <MudIconButton Icon="@Icons.Material.Filled.Camera" Color="Color.Surface"
-                    Style="width: 72px; height: 72px; border: 4px solid white; border-radius: 50%; padding: 0;"
-                    OnClick="CapturePhoto" />
+        <!-- Top header bar -->
+        <div class="scanner-header">
+            <button class="scanner-back-btn" @onclick="CloseCamera" aria-label="Voltar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="white"/>
+                </svg>
+            </button>
+            <div class="scanner-title-block">
+                <span class="scanner-title">Escanear Placa</span>
+                <span class="scanner-subtitle">Tombamento de Patrimônio</span>
+            </div>
+            <MudIconButton Icon="@Icons.Material.Filled.FlipCameraIos" Color="Color.Surface"
+                Size="Size.Medium" OnClick="SwitchCamera" Class="scanner-flip-btn" />
+        </div>
+
+        <!-- Central viewfinder -->
+        <div class="scanner-viewfinder-area">
+            <div class="scanner-viewfinder @(lastRecognitionResult?.Success == true ? "viewfinder-success" : recognitionEnabled ? "viewfinder-active" : "viewfinder-idle")">
+                <!-- Corner brackets -->
+                <span class="vf-corner vf-tl"></span>
+                <span class="vf-corner vf-tr"></span>
+                <span class="vf-corner vf-bl"></span>
+                <span class="vf-corner vf-br"></span>
+                <!-- Scan line animation -->
+                @if (recognitionEnabled && lastRecognitionResult?.Success != true)
+                {
+                    <div class="scanner-scan-line"></div>
+                }
+                <!-- Success checkmark -->
+                @if (lastRecognitionResult?.Success == true)
+                {
+                    <div class="scanner-success-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="11" stroke="#4caf50" stroke-width="2"/>
+                            <path d="M7 12.5l3.5 3.5 6.5-7" stroke="#4caf50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                }
             </div>
 
-            <MudIconButton Icon="@Icons.Material.Filled.FlipCameraIos" Color="Color.Surface" Size="Size.Large"
-                OnClick="SwitchCamera" />
-        </MudPaper>
+            <!-- Mode badges -->
+            <div class="scanner-mode-badges">
+                <span class="scanner-badge @(recognitionEnabled ? "badge-active" : "badge-off")">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right:4px;vertical-align:middle">
+                        <path d="M9.5 6.5v3h-3v-3h3M11 5H5v6h6V5zm-1.5 9.5v3h-3v-3h3M11 13H5v6h6v-6zm6.5-6.5v3h-3v-3h3M22 5h-6v6h6V5zm-6 8h1.5v1.5H16V13zm1.5 1.5H19V16h-1.5v-1.5zM19 13h1.5v1.5H19V13zm-3 3h1.5v1.5H16V16zm1.5 1.5H19V19h-1.5v-1.5zM19 16h1.5v1.5H19V16zm1.5-1.5H22V16h-1.5v-1.5zm0 3H22V19h-1.5v-1.5z"/>
+                    </svg>
+                    QR
+                </span>
+                <span class="scanner-badge @(recognitionEnabled ? "badge-active" : "badge-off")">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right:4px;vertical-align:middle">
+                        <path d="M2 4h2v16H2V4zm3 0h1v16H5V4zm2 0h2v16H7V4zm3 0h1v16h-1V4zm2 0h2v16h-2V4zm3 0h1v16h-1V4zm2 0h3v16h-3V4z"/>
+                    </svg>
+                    Barcode
+                </span>
+                <span class="scanner-badge @(recognitionEnabled ? "badge-active" : "badge-off")">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right:4px;vertical-align:middle">
+                        <path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
+                    </svg>
+                    OCR
+                </span>
+            </div>
+
+            <!-- Instruction text -->
+            <p class="scanner-instruction">
+                @if (lastRecognitionResult?.Success == true)
+                {
+                    @lastRecognitionResult.Message
+                }
+                else if (isValidating)
+                {
+                    <span>Validando tombamento...</span>
+                }
+                else
+                {
+                    <span>Aponte para a placa de tombamento do patrimônio</span>
+                }
+            </p>
+        </div>
+
+        <!-- Detection overlays (positioned over video) -->
+        @if (recognitionEnabled)
+        {
+            @if (qrDetectionBox != null)
+            {
+                <div class="qr-detection-box" style="@GetDetectionBoxStyle()">
+                    <div class="qr-corners"></div>
+                </div>
+            }
+            @if (ocrTextRegions?.Any() == true)
+            {
+                @foreach (var region in ocrTextRegions)
+                {
+                    <div class="ocr-text-region" style="@GetTextRegionStyle(region)">
+                        <span class="ocr-text">@region.Text</span>
+                    </div>
+                }
+            }
+            @if (barcodeDetections?.Any() == true)
+            {
+                @foreach (var barcode in barcodeDetections)
+                {
+                    <div class="barcode-detection-box @GetBarcodeValidationClass(barcode)" style="@GetBarcodeDetectionBoxStyle(barcode)">
+                        <div class="barcode-corners"></div>
+                        <div class="barcode-format-label">@GetBarcodeFormatDisplay(barcode.Format)</div>
+                    </div>
+                }
+            }
+        }
+
+        <!-- Bottom action bar -->
+        <div class="scanner-bottom-bar">
+            <button class="scanner-toggle-btn @(recognitionEnabled ? "toggle-on" : "toggle-off")"
+                    @onclick="ToggleRecognition" aria-label="@(recognitionEnabled ? "Desativar scanner" : "Ativar scanner")">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9.5 6.5v3h-3v-3h3M11 5H5v6h6V5zm-1.5 9.5v3h-3v-3h3M11 13H5v6h6v-6zm6.5-6.5v3h-3v-3h3M22 5h-6v6h6V5zm-6 8h1.5v1.5H16V13zm1.5 1.5H19V16h-1.5v-1.5zM19 13h1.5v1.5H19V13zm-3 3h1.5v1.5H16V16zm1.5 1.5H19V19h-1.5v-1.5zM19 16h1.5v1.5H19V16zm1.5-1.5H22V16h-1.5v-1.5zm0 3H22V19h-1.5v-1.5z"/>
+                </svg>
+                <span>@(recognitionEnabled ? "Scanner On" : "Scanner Off")</span>
+            </button>
+
+            <button class="scanner-capture-btn" @onclick="CapturePhoto" aria-label="Capturar foto">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+                    <path d="M12 15.2A3.2 3.2 0 0 1 8.8 12 3.2 3.2 0 0 1 12 8.8 3.2 3.2 0 0 1 15.2 12 3.2 3.2 0 0 1 12 15.2M12 7a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 5-5 5 5 0 0 0-5-5m0-1.8c-3.73 0-6.8 3.07-6.8 6.8S8.27 18.8 12 18.8s6.8-3.07 6.8-6.8S15.73 5.2 12 5.2z"/>
+                </svg>
+            </button>
+
+            <div style="width: 80px;"></div>
+        </div>
     </div>
 }
 
@@ -145,6 +265,15 @@ else
     private Usuario? currentUser;
     private EditContext? editContext;
 
+    // Recognition-related fields
+    private bool recognitionEnabled = true;
+    private bool isValidating = false;
+    private RecognitionResult? lastRecognitionResult;
+    private Rectangle? qrDetectionBox;
+    private OCRTextRegion[]? ocrTextRegions;
+    private BarcodeResult[]? barcodeDetections;
+    private string[] autoFilledFields = Array.Empty<string>();
+
     protected override async Task OnInitializedAsync()
     {
         // Verificar se a sessão está configurada
@@ -156,6 +285,18 @@ else
         
         appState.IsCameraActive = true;
         currentUser = await AuthService.GetCurrentUserAsync();
+        
+        // Setup recognition event handlers
+        RecognitionService.CodeDetected += OnCodeDetected;
+        RecognitionService.PatrimonioFound += OnPatrimonioFound;
+        RecognitionService.RecognitionError += OnRecognitionError;
+        
+        // Add barcode-specific event handler if available
+        if (RecognitionService is IRecognitionService service)
+        {
+            // Note: This would require adding a BarcodeDetected event to IRecognitionService
+            // For now, barcode detection will be handled through the existing CodeDetected event
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -163,6 +304,10 @@ else
         if (firstRender && !isFormVisible)
         {
             await StartCamera();
+            if (recognitionEnabled)
+            {
+                await StartRecognition();
+            }
         }
     }
 
@@ -231,7 +376,6 @@ else
             }
             if (existing != null && existing.Esfera != (appState.EsferaAtual ?? currentUser?.Esfera))
             {
-                // Alerta impeditivo
                 var esferaMsg = existing.Esfera == "L" ? "Legislativa" : existing.Esfera == "E" ? "Executiva" : existing.Esfera;
                 ToastService.ShowError($"Item localizado (Placa: {existing.Nutomb ?? existing.Code}), porém pertence à Esfera {esferaMsg}. Acesso restrito para o seu perfil.");
                 isSaving = false;
@@ -243,11 +387,41 @@ else
             itemModel.IdUO = appState.CurrentUO?.IdUO;
             itemModel.IdArea = appState.CurrentArea?.IdArea;
             itemModel.IdSubarea = appState.CurrentSubarea?.IdSubarea;
-            itemModel.CreatedBy = currentUser?.UsuarioNome ?? string.Empty; // Define o criador
+            itemModel.CreatedBy = currentUser?.UsuarioNome ?? string.Empty;
             itemModel.Timestamp = DateTime.Now;
             itemModel.Synced = false;
             itemModel.Esfera = appState.EsferaAtual ?? currentUser?.Esfera ?? string.Empty;
+
+            // Task 8.1: Save locally first
             await DbService.AddAsync("items", itemModel);
+
+            // Task 8.1-8.4: Try to save to backend (non-blocking)
+            try
+            {
+                var prefix = currentUser?.Prefixo ?? string.Empty;
+                if (!string.IsNullOrEmpty(prefix))
+                {
+                    // Task 8.2: Include source from last recognition result
+                    var source = lastRecognitionResult?.Source.ToString();
+                    var fotoKey = itemModel.RemoteUrls.FirstOrDefault() ?? itemModel.PhotoPath;
+
+                    var dto = CaptureItemDto.FromInventoryItem(itemModel, prefix, fotoKey, source);
+                    var response = await CaptureApiService.SaveCaptureAsync(dto);
+
+                    if (response != null)
+                    {
+                        // Task 8.3: Mark as synced if backend succeeded
+                        itemModel.Synced = true;
+                        await DbService.UpdateAsync("items", itemModel);
+                    }
+                    // Task 8.4: If backend fails, Synced stays false — no exception thrown
+                }
+            }
+            catch
+            {
+                // Backend failure is non-blocking — item already saved locally
+            }
+
             appState.PendingSyncCount++;
             ToastService.ShowSuccess("Item salvo com sucesso!");
             Navigation.NavigateTo("/home");
@@ -274,9 +448,283 @@ else
     {
         Navigation.NavigateTo("/home");
     }
+
+    // Recognition Methods
+    private async Task StartRecognition()
+    {
+        try
+        {
+            await RecognitionService.StartRecognitionAsync("camera-feed");
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Erro ao iniciar reconhecimento: {ex.Message}");
+        }
+    }
+
+    private async Task ToggleRecognition()
+    {
+        recognitionEnabled = !recognitionEnabled;
+        if (recognitionEnabled)
+            await StartRecognition();
+        else
+            await StopRecognition();
+    }
+
+    private async Task StopRecognition()
+    {
+        await RecognitionService.StopRecognitionAsync();
+        lastRecognitionResult = null;
+        qrDetectionBox = null;
+        ocrTextRegions = null;
+        barcodeDetections = null;
+        StateHasChanged();
+    }
+
+    private async void OnCodeDetected(object? sender, RecognitionEventArgs e)
+    {
+        await InvokeAsync(() =>
+        {
+            if (e.Result.Source == RecognitionSource.QR)
+            {
+                qrDetectionBox = e.Result.BoundingBox;
+                // Clear barcode detections when QR is detected (priority handling)
+                barcodeDetections = null;
+                // Vibrate device (simplified - would need JS interop for actual vibration)
+            }
+            else if (e.Result.Source == RecognitionSource.OCR)
+            {
+                ocrTextRegions = e.Result.TextRegions;
+                // Clear barcode detections when OCR is detected (priority handling)
+                barcodeDetections = null;
+            }
+            else if (e.Result.Source == RecognitionSource.Barcode)
+            {
+                // Clear QR and OCR when barcode is detected (should only show if higher priority failed)
+                qrDetectionBox = null;
+                ocrTextRegions = null;
+                
+                // Handle barcode detection result with detailed information from RecognitionResult
+                if (e.Result.BoundingBox.HasValue)
+                {
+                    barcodeDetections = new[]
+                    {
+                        new BarcodeResult
+                        {
+                            Code = e.Result.DetectedCode ?? string.Empty,
+                            Confidence = e.Result.Confidence,
+                            BoundingBox = e.Result.BoundingBox.Value,
+                            Format = e.Result.BarcodeFormat ?? BarcodeFormat.Unknown,
+                            ChecksumValid = e.Result.BarcodeChecksumValid ?? true,
+                            Timestamp = e.Result.Timestamp
+                        }
+                    };
+                }
+            }
+            
+            StateHasChanged();
+        });
+    }
+
+    // Barcode detection is handled through the main CodeDetected event
+    // The RecognitionService.OnBarcodeDetectedAsync method processes barcode data
+    // and triggers the CodeDetected event with detailed barcode information
+
+    private async void OnPatrimonioFound(object? sender, PatrimonioFoundEventArgs e)
+    {
+        await InvokeAsync(async () =>
+        {
+            // Task 7: Validate tombamento in backend before auto-fill
+            isValidating = true;
+            StateHasChanged();
+
+            try
+            {
+                var prefix = currentUser?.Prefixo ?? string.Empty;
+                if (!string.IsNullOrEmpty(prefix) && !string.IsNullOrEmpty(e.Patrimonio.Nutomb))
+                {
+                    var validation = await CaptureApiService.ValidateTombamentoAsync(e.Patrimonio.Nutomb, prefix);
+
+                    if (validation != null && validation.Exists)
+                    {
+                        // Enrich auto-fill with backend data
+                        if (!string.IsNullOrEmpty(validation.Deprod))
+                            e.Patrimonio.Descricao = validation.Deprod;
+                        if (!string.IsNullOrEmpty(validation.Esfera))
+                            e.Patrimonio.Esfera = validation.Esfera;
+                    }
+                    else if (validation != null && !validation.Exists)
+                    {
+                        ToastService.ShowWarning($"Tombamento {e.Patrimonio.Nutomb} não encontrado no servidor. Continuando com dados locais.");
+                    }
+                }
+            }
+            catch
+            {
+                // Validation failure is non-blocking — proceed with local data
+            }
+            finally
+            {
+                isValidating = false;
+            }
+
+            // Auto-fill form
+            await AutoFillForm(e.Patrimonio);
+
+            // Show success message
+            lastRecognitionResult = new RecognitionResult
+            {
+                Success = true,
+                Message = $"Patrimônio encontrado: {e.Patrimonio.Nutomb}",
+                Source = e.Source
+            };
+
+            StateHasChanged();
+        });
+    }
+
+    private async void OnRecognitionError(object? sender, RecognitionErrorEventArgs e)
+    {
+        await InvokeAsync(() =>
+        {
+            lastRecognitionResult = new RecognitionResult
+            {
+                Success = false,
+                Message = e.ErrorMessage,
+                Source = e.Source
+            };
+            
+            StateHasChanged();
+        });
+    }
+
+    private async Task AutoFillForm(PatrimonioItem patrimonio)
+    {
+        // Validate access
+        var validation = await RecognitionService.ValidateAccessAsync(patrimonio, currentUser!);
+        if (!validation.HasAccess)
+        {
+            ToastService.ShowError(validation.ErrorMessage ?? "Acesso negado ao patrimônio");
+            return;
+        }
+
+        // Map patrimonio to form
+        itemModel.Code = patrimonio.Nutomb;
+        itemModel.Name = patrimonio.Descricao ?? string.Empty;
+        itemModel.Location = patrimonio.Localizacao ?? string.Empty;
+        itemModel.EstimatedValue = patrimonio.ValorEstimado ?? 0;
+        itemModel.State = patrimonio.Estado ?? ConservationState.Good;
+
+        // Mark fields as auto-filled
+        autoFilledFields = new[] { "Code", "Name", "Location", "EstimatedValue", "State" };
+        
+        // Show form
+        isFormVisible = true;
+        editContext = new EditContext(itemModel);
+        
+        StateHasChanged();
+    }
+
+    // UI Helper Methods
+    private string GetRecognitionIcon()
+    {
+        return RecognitionService.IsActive switch
+        {
+            true when lastRecognitionResult?.Success == true => Icons.Material.Filled.CheckCircle,
+            true => Icons.Material.Filled.Search,
+            false => Icons.Material.Filled.SearchOff
+        };
+    }
+
+    private Color GetRecognitionColor()
+    {
+        return RecognitionService.IsActive switch
+        {
+            true when lastRecognitionResult?.Success == true => Color.Success,
+            true => Color.Primary,
+            false => Color.Default
+        };
+    }
+
+    private string GetRecognitionStatus()
+    {
+        return RecognitionService.IsActive switch
+        {
+            true when lastRecognitionResult?.Success == true => "Código Detectado",
+            true => "Procurando...",
+            false => "Reconhecimento Desabilitado"
+        };
+    }
+
+    private Severity GetResultSeverity()
+    {
+        return lastRecognitionResult?.Success == true ? Severity.Success : Severity.Warning;
+    }
+
+    private string GetDetectionBoxStyle()
+    {
+        if (qrDetectionBox == null) return string.Empty;
+        
+        return $"left: {qrDetectionBox.Value.X}px; top: {qrDetectionBox.Value.Y}px; " +
+               $"width: {qrDetectionBox.Value.Width}px; height: {qrDetectionBox.Value.Height}px;";
+    }
+
+    private string GetTextRegionStyle(OCRTextRegion region)
+    {
+        return $"left: {region.BoundingBox.X}px; top: {region.BoundingBox.Y}px; " +
+               $"width: {region.BoundingBox.Width}px; height: {region.BoundingBox.Height}px;";
+    }
+    
+    // Barcode Visual Feedback Helper Methods
+    private string GetBarcodeDetectionBoxStyle(BarcodeResult barcode)
+    {
+        return $"left: {barcode.BoundingBox.X}px; top: {barcode.BoundingBox.Y}px; " +
+               $"width: {barcode.BoundingBox.Width}px; height: {barcode.BoundingBox.Height}px;";
+    }
+    
+    private string GetBarcodeValidationClass(BarcodeResult barcode)
+    {
+        // Green for valid barcodes (high confidence and valid checksum)
+        // Yellow for invalid barcodes (low confidence or invalid checksum)
+        bool isValid = barcode.Confidence >= 0.7f && barcode.ChecksumValid;
+        
+        // Apply format-specific confidence thresholds
+        float minConfidence = barcode.Format switch
+        {
+            BarcodeFormat.EAN_13 or BarcodeFormat.EAN_8 or BarcodeFormat.UPC_A or BarcodeFormat.UPC_E => 0.8f,
+            BarcodeFormat.CODE_128 or BarcodeFormat.CODE_39 => 0.7f,
+            _ => 0.7f
+        };
+        
+        isValid = barcode.Confidence >= minConfidence && barcode.ChecksumValid;
+        return isValid ? "barcode-valid" : "barcode-invalid";
+    }
+    
+    private string GetBarcodeFormatDisplay(BarcodeFormat format)
+    {
+        return format switch
+        {
+            BarcodeFormat.CODE_128 => "CODE 128",
+            BarcodeFormat.CODE_39 => "CODE 39",
+            BarcodeFormat.EAN_13 => "EAN-13",
+            BarcodeFormat.EAN_8 => "EAN-8",
+            BarcodeFormat.UPC_A => "UPC-A",
+            BarcodeFormat.UPC_E => "UPC-E",
+            BarcodeFormat.ITF => "ITF",
+            BarcodeFormat.CODABAR => "CODABAR",
+            _ => "BARCODE"
+        };
+    }
     
     public async ValueTask DisposeAsync()
     {
+        // Cleanup recognition
+        RecognitionService.CodeDetected -= OnCodeDetected;
+        RecognitionService.PatrimonioFound -= OnPatrimonioFound;
+        RecognitionService.RecognitionError -= OnRecognitionError;
+        
+        await StopRecognition();
         await CameraService.StopCameraAsync("camera-feed");
         appState.IsCameraActive = false;
     }

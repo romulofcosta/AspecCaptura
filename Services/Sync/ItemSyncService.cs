@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using pwa_camera_poc_blazor.Models;
 using pwa_camera_poc_blazor.Services.Storage;
 using pwa_camera_poc_blazor.Services.Crypto;
+using pwa_camera_poc_blazor.Services.Capture;
 
 namespace pwa_camera_poc_blazor.Services.Sync;
 
@@ -11,6 +12,7 @@ public class ItemSyncService : ISyncService
     private readonly IIndexedDbService _dbService;
     private readonly ICryptoService _cryptoService;
     private readonly AppState _appState;
+    private readonly ICaptureApiService _captureApiService;
     private bool _isSyncing;
     private const int BATCH_SIZE = 50;
     private const int BATCH_DELAY_MS = 2000;
@@ -25,12 +27,14 @@ public class ItemSyncService : ISyncService
         IHttpClientFactory httpClientFactory,
         IIndexedDbService dbService,
         ICryptoService cryptoService,
-        AppState appState)
+        AppState appState,
+        ICaptureApiService captureApiService)
     {
         _httpClientFactory = httpClientFactory;
         _dbService = dbService;
         _cryptoService = cryptoService;
         _appState = appState;
+        _captureApiService = captureApiService;
     }
 
     public async Task<ItemSyncResult> SyncAllAsync()
@@ -130,57 +134,91 @@ public class ItemSyncService : ISyncService
             ErrorMessages = new List<string>()
         };
 
-        foreach (var item in items)
+        // Task 9.2: Map to CaptureItemDto and call SyncPendingItemsAsync
+        var prefix = _appState.CurrentUser?.Prefixo ?? string.Empty;
+        if (!string.IsNullOrEmpty(prefix))
         {
-            var success = false;
-            var lastError = string.Empty;
-
-            // Retry up to MAX_RETRIES times
-            for (int attempt = 0; attempt < MAX_RETRIES; attempt++)
+            var dtos = items.Select(item =>
             {
-                try
-                {
-                    // Decrypt sensitive fields before sending
-                    var decryptedItem = await DecryptItemAsync(item);
+                var fotoKey = item.RemoteUrls.FirstOrDefault() ?? item.PhotoPath;
+                return CaptureItemDto.FromInventoryItem(item, prefix, fotoKey, source: null);
+            }).ToList();
 
-                    // Send to server (HTTPS only)
-                    var client = _httpClientFactory.CreateClient("BackendApi");
-                    
-                    // Validate HTTPS
-                    if (!client.BaseAddress?.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase) ?? true)
+            var syncResponse = await _captureApiService.SyncPendingItemsAsync(dtos);
+
+            if (syncResponse != null)
+            {
+                // Task 9.3: Update Synced = true for succeeded items
+                foreach (var syncResult in syncResponse.Results)
+                {
+                    if (syncResult.Status == "updated" || syncResult.Status == "created")
                     {
-                        throw new InvalidOperationException("Sincronização requer conexão HTTPS");
+                        var item = items.FirstOrDefault(i => i.Nutomb == syncResult.Nutomb);
+                        if (item != null)
+                        {
+                            item.Synced = true;
+                            item.IsSynchronized = true;
+                            await _dbService.UpdateAsync("items", item);
+                            await _dbService.DeleteAsync("syncQueue", item.Id);
+                            result.SuccessCount++;
+                        }
                     }
-
-                    var response = await client.PostAsJsonAsync("/api/items", decryptedItem);
-                    response.EnsureSuccessStatusCode();
-
-                    // Update item status
-                    item.IsSynchronized = true;
-                    await _dbService.UpdateAsync("items", item);
-                    await _dbService.DeleteAsync("syncQueue", item.Id);
-
-                    result.SuccessCount++;
-                    success = true;
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    lastError = ex.Message;
-                    Console.Error.WriteLine($"Error syncing item {item.Id} (attempt {attempt + 1}): {ex.Message}");
-                    
-                    if (attempt < MAX_RETRIES - 1)
+                    else
                     {
-                        await Task.Delay(1000 * (attempt + 1)); // Exponential backoff
+                        // Task 9.4: Keep Synced = false for failed items
+                        result.FailureCount++;
+                        result.FailedItemIds.Add(syncResult.Nutomb);
+                        result.ErrorMessages.Add($"Item {syncResult.Nutomb}: sync failed");
                     }
                 }
             }
-
-            if (!success)
+            else
             {
-                result.FailureCount++;
-                result.FailedItemIds.Add(item.Id);
-                result.ErrorMessages.Add($"Item {item.Code}: {lastError}");
+                // Entire batch failed (network error)
+                result.FailureCount = items.Count;
+                result.FailedItemIds.AddRange(items.Select(i => i.Id));
+                result.ErrorMessages.Add("Falha de rede ao sincronizar batch");
+            }
+        }
+        else
+        {
+            // Fallback: individual sync via legacy endpoint
+            foreach (var item in items)
+            {
+                var success = false;
+                var lastError = string.Empty;
+
+                for (int attempt = 0; attempt < MAX_RETRIES; attempt++)
+                {
+                    try
+                    {
+                        var decryptedItem = await DecryptItemAsync(item);
+                        var client = _httpClientFactory.CreateClient("BackendApi");
+                        var response = await client.PostAsJsonAsync("/api/items", decryptedItem);
+                        response.EnsureSuccessStatusCode();
+
+                        item.IsSynchronized = true;
+                        await _dbService.UpdateAsync("items", item);
+                        await _dbService.DeleteAsync("syncQueue", item.Id);
+
+                        result.SuccessCount++;
+                        success = true;
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        lastError = ex.Message;
+                        if (attempt < MAX_RETRIES - 1)
+                            await Task.Delay(1000 * (attempt + 1));
+                    }
+                }
+
+                if (!success)
+                {
+                    result.FailureCount++;
+                    result.FailedItemIds.Add(item.Id);
+                    result.ErrorMessages.Add($"Item {item.Code}: {lastError}");
+                }
             }
         }
 

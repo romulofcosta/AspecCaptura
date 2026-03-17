@@ -1,6 +1,6 @@
 window.updateService = {
     dotnetRef: null,
-    currentVersion: '0.2.2',
+    currentVersion: '0.3.0',
     updateCheckInterval: 60000, // 1 minuto
     updateCheckTimer: null,
 
@@ -95,12 +95,12 @@ window.updateService = {
         try {
             const versionMeta = document.querySelector('meta[name="app-version"]');
             if (versionMeta) {
-                return versionMeta.getAttribute('content') || '0.2.2';
+                return versionMeta.getAttribute('content') || '0.3.0';
             }
         } catch (error) {
             console.error('[UpdateService] Erro ao obter versão:', error);
         }
-        return '0.2.2';
+        return '0.3.0';
     },
 
     skipWaiting: async function () {

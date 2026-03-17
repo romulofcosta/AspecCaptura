@@ -5,6 +5,21 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [0.2.8] - 2026-03-13
+
+### Adicionado
+- **Infraestrutura de Testes Automatizados**: Criado projeto de testes unitários com framework xUnit
+  - Projeto `Tests.csproj` integrado à solução principal
+  - Testes básicos de validação da infraestrutura implementados
+  - Estrutura preparada para expansão de testes de componentes e serviços
+  - Configuração otimizada para execução em CI/CD
+  - Base sólida para garantir qualidade e confiabilidade do código
+
+### Melhorado
+- **Arquitetura de Qualidade**: Estabelecida base para métricas de qualidade de código
+- **Preparação para CI/CD**: Infraestrutura pronta para integração contínua
+- **Versionamento**: Atualização coordenada em todos os componentes (AppInfo, Service Worker, Manifest, .csproj)
+
 ## [0.2.7] - 2026-03-13
 
 ### Corrigido

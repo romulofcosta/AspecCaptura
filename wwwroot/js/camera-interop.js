@@ -94,8 +94,18 @@ window.cameraInterop = {
 
     // Legacy methods for backward compatibility
     startCamera: async (videoElementId, facingMode) => {
-        const video = document.getElementById(videoElementId);
-        if (!video) return;
+        // Polling/retry: aguarda o elemento estar disponível no DOM (fix para race condition pós-navegação Blazor)
+        let video = null;
+        const maxAttempts = 10;
+        const intervalMs = 50;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            video = document.getElementById(videoElementId);
+            if (video) break;
+            await new Promise(resolve => setTimeout(resolve, intervalMs));
+        }
+        if (!video) {
+            throw new Error(`Elemento #${videoElementId} não encontrado no DOM após ${maxAttempts} tentativas. Verifique se o componente foi renderizado.`);
+        }
 
         const constraints = {
             video: { 

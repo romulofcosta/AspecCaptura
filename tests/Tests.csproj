@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -6,29 +6,45 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="bunit" Version="1.28.9" />
-    <PackageReference Include="bunit.web" Version="1.28.9" />
+    <!-- Core Testing Frameworks -->
     <PackageReference Include="xunit" Version="2.6.6" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    
+    <!-- Blazor Testing -->
+    <PackageReference Include="bunit" Version="1.24.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
+    
+    <!-- Mocking and Assertions -->
     <PackageReference Include="Moq" Version="4.20.70" />
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
-    <PackageReference Include="FsCheck" Version="2.16.6" />
-    <PackageReference Include="FsCheck.Xunit" Version="2.16.6" />
-    <PackageReference Include="Bogus" Version="35.4.0" />
+    
+    <!-- Code Coverage -->
     <PackageReference Include="coverlet.collector" Version="6.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="coverlet.msbuild" Version="6.0.0" />
+    <PackageReference Include="ReportGenerator" Version="5.2.0" />
+    
+    <!-- Performance Testing -->
+    <PackageReference Include="NBomber" Version="5.0.0" />
+    
+    <!-- Additional Testing Utilities - Fixed versions -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\pwa-camera-poc-blazor.csproj" />
+    <!-- Reference to main project -->
+    <ProjectReference Include="../pwa-camera-poc-blazor.csproj" />
   </ItemGroup>
 
 </Project>
