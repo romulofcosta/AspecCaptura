@@ -5,14 +5,7 @@
 @inject AppState appState
 @inject IJSRuntime JSRuntime
 @inject ILogger<MinimalLayout> Logger
-@using MudBlazor
 @using System.Diagnostics.CodeAnalysis
-@inject ISnackbar Snackbar
-
-<MudThemeProvider Theme="currentTheme" @bind-IsDarkMode="appState.IsDarkMode" />
-<MudDialogProvider />
-<MudSnackbarProvider />
-<MudPopoverProvider />
 
 <style>
     /* Global Minimal Styles */
@@ -25,10 +18,31 @@
         padding-bottom: calc(120px + env(safe-area-inset-bottom));
     }
     
-    .minimal-page {
+    .app-viewport {
+        min-height: 100vh;
+        background-color: #f1f5f9;
+        display: flex;
+        justify-content: center;
+    }
+
+    .mobile-frame {
+        width: 100%;
+        max-width: 480px;
         background: #FFFFFF;
         min-height: 100vh;
-        padding-bottom: calc(120px + env(safe-area-inset-bottom));
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 0 50px rgba(0,0,0,0.1);
+        overflow-x: hidden;
+    }
+
+    .minimal-page {
+        background: #F8FAFC;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding-bottom: calc(100px + env(safe-area-inset-bottom));
     }
     
     .minimal-header {
@@ -242,6 +256,25 @@
         letter-spacing: 0.1em;
     }
     
+    /* Ensure Material Icons render correctly */
+    .material-symbols-outlined {
+        font-family: 'Material Symbols Outlined' !important;
+        font-weight: normal;
+        font-style: normal;
+        font-size: 24px;
+        line-height: 1;
+        letter-spacing: normal;
+        text-transform: none;
+        display: inline-block;
+        white-space: nowrap;
+        word-wrap: normal;
+        direction: ltr;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        -moz-osx-font-smoothing: grayscale;
+        font-feature-settings: 'liga';
+    }
+    
     /* Form Styles */
     .form-group {
         margin-bottom: 20px;
@@ -288,30 +321,16 @@
     }
 </style>
 
-<!-- Main Content -->
-<div class="minimal-page">
-    @Body
-</div>
+<!-- Main Content with Mobile Frame -->
+<div class="app-viewport">
+    <div class="mobile-frame">
+        <div class="minimal-page">
+            @Body
+        </div>
 
-<!-- Bottom Navigation -->
-<nav class="bottom-nav">
-    <a href="/" class="nav-item @(IsActive("/") || IsActive("/home") ? "active" : "")">
-        <MudIcon Icon="@Icons.Material.Filled.GridView" Size="Size.Medium" />
-        <span class="nav-label">Início</span>
-    </a>
-    <a href="/dashboard" class="nav-item @(IsActive("/dashboard") ? "active" : "")">
-        <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Medium" />
-        <span class="nav-label">Lista</span>
-    </a>
-    <a href="/sync" class="nav-item @(IsActive("/sync") ? "active" : "")">
-        <MudIcon Icon="@Icons.Material.Filled.Sync" Size="Size.Medium" />
-        <span class="nav-label">Sinc</span>
-    </a>
-    <a href="/settings" class="nav-item @(IsActive("/settings") ? "active" : "")">
-        <MudIcon Icon="@Icons.Material.Filled.Settings" Size="Size.Medium" />
-        <span class="nav-label">Ajustes</span>
-    </a>
-</nav>
+
+    </div>
+</div>
 
 @code {
     // Construtor público explícito para evitar problemas com IL trimming
@@ -319,38 +338,6 @@
     {
         // Construtor vazio necessário para instanciação do Blazor
     }
-
-    // ASPEC Identity Theme Configuration
-    private MudTheme currentTheme = new MudTheme()
-    {
-        LayoutProperties = new LayoutProperties()
-        {
-            DefaultBorderRadius = "12px"
-        },
-        Typography = new Typography()
-        {
-            Default = new DefaultTypography()
-            {
-                FontFamily = new[] { "Inter", "Roboto", "Helvetica", "Arial", "sans-serif" },
-                FontSize = "0.875rem",
-                FontWeight = "400",
-                LineHeight = "1.5"
-            }
-        },
-        PaletteLight = new PaletteLight()
-        {
-            Primary = "#003366",
-            Secondary = "#64748B",
-            Success = "#2e7d32",
-            Info = "#0066CC",
-            Warning = "#ed6c02",
-            Error = "#dc3545",
-            Background = "#FFFFFF",
-            Surface = "#FFFFFF",
-            TextPrimary = "#1E293B",
-            TextSecondary = "#64748B"
-        }
-    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -389,34 +376,44 @@
     private void HandleToastShow(string message, string type)
     {
         Logger.LogInformation($"Toast shown: {type} - {message}");
-        InvokeAsync(() => ShowSnackbar(message, type));
+        InvokeAsync(() => ShowToast(message, type));
     }
 
-    private void ShowSnackbar(string message, string type)
+    private async Task ShowToast(string message, string type)
     {
         try
         {
-            Severity severity = type switch
+            var colorClass = type switch
             {
-                "success" => Severity.Success,
-                "error" => Severity.Error,
-                "warning" => Severity.Warning,
-                "info" => Severity.Info,
-                _ => Severity.Normal
+                "success" => "bg-green-500",
+                "error" => "bg-red-500",
+                "warning" => "bg-yellow-500",
+                "info" => "bg-blue-500",
+                _ => "bg-gray-500"
             };
-            Snackbar.Add(message, severity);
+            
+            await JSRuntime.InvokeVoidAsync("eval", $@"
+                const container = document.getElementById('toast-container') || (() => {{
+                    const c = document.createElement('div');
+                    c.id = 'toast-container';
+                    c.className = 'fixed top-20 right-4 z-50 space-y-2';
+                    document.body.appendChild(c);
+                    return c;
+                }})();
+                const toast = document.createElement('div');
+                toast.className = '{colorClass} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2';
+                toast.innerHTML = '<span>{message}</span>';
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            ");
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error showing snackbar");
+            Logger.LogError(ex, "Error showing toast");
         }
     }
 
-    private bool IsActive(string path)
-    {
-        var currentPath = Navigation.ToBaseRelativePath(Navigation.Uri);
-        return currentPath.StartsWith(path.TrimStart('/'), StringComparison.OrdinalIgnoreCase);
-    }
+
 
     public void Dispose()
     {

@@ -1,0 +1,12 @@
+﻿  Determinando os projetos a serem restaurados...
+  Todos os projetos est├úo atualizados para restaura├º├úo.
+  pwa-camera-poc-blazor -> C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\bin\Debug\net8.0\pwa-camera-poc-blazor.dll
+  pwa-camera-poc-blazor (Blazor output) -> C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\bin\Debug\net8.0\wwwroot
+  Tests -> C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\tests\bin\Debug\net8.0\Tests.dll
+Execu├º├úo de teste para C:\Users\romulo.costa\.gemini\antigravity\scratch\pwa-camera-poc-blazor\tests\bin\Debug\net8.0\Tests.dll (.NETCoreApp,Version=v8.0)
+Vers├úo do VSTest 17.11.1 (x64)
+
+Iniciando execu├º├úo de teste, espere...
+1 arquivos de teste no total corresponderam ao padr├úo especificado.
+
+Aprovado!  ÔÇô Com falha:     0, Aprovado:   294, Ignorado:     0, Total:   294, Dura├º├úo: 438 ms - Tests.dll (net8.0)

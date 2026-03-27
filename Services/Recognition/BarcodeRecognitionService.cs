@@ -125,10 +125,17 @@ public class BarcodeRecognitionService : IBarcodeService
             RecordPerformanceMetric("success", processingTime, true, sortedResults.Length);
             return sortedResults;
         }
+        catch (JSException jsEx)
+        {
+            var processingTime = (DateTime.Now - startTime).TotalMilliseconds;
+            Console.Error.WriteLine($"JavaScript error detecting barcodes: {jsEx.Message}");
+            RecordPerformanceMetric("js_error", processingTime, false);
+            return Array.Empty<BarcodeResult>();
+        }
         catch (Exception ex)
         {
             var processingTime = (DateTime.Now - startTime).TotalMilliseconds;
-            Console.Error.WriteLine($"Error detecting barcodes: {ex.Message}");
+            Console.Error.WriteLine($"General error detecting barcodes: {ex.Message}");
             RecordPerformanceMetric("error", processingTime, false);
             return Array.Empty<BarcodeResult>();
         }

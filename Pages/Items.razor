@@ -1,178 +1,445 @@
+@page "/"
 @page "/items"
-@layout MainLayout
+@layout MinimalLayout
 @using pwa_camera_poc_blazor.Models
-@inject IAuthService AuthService
-@inject IIndexedDbService DbService
-@inject NavigationManager Navigation
-@inject AppState appState
-@inject HttpClient HttpClient
-@inject IJSRuntime JSRuntime
-@using pwa_camera_poc_blazor.Services.AWS
-@inject IAwsStorageService AwsService
+@using pwa_camera_poc_blazor.Components.Cards
+
 @implements IDisposable
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
-<PageTitle>Lista Completa - Aspec Captura</PageTitle>
+<PageTitle>Itens - Aspec Captura</PageTitle>
 
-<MudContainer id="items-container" MaxWidth="MaxWidth.Large" Class="mt-4 pb-20" Style="overflow-y: auto; height: 100%;">
-    <MudGrid Spacing="2">
-        <!-- Header with Back Button -->
-        <MudItem xs="12">
-            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
-                <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" 
-                               Color="Color.Primary" 
-                               OnClick="@(() => Navigation.NavigateTo("/"))" />
-                <MudText Typo="Typo.h5">Lista Completa de Itens</MudText>
+@* ── App Header ── *@
+<header class="app-header">
+    <div class="header-brand">
+        <img src="images/aspec_logo.png" alt="Aspec" class="brand-logo" />
+        <span class="brand-name">Aspec Captura</span>
+    </div>
+    <div class="header-actions">
+        <button class="header-action" title="Sincronização" @onclick='() => Navigation.NavigateTo("/sync")'>
+            <span class="material-symbols-outlined">sync</span>
+        </button>
+        <button class="header-action" title="Ajustes" @onclick='() => Navigation.NavigateTo("/settings")'>
+            <span class="material-symbols-outlined">settings</span>
+        </button>
+    </div>
+</header>
+
+@* ── Sticky Search ── *@
+<div class="search-bar">
+    <span class="material-symbols-outlined search-icon">search</span>
+    <input type="search"
+           class="search-input"
+           placeholder="Buscar patrimônio ou descrição..."
+           @bind="searchQuery"
+           @bind:event="oninput" />
+    <button class="scan-btn-top" title="Nova Captura" @onclick='() => Navigation.NavigateTo("/camera")'>
+        <span class="material-symbols-outlined">qr_code_scanner</span>
+        <span class="scan-btn-text">SCAN</span>
+    </button>
+</div>
+
+@* ── Horizontal Filter Tabs ── *@
+<div class="filter-tabs-wrapper">
+    <div class="filter-tabs">
+        <button class="filter-tab @(selectedStatus == "todos" ? "active" : "")" @onclick='() => SetStatus("todos")'>TODOS</button>
+        <button class="filter-tab @(selectedStatus == "operacao" ? "active" : "")" @onclick='() => SetStatus("operacao")'>EM OPERAÇÃO</button>
+        <button class="filter-tab @(selectedStatus == "manutencao" ? "active" : "")" @onclick='() => SetStatus("manutencao")'>MANUTENÇÃO</button>
+        <button class="filter-tab @(selectedStatus == "baixado" ? "active" : "")" @onclick='() => SetStatus("baixado")'>BAIXADO</button>
+        <button class="filter-tab @(selectedStatus == "inativos" ? "active" : "")" @onclick='() => SetStatus("inativos")'>EM BAIXA</button>
+    </div>
+</div>
+
+@* ── Summary Bar ── *@
+<div class="summary-bar">
+    <span class="summary-count">
+        <span class="summary-number">@filteredItems.Count()</span>
+        BENS
+    </span>
+    <span class="summary-divider">|</span>
+    <span class="summary-uo">@(appState.CurrentUO?.NomeUO ?? "Unidade não selecionada")</span>
+</div>
+
+@* ── Items List ── *@
+<div class="items-list">
+    @if (isLoading)
+    {
+        <div class="state-container">
+            <div class="spinner-ring"></div>
+            <span class="state-label">Carregando bens...</span>
+        </div>
+    }
+    else if (!filteredItems.Any())
+    {
+        <div class="state-container">
+            <span class="material-symbols-outlined state-icon">inventory_2</span>
+            <span class="state-label">Nenhum bem encontrado</span>
+            <span class="state-hint">Tente outro filtro ou termo de busca</span>
+        </div>
+    }
+    else
+    {
+        @foreach (var item in pagedItems)
+        {
+            <ItemCard Item="@item" OnView="NavigateToItem" />
+        }
+
+        @if (totalPages > 1)
+        {
+            <div class="pagination">
+                <button class="pag-btn" disabled="@(currentPage == 1)" @onclick="PrevPage">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                    ANTERIOR
+                </button>
+                <span class="pag-info">@currentPage / @totalPages</span>
+                <button class="pag-btn" disabled="@(currentPage == totalPages)" @onclick="NextPage">
+                    PRÓXIMA
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
             </div>
-        </MudItem>
-
-        <!-- Search and Filter Bar -->
-        <MudItem xs="12">
-            <MudPaper Elevation="0" Class="d-flex gap-2 align-center pa-2 mud-background-gray rounded-lg">
-                <MudTextField @bind-Value="searchQuery" Placeholder="Buscar por nome, código ou categoria..."
-                    Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined"
-                    Class="flex-grow-1" Clearable="true" OnClearButtonClick="ClearSearch" Margin="Margin.Dense"
-                    UserAttributes="@(new Dictionary<string, object> { { "id", "search-input" } })" />
-
-                <div class="d-flex gap-2">
-                    <MudIconButton Icon="@Icons.Material.Filled.FilterList"
-                        Color="@(showFilters ? Color.Primary : Color.Default)" OnClick="ToggleFilters" title="Filtros" />
-
-                    <MudIconButton Icon="@Icons.Material.Filled.Sync"
-                        Color="@(isSyncing ? Color.Warning : Color.Primary)" 
-                        OnClick="@(() => SyncPendingItems(false))" 
-                        Disabled="@isSyncing"
-                        title="@(isSyncing ? "Sincronizando..." : "Sincronizar")" />
-
-                    <MudIconButton
-                        Icon="@(viewMode == "grid" ? Icons.Material.Filled.GridView : Icons.Material.Filled.ViewList)"
-                        Color="@(viewMode == "grid" ? Color.Primary : Color.Default)" OnClick="ToggleViewMode"
-                        title="Alternar Visualização" />
-                </div>
-            </MudPaper>
-        </MudItem>
-
-        <!-- Filter Panel -->
-        @if (showFilters)
-        {
-            <MudItem xs="12">
-                <MudPaper Class="pa-4" Elevation="1">
-                    <MudGrid Spacing="2">
-                        <MudItem xs="12" md="8">
-                            <MudText Typo="Typo.subtitle2" Class="mb-2">Categoria</MudText>
-                            <div class="d-flex gap-2 flex-wrap">
-                                @foreach (var category in categories)
-                                {
-                                    <MudChip T="string" Color="@(selectedCategory == category ? Color.Primary : Color.Default)"
-                                        OnClick="() => SelectCategory(category)"
-                                        Variant="@(selectedCategory == category ? Variant.Filled : Variant.Outlined)">
-                                        @category
-                                    </MudChip>
-                                }
-                            </div>
-                        </MudItem>
-                        <MudItem xs="12" md="4">
-                            <MudSelect T="string" @bind-Value="SortOrderProperty" Label="Ordenar por" Variant="Variant.Outlined"
-                                AnchorOrigin="Origin.BottomCenter" Margin="Margin.Dense" Dense="true"
-                                UserAttributes="@(new Dictionary<string, object> { { "id", "sort-select" } })">
-                                <MudSelectItem Value="@("newest")">Mais recentes</MudSelectItem>
-                                <MudSelectItem Value="@("oldest")">Mais antigos</MudSelectItem>
-                                <MudSelectItem Value="@("name-asc")">Nome (A-Z)</MudSelectItem>
-                                <MudSelectItem Value="@("name-desc")">Nome (Z-A)</MudSelectItem>
-                                <MudSelectItem Value="@("code-asc")">Código (A-Z)</MudSelectItem>
-                            </MudSelect>
-                        </MudItem>
-                    </MudGrid>
-                </MudPaper>
-            </MudItem>
         }
+    }
+</div>
 
-        @if (isLoading)
-        {
-            <MudItem xs="12" Class="d-flex justify-center my-16">
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-            </MudItem>
-        }
-        else if (!filteredItems.Any())
-        {
-            <MudItem xs="12" Class="d-flex flex-column align-center my-16">
-                <MudIcon Icon="@Icons.Material.Filled.CameraAlt" Size="Size.Large" Color="Color.Default"
-                    Style="font-size: 6rem; opacity: 0.1;" />
-                <MudText Typo="Typo.h5" Class="mt-4">Nenhum item encontrado</MudText>
-                <MudText Typo="Typo.body1" Color="Color.Secondary">Tente mudar os filtros ou capture novos itens.</MudText>
-            </MudItem>
-        }
-        else
-        {
-            @foreach (var item in pagedItems)
-            {
-                <MudItem Class="inventory-grid-item" xs="12" sm="@(viewMode == "list" ? 12 : 6)" md="@(viewMode == "list" ? 12 : 6)"
-                    lg="@(viewMode == "list" ? 12 : 6)">
-                    <ItemCard Item="item" OnView="NavigateToItemCallback" IsListView="@(viewMode == "list")" />
-                </MudItem>
-            }
 
-            @if (totalPages > 1)
-            {
-                <MudItem xs="12" Class="d-flex justify-center align-center gap-4 my-8">
-                    <MudButton Variant="Variant.Outlined" Disabled="@(currentPage == 1)" OnClick="PrevPage"
-                        StartIcon="@Icons.Material.Filled.ChevronLeft">Anterior</MudButton>
-                    <MudText Typo="Typo.body2">Página @currentPage de @totalPages</MudText>
-                    <MudButton Variant="Variant.Outlined" Disabled="@(currentPage == totalPages)" OnClick="NextPage"
-                        EndIcon="@Icons.Material.Filled.ChevronRight">Próxima</MudButton>
-                </MudItem>
-            }
-        }
-    </MudGrid>
-</MudContainer>
+
+<style>
+    /* ── Header ── */
+    .app-header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: #fff;
+        border-bottom: 1px solid #E2E8F0;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .header-brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .brand-logo {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+    }
+
+    .brand-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: #003366;
+        letter-spacing: 0.3px;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .header-action {
+        background: none;
+        border: none;
+        color: #64748B;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .header-action:active {
+        background: #F1F5F9;
+    }
+
+    /* ── Search ── */
+    .search-bar {
+        position: sticky;
+        top: 49px;
+        z-index: 19;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        background: #fff;
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .search-icon {
+        color: #94A3B8;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .search-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        font-size: 14px;
+        color: #1E293B;
+        background: transparent;
+        font-family: inherit;
+        min-width: 0;
+    }
+
+    .search-input::placeholder {
+        color: #94A3B8;
+    }
+    
+    .scan-btn-top {
+        background: #003366;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        height: 36px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 51, 102, 0.2);
+        flex-shrink: 0;
+    }
+    
+    .scan-btn-top .material-symbols-outlined {
+        font-size: 18px;
+    }
+    
+    .scan-btn-text {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    /* ── Filter Tabs ── */
+    .filter-tabs-wrapper {
+        background: #fff;
+        border-bottom: 2px solid #E2E8F0;
+        position: sticky;
+        top: 97px;
+        z-index: 18;
+    }
+
+    .filter-tabs {
+        display: flex;
+        overflow-x: auto;
+        scrollbar-width: none;
+        gap: 0;
+    }
+
+    .filter-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-tab {
+        flex-shrink: 0;
+        padding: 10px 14px;
+        border: none;
+        background: transparent;
+        font-size: 11px;
+        font-weight: 700;
+        color: #94A3B8;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .filter-tab.active {
+        color: #003366;
+        border-bottom-color: #003366;
+    }
+
+    /* ── Summary Bar ── */
+    .summary-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: #F8FAFC;
+        border-bottom: 1px solid #E2E8F0;
+    }
+
+    .summary-count {
+        font-size: 11px;
+        font-weight: 700;
+        color: #003366;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .summary-number {
+        font-size: 14px;
+    }
+
+    .summary-divider {
+        color: #CBD5E1;
+        font-size: 12px;
+    }
+
+    .summary-uo {
+        font-size: 11px;
+        color: #64748B;
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* ── Items List ── */
+    .items-list {
+        flex: 1;
+        padding: 12px 12px 120px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background: #F8FAFC;
+    }
+
+    /* ── States ── */
+    .state-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 24px;
+        text-align: center;
+        gap: 12px;
+    }
+
+    .state-icon {
+        font-size: 56px;
+        color: #CBD5E1;
+    }
+
+    .state-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #94A3B8;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .state-hint {
+        font-size: 12px;
+        color: #CBD5E1;
+    }
+
+    .spinner-ring {
+        width: 36px;
+        height: 36px;
+        border: 3px solid #E2E8F0;
+        border-top-color: #003366;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ── Pagination ── */
+    .pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 0;
+        margin-top: 8px;
+    }
+
+    .pag-btn {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 14px;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        background: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        color: #003366;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .pag-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+
+    .pag-btn .material-symbols-outlined {
+        font-size: 16px;
+    }
+
+    .pag-info {
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748B;
+    }
+
+    /* ── FAB ── */
+    .fab {
+        position: fixed;
+        bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+        right: 16px;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: #003366;
+        color: #fff;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 16px rgba(0, 51, 102, 0.35);
+        cursor: pointer;
+        z-index: 30;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .fab:active {
+        transform: scale(0.93);
+        box-shadow: 0 2px 8px rgba(0,51,102,0.3);
+    }
+
+    .fab .material-symbols-outlined {
+        font-size: 24px;
+    }
+</style>
 
 @code {
     private List<InventoryItem> items = new();
     private string searchQuery = "";
-    private string selectedCategory = "Todas";
-    private string sortOrder = "newest";
-    private string viewMode = "list";
-    private bool showFilters = false;
-    private bool isLoading = true;
-    private bool isSyncing = false;
-
-    // Pagination
+    private string selectedStatus = "todos";
     private int currentPage = 1;
-    private int pageSize = 12;
-
-    private readonly string[] categories = { "Todas", "Móveis", "Eletrônicos", "Equipamentos", "Ferramentas", "Materiais", "Outros" };
-
-    // Property binding for Sort Order to handle page reset
-    private string SortOrderProperty
-    {
-        get => sortOrder;
-        set
-        {
-            if (sortOrder != value)
-            {
-                sortOrder = value;
-                currentPage = 1;
-            }
-        }
-    }
+    private const int PageSize = 20;
+    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        // Verificar se a sessão está configurada
         if (!appState.IsSessionConfigured())
         {
             Navigation.NavigateTo("/configuracao-sessao");
             return;
         }
-        
+
         appState.OnChange += HandleStateChange;
         await LoadItems();
     }
 
-    private async void HandleStateChange()
-    {
-        await InvokeAsync(StateHasChanged);
-    }
+    private async void HandleStateChange() => await InvokeAsync(StateHasChanged);
 
     private async Task LoadItems()
     {
@@ -180,33 +447,20 @@
         try
         {
             var user = await AuthService.GetCurrentUserAsync();
-            string esfera = appState.EsferaAtual ?? user?.Esfera ?? string.Empty;
-            
-            if (appState.CurrentUO?.IdUO != null)
+            if (user == null) return;
+
+            if (appState.CurrentUO != null)
             {
                 var allItems = await DbService.GetItemsByUOAsync(appState.CurrentUO.IdUO);
-                
-                if (esfera == "A")
-                {
-                    items = allItems.ToList();
-                }
-                else if (!string.IsNullOrEmpty(esfera))
-                {
-                    items = allItems.Where(i => i.Esfera == esfera).ToList();
-                }
-                else
-                {
-                    items = allItems.ToList();
-                }
-            }
-            else
-            {
-                items = new List<InventoryItem>();
+                var esfera = appState.EsferaAtual ?? user.Esfera;
+                items = (!string.IsNullOrEmpty(esfera) && esfera != "A")
+                    ? allItems.Where(i => i.Esfera == esfera).ToList()
+                    : allItems.ToList();
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error loading items: " + ex.Message);
+            Console.Error.WriteLine($"Error loading items: {ex.Message}");
         }
         finally
         {
@@ -214,129 +468,9 @@
         }
     }
 
-    private async Task SyncPendingItems(bool autoSync = false)
+    private void SetStatus(string status)
     {
-        if (isSyncing) return;
-        
-        isSyncing = true;
-        await InvokeAsync(StateHasChanged);
-
-        try
-        {
-            var user = await AuthService.GetCurrentUserAsync();
-            var username = user?.UsuarioNome ?? "unknown";
-
-            List<string> pendingIds = new();
-            try {
-                pendingIds = await DbService.GetAllKeysFromIndexAsync<string>("items", "synced", 0);
-            }
-            catch {
-                var allItems = await DbService.GetAllAsync<InventoryItem>("items");
-                if (allItems != null)
-                    pendingIds = allItems.Where(i => !i.Synced).Select(i => i.Id).ToList();
-            }
-
-            if (!pendingIds.Any()) 
-            {
-                isSyncing = false;
-                await InvokeAsync(StateHasChanged);
-                return;
-            }
-            
-            bool stateChanged = false;
-
-            foreach (var id in pendingIds)
-            {
-                var item = await DbService.GetAsync<InventoryItem>("items", id);
-                
-                if (item == null || item.CreatedBy != username) continue;
-                if (item.Synced) continue;
-
-                bool itemSyncSuccess = false;
-                bool exists = await AwsService.ItemExistsInS3Async(item.Id);
-                
-                if (exists)
-                {
-                    itemSyncSuccess = true;
-                }
-                else
-                {
-                    bool photoSuccess = true;
-                    if (item.Photos != null && item.Photos.Any())
-                    {
-                        var firstPhoto = item.Photos.FirstOrDefault();
-                        if (!string.IsNullOrEmpty(firstPhoto))
-                        {
-                            var (success, url) = await AwsService.UploadPhotoAsync(item.Id, item.Code, firstPhoto);
-                            if (success && !string.IsNullOrEmpty(url))
-                            {
-                                if (item.RemoteUrls == null) item.RemoteUrls = new List<string>();
-                                if (!item.RemoteUrls.Contains(url))
-                                {
-                                    item.RemoteUrls.Add(url);
-                                }
-                            }
-                            else
-                            {
-                                photoSuccess = false;
-                            }
-                        }
-                    }
-
-                    if (photoSuccess)
-                    {
-                        var metadata = ItemMetadata.FromInventoryItem(item, username);
-                        var (metaSuccess, _) = await AwsService.UploadMetadataAsync(item.Id, metadata);
-                        
-                        if (metaSuccess)
-                        {
-                            itemSyncSuccess = true;
-                        }
-                    }
-                }
-
-                if (itemSyncSuccess)
-                {
-                    var imageUrl = await AwsService.GetItemImageUrlAsync(item);
-                    if (!string.IsNullOrEmpty(imageUrl))
-                    {
-                        if (item.RemoteUrls == null) item.RemoteUrls = new List<string>();
-                        if (!item.RemoteUrls.Contains(imageUrl))
-                        {
-                            item.RemoteUrls.Add(imageUrl);
-                        }
-                    }
-
-                    item.Synced = true;
-                    await DbService.UpdateAsync("items", item);
-                    stateChanged = true;
-                }
-            }
-
-            if (stateChanged)
-            {
-                await LoadItems(); 
-                await InvokeAsync(StateHasChanged);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erro na sincronização: {ex.Message}");
-        }
-        finally
-        {
-            isSyncing = false;
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-    private void ToggleFilters() => showFilters = !showFilters;
-    private void ToggleViewMode() => viewMode = viewMode == "grid" ? "list" : "grid";
-    private void ClearSearch() => searchQuery = "";
-
-    private void SelectCategory(string category)
-    {
-        selectedCategory = category;
+        selectedStatus = status;
         currentPage = 1;
     }
 
@@ -346,46 +480,34 @@
         {
             var result = items.AsEnumerable();
 
-            if (selectedCategory != "Todas")
+            result = selectedStatus switch
             {
-                result = result.Where(i => i.Category == selectedCategory);
-            }
+                "operacao" => result.Where(i => i.Status != "baixado" && (i.State == ConservationState.Good || i.State == ConservationState.New)),
+                "manutencao" => result.Where(i => i.Status != "baixado" && (i.State == ConservationState.Regular || i.State == ConservationState.Recoverable)),
+                "baixado" => result.Where(i => i.Status == "baixado"),
+                "inativos" => result.Where(i => i.State == ConservationState.Unrecoverable),
+                _ => result
+            };
 
             if (!string.IsNullOrWhiteSpace(searchQuery))
             {
                 result = result.Where(i =>
-                i.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                i.Code.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                i.Category.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
-                );
+                    i.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    i.Code.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    i.Location.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
             }
 
-            result = sortOrder switch
-            {
-                "oldest" => result.OrderBy(i => i.Timestamp),
-                "name-asc" => result.OrderBy(i => i.Name),
-                "name-desc" => result.OrderByDescending(i => i.Name),
-                "code-asc" => result.OrderBy(i => i.Code),
-                _ => result.OrderByDescending(i => i.Timestamp)
-            };
-
-            return result;
+            return result.OrderByDescending(i => i.UpdatedAt);
         }
     }
 
-    private int totalPages => (int)Math.Ceiling((double)filteredItems.Count() / pageSize);
-    private IEnumerable<InventoryItem> pagedItems => filteredItems.Skip((currentPage - 1) * pageSize).Take(pageSize);
+    private int totalPages => (int)Math.Ceiling((double)filteredItems.Count() / PageSize);
+    private IEnumerable<InventoryItem> pagedItems => filteredItems.Skip((currentPage - 1) * PageSize).Take(PageSize);
 
     private void PrevPage() { if (currentPage > 1) currentPage--; }
     private void NextPage() { if (currentPage < totalPages) currentPage++; }
 
-    private void NavigateToItemCallback(InventoryItem item)
-    {
-        Navigation.NavigateTo($"/item/{item.Id}");
-    }
+    private void NavigateToItem(InventoryItem item) => Navigation.NavigateTo($"/item/{item.Id}");
 
-    public void Dispose()
-    {
-        appState.OnChange -= HandleStateChange;
-    }
+    public void Dispose() => appState.OnChange -= HandleStateChange;
 }

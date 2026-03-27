@@ -18,6 +18,7 @@ public class RecognitionService : IRecognitionService
     private readonly ILogger<RecognitionService> _logger;
     
     private bool _isActive = false;
+    private DotNetObjectReference<RecognitionService>? _dotNetRef;
     private readonly SemaphoreSlim _processingSemaphore = new(1, 1);
     private readonly ConcurrentQueue<string> _recentDetections = new();
     private readonly TimeSpan _detectionCooldown = TimeSpan.FromSeconds(2);
@@ -117,12 +118,12 @@ public class RecognitionService : IRecognitionService
                 return false;
             }
 
-            // Create DotNetObjectReference for callbacks
-            var dotNetRef = DotNetObjectReference.Create(this);
+            // Create DotNetObjectReference for callbacks — stored as field to prevent GC collection
+            _dotNetRef = DotNetObjectReference.Create(this);
 
             // Start JavaScript recognition with service reference
             await _jsRuntime.InvokeVoidAsync("recognitionInterop.startRecognition", 
-                videoElementId, Settings.ProcessingIntervalMs, dotNetRef);
+                videoElementId, Settings.ProcessingIntervalMs, _dotNetRef);
 
             _isActive = true;
             _logger.LogInformation("Recognition service started successfully with {EnabledServices} enabled services", 
@@ -162,6 +163,8 @@ public class RecognitionService : IRecognitionService
         finally
         {
             _isActive = false;
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
         }
     }
 

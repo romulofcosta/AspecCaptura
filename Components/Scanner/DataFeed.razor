@@ -1,0 +1,62 @@
+@namespace pwa_camera_poc_blazor.Components.Scanner
+
+<div class="absolute bottom-20 left-0 right-0 bg-surface-container/80 backdrop-blur-md p-2 border-t border-outline">
+    <div class="flex items-center gap-2">
+        @if (!string.IsNullOrEmpty(LastCapturedThumbnail))
+        {
+            <img src="@LastCapturedThumbnail" alt="Última captura" class="w-12 h-12 rounded object-cover" />
+        }
+        else
+        {
+            <div class="w-12 h-12 rounded bg-surface-dim flex items-center justify-center">
+                <span class="material-symbols-outlined text-on-surface-variant">image</span>
+            </div>
+        }
+        
+        <div class="flex-1 flex flex-col gap-0.5">
+            @if (!string.IsNullOrEmpty(LastCapturedId))
+            {
+                <span class="text-sm font-mono text-on-surface">ID: @LastCapturedId</span>
+            }
+            else
+            {
+                <span class="text-sm text-on-surface-variant">Nenhuma captura recente</span>
+            }
+            
+            <div class="flex items-center gap-1 text-xs text-on-surface-variant">
+                <span class="@GetStatusDotClasses()"></span>
+                <span>@(IsOnline ? "Online" : "Offline")</span>
+                <span class="mx-1">|</span>
+                <span>@(IsSynced ? "Synced" : "Pending")</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? LastCapturedId { get; set; }
+    [Parameter] public string? LastCapturedThumbnail { get; set; }
+    [Parameter] public bool IsOnline { get; set; }
+    [Parameter] public bool IsSynced { get; set; }
+
+    private string GetStatusDotClasses()
+    {
+        var classes = new List<string>
+        {
+            "w-2",
+            "h-2",
+            "rounded-full"
+        };
+
+        if (IsOnline)
+        {
+            classes.Add("bg-success");
+        }
+        else
+        {
+            classes.Add("bg-error");
+        }
+
+        return string.Join(" ", classes);
+    }
+}

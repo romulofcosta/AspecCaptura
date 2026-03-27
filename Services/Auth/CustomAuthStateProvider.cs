@@ -22,8 +22,13 @@ namespace pwa_camera_poc_blazor.Services.Auth
             try
             {
                 var session = await _localStorage.GetItemAsync<UserSession>(SESSION_KEY);
-
                 if (session == null)
+                {
+                    return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+                }
+
+                var token = await _localStorage.GetItemAsync<SessionToken>("auth_token");
+                if (token == null || !token.IsValid)
                 {
                     return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
                 }

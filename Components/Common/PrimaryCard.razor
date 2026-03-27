@@ -1,0 +1,21 @@
+@namespace pwa_camera_poc_blazor.Components.Common
+
+<div class="primary-card @Class">
+    @ChildContent
+</div>
+
+<style>
+    .primary-card {
+        background-color: var(--color-surface);
+        border-radius: var(--radius-card);
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--color-border);
+        width: 100%;
+    }
+</style>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string Class { get; set; } = string.Empty;
+}

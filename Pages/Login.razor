@@ -1,113 +1,385 @@
 @page "/login"
 @layout AuthMinimalLayout
-@inject IAuthService AuthService
-@inject NavigationManager Navigation
-@inject IJSRuntime JSRuntime
-@inject AppState appState
 @inject ILogger<Login> Logger
+
 @using System.ComponentModel.DataAnnotations
-@using MudBlazor
+@using pwa_camera_poc_blazor.Components.Base
+
 
 <PageTitle>Login - Aspec Captura</PageTitle>
 
-<div class="auth-card">
-    <!-- Logo e Título -->
-    <div class="app-logo">
-        <MudImage Src="images/aspec_logo.png" Alt="Aspec Logo" 
-                  Style="width: 64px; height: 64px; border-radius: 12px; object-fit: contain;" />
-    </div>
-    
-    <h1 class="app-title">Aspec Captura</h1>
-    <p class="app-subtitle">Inventário Patrimonial</p>
-    
-    <!-- Alerta de Erro/Sucesso -->
-    @if (!string.IsNullOrEmpty(alertMessage))
+<div class="login-container">
+    @if (!isPostLoginLoading)
     {
-        <div class="alert-minimal @(alertType == "success" ? "alert-success" : "alert-error")">
-            @alertMessage
+        <div class="login-content">
+            <!-- Logo Section -->
+            <div class="logo-section">
+                <img src="images/aspec_logo.png" alt="Aspec Logo" class="app-logo" />
+                <h1 class="app-title">ASPEC CAPTURA</h1>
+                <p class="app-subtitle">Gestão Inteligente de Ativos</p>
+            </div>
+
+            <!-- Login Form -->
+            <div class="login-card">
+                <h2 class="card-title">Acesse sua conta</h2>
+
+                @if (!string.IsNullOrEmpty(alertMessage))
+                {
+                    <div class="alert @alertType">@alertMessage</div>
+                }
+
+                <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" style="width: 100%;">
+                    <DataAnnotationsValidator />
+                    
+                    <div class="form-group">
+                        <label class="input-label">USUÁRIO</label>
+                        <input type="text" class="input-field" placeholder="nome.usuario" @bind="loginModel.Usuario" disabled="@isLoading" />
+                        <ValidationMessage For="@(() => loginModel.Usuario)" class="validation-error" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="input-label">SENHA</label>
+                        <input type="password" class="input-field" placeholder="********" @bind="loginModel.Senha" disabled="@isLoading" />
+                        <ValidationMessage For="@(() => loginModel.Senha)" class="validation-error" />
+                    </div>
+
+                    <button type="submit" class="primary-button" disabled="@isLoading">
+                        @(isLoading ? "ENTRANDO..." : "ENTRAR")
+                        <span class="material-symbols-outlined" style="font-size: 18px; margin-left: 8px;">login</span>
+                    </button>
+                </EditForm>
+
+                <div class="config-section">
+                    <button class="text-button" @onclick="ShowConfig">
+                        <span class="material-symbols-outlined">settings</span>
+                        Configurações do Sistema
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer Info -->
+            <div class="login-footer">
+                <span class="version-text">Versão @(AppInfo?.Version ?? "4.2.0")</span>
+                <div class="status-indicator">
+                    <span class="dot online"></span>
+                    <span class="status-text">SERVIDOR ONLINE</span>
+                </div>
+            </div>
         </div>
     }
-    
-    <!-- Formulário -->
-    <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
-        <DataAnnotationsValidator />
-        
-        <div class="form-group">
-            <label class="form-label">LOGIN</label>
-            <input class="form-input" 
-                   type="text" 
-                   placeholder="Usuário" 
-                   @bind="loginModel.Usuario" 
-                   disabled="@isLoading" />
-            <ValidationMessage For="@(() => loginModel.Usuario)" />
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label">SENHA</label>
-            <div style="position: relative;">
-                <input class="form-input" 
-                       type="@(showPassword ? "text" : "password")" 
-                       placeholder="••••••••" 
-                       @bind="loginModel.Senha" 
-                       disabled="@isLoading"
-                       style="padding-right: 48px;" />
-                <button type="button" 
-                        @onclick="TogglePasswordVisibility"
-                        style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 8px; color: #94A3B8;">
-                    <MudIcon Icon="@(showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)" 
-                             Size="Size.Small" />
-                </button>
+    else
+    {
+        <!-- Post-Login Loading Flow -->
+        <div class="loading-workflow">
+            <div class="logo-section mb-xl">
+                <img src="images/aspec_logo.png" alt="Aspec Logo" class="app-logo-small" />
             </div>
-            <ValidationMessage For="@(() => loginModel.Senha)" />
+
+            <div class="progress-card">
+                <h3 class="progress-title">Carregando dados do município...</h3>
+                
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width: @(loadProgress)%"></div>
+                </div>
+
+                <div class="loading-steps">
+                    @foreach (var step in loadingSteps)
+                    {
+                        <div class="loading-step @(step.IsCompleted ? "completed" : "pending")">
+                            <span class="material-symbols-outlined">@(step.IsCompleted ? "check_circle" : "radio_button_unchecked")</span>
+                            <span class="step-label">@step.Label</span>
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
-        
-        <button type="submit" class="btn-login" disabled="@isLoading">
-            @if (isLoading)
-            {
-                <span class="loading-spinner"></span>
-                <span>Entrando...</span>
-            }
-            else
-            {
-                <span>Entrar</span>
-            }
-        </button>
-    </EditForm>
-    
-    <!-- Links de Ajuda -->
-    <div class="auth-links">
-        <a href="#" class="auth-link" @onclick:preventDefault="true" @onclick="ShowForgotPassword">
-            Esqueceu a senha?
-        </a>
-    </div>
+    }
 </div>
+
+<style>
+    .login-container {
+        min-height: 100vh;
+        background-color: var(--color-background);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 24px;
+    }
+
+    .login-content {
+        width: 100%;
+        max-width: 400px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .logo-section {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .app-logo {
+        width: 80px;
+        height: auto;
+        margin-bottom: 16px;
+    }
+
+    .app-logo-small {
+        width: 60px;
+        height: auto;
+    }
+
+    .app-title {
+        color: var(--color-primary);
+        font-size: var(--font-size-title-lg);
+        font-weight: var(--font-weight-bold);
+        letter-spacing: 1px;
+        margin-bottom: 4px;
+    }
+
+    .app-subtitle {
+        color: var(--color-text-secondary);
+        font-size: 11px;
+        text-transform: none;
+        letter-spacing: 0.5px;
+        font-weight: var(--font-weight-medium);
+        opacity: 0.8;
+    }
+
+    .login-card {
+        background: var(--color-surface);
+        width: 100%;
+        padding: 32px;
+        border-radius: var(--radius-card);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border: 1px solid var(--color-border);
+    }
+
+    .card-title {
+        font-size: var(--font-size-body);
+        color: var(--color-text-primary);
+        text-align: center;
+        margin-bottom: 32px;
+        font-weight: var(--font-weight-medium);
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .input-label {
+        display: block;
+        font-size: 10px;
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-secondary);
+        margin-bottom: 8px;
+        letter-spacing: 0.5px;
+    }
+
+    .input-field {
+        width: 100%;
+        height: 48px;
+        padding: 0 16px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-input);
+        background-color: #FAFAFA;
+        font-size: var(--font-size-body);
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .input-field:focus {
+        border-color: var(--color-primary);
+    }
+
+    .primary-button {
+        width: 100%;
+        height: 48px;
+        background-color: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: var(--radius-input);
+        font-weight: var(--font-weight-bold);
+        font-size: var(--font-size-body);
+        cursor: pointer;
+        transition: background-color 0.2s;
+        margin-top: 8px;
+    }
+
+    .primary-button:hover:not(:disabled) {
+        background-color: var(--color-primary-dark);
+    }
+
+    .primary-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .alert {
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        text-align: center;
+        margin-bottom: 24px;
+        font-weight: var(--font-weight-medium);
+    }
+
+    .alert.error { background-color: #FEE2E2; color: var(--color-danger); }
+    .alert.success { background-color: #DCFCE7; color: var(--color-success); }
+
+    .config-section {
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid var(--color-border);
+        display: flex;
+        justify-content: center;
+    }
+
+    .text-button {
+        background: none;
+        border: none;
+        color: var(--color-text-secondary);
+        font-size: 10px;
+        font-weight: var(--font-weight-bold);
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+
+    .login-footer {
+        width: 100%;
+        margin-top: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 8px;
+    }
+
+    .version-text {
+        font-size: 10px;
+        color: var(--color-text-secondary);
+        opacity: 0.6;
+    }
+
+    .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .dot.online {
+        background-color: #10B981;
+        box-shadow: 0 0 8px #10B981;
+    }
+
+    .status-text {
+        font-size: 10px;
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-primary);
+    }
+
+    .input-field {
+        color: #1e293b;
+    }
+
+    /* Loading Workflow Styles */
+    .loading-workflow {
+        width: 100%;
+        max-width: 400px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex-grow: 1;
+    }
+
+    .progress-card {
+        background: white;
+        width: 100%;
+        padding: 32px;
+        border-radius: var(--radius-card);
+        border: 1px solid var(--color-border);
+    }
+
+    .progress-title {
+        font-size: var(--font-size-title-md);
+        color: var(--color-primary);
+        margin-bottom: 24px;
+        font-weight: var(--font-weight-bold);
+    }
+
+    .progress-bar-container {
+        width: 100%;
+        height: 8px;
+        background-color: #EDF2F7;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 32px;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background-color: var(--color-primary);
+        transition: width 0.3s ease;
+    }
+
+    .loading-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .loading-step {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: var(--font-size-body);
+    }
+
+    .loading-step.completed { color: var(--color-success); }
+    .loading-step.pending { color: var(--color-text-secondary); }
+
+    .loading-step .material-symbols-outlined {
+        font-size: 20px;
+    }
+</style>
+
 
 @code {
     private LoginModel loginModel = new();
     private string? alertMessage;
     private string? alertType;
     private bool isLoading = false;
-    private bool showPassword = false;
+    private bool isPostLoginLoading = false;
+    private int loadProgress = 0;
+    private List<LoadingStep> loadingSteps = new()
+    {
+        new LoadingStep { Label = "Autenticando sessão...", IsCompleted = false },
+        new LoadingStep { Label = "Buscando dados do município...", IsCompleted = false },
+        new LoadingStep { Label = "Sincronizando base de bens...", IsCompleted = false },
+        new LoadingStep { Label = "Finalizando configuração...", IsCompleted = false }
+    };
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             Logger.LogInformation("Login page initialized");
-            var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
-            appState.IsDarkMode = theme == "dark";
-            Logger.LogInformation($"Theme loaded: {theme}");
+            // Basic initialization
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "Error loading theme, using default");
+            Logger.LogWarning(ex, "Error during initialization");
         }
-    }
-
-    private void TogglePasswordVisibility()
-    {
-        showPassword = !showPassword;
-        Logger.LogDebug($"Password visibility toggled: {showPassword}");
     }
 
     private async Task HandleLogin()
@@ -125,11 +397,8 @@
             if (result.Success && result.User != null)
             {
                 Logger.LogInformation($"Login successful for user: {loginModel.Usuario}");
-                alertMessage = "Login realizado com sucesso!";
-                alertType = "success";
-                StateHasChanged();
-                await Task.Delay(1000);
-                Navigation.NavigateTo("/configuracao-sessao");
+                isLoading = false;
+                await StartPostLoginLoading();
             }
             else
             {
@@ -151,10 +420,40 @@
         }
     }
 
-    private async Task ShowForgotPassword()
+    private async Task StartPostLoginLoading()
     {
-        Logger.LogInformation("Forgot password requested");
-        await JSRuntime.InvokeVoidAsync("alert", "Funcionalidade 'Esqueceu a senha' será implementada em breve.");
+        isPostLoginLoading = true;
+        StateHasChanged();
+
+        // Simulate Loading Steps
+        for (int i = 0; i < loadingSteps.Count; i++)
+        {
+            // Update Progress
+            loadProgress = (i + 1) * 25;
+            
+            // Wait a bit to simulate work
+            await Task.Delay(800);
+            
+            // Mark step as completed
+            loadingSteps[i].IsCompleted = true;
+            StateHasChanged();
+        }
+
+        Navigation.NavigateTo("/configuracao-sessao");
+    }
+
+    private void ShowConfig()
+    {
+        Logger.LogInformation("System configuration requested");
+        Navigation.NavigateTo("/configuracao-sessao");
+    }
+
+
+
+    public class LoadingStep
+    {
+        public string Label { get; set; } = string.Empty;
+        public bool IsCompleted { get; set; }
     }
 
     public class LoginModel

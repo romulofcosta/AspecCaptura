@@ -59,4 +59,14 @@ public class SessionConfig
     /// ID do usuário que criou a sessão
     /// </summary>
     public string UserId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Ano do exercício fiscal selecionado (ex: 1997). Derivado de DtEstr / 10000.
+    /// </summary>
+    public int AnoExercicio { get; set; } = 0;
+
+    /// <summary>
+    /// Data de início do exercício fiscal no formato YYYYMMDD (ex: 19970101). 0 quando ausente.
+    /// </summary>
+    public int DtEstr { get; set; } = 0;
 }

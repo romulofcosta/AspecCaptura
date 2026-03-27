@@ -1,0 +1,39 @@
+@namespace pwa_camera_poc_blazor.Components.Common
+
+<div class="status-badge @Variant.ToString().ToLower()">
+    @Text
+</div>
+
+<style>
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: var(--font-size-small);
+        font-weight: var(--font-weight-bold);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-badge.completo { background-color: #DCFCE7; color: var(--color-success); }
+    .status-badge.pendente { background-color: #FEE2E2; color: var(--color-danger); }
+    .status-badge.neutro { background-color: #F1F5F9; color: var(--color-text-secondary); }
+    .status-badge.alerta { background-color: #FEF3C7; color: #D97706; }
+    .status-badge.erro { background-color: #FEE2E2; color: #DC2626; }
+</style>
+
+@code {
+    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter] public BadgeVariant Variant { get; set; } = BadgeVariant.Neutro;
+
+    public enum BadgeVariant
+    {
+        Completo,
+        Pendente,
+        Neutro,
+        Alerta,
+        Erro
+    }
+}

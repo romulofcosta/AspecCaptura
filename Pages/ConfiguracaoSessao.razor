@@ -1,184 +1,490 @@
 @page "/configuracao-sessao"
-@layout AuthMinimalLayout
+@using pwa_camera_poc_blazor.Components.Forms
 @inject IAuthService AuthService
-@inject NavigationManager Navigation
-@inject AppState appState
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@layout MinimalLayout
+
+<PageTitle>Configuração de Sessão - Aspec Captura</PageTitle>
+
+@* ── Top App Bar ── *@
+<header class="cs-header">
+    <div class="cs-brand">
+        <img src="images/aspec_logo.png" alt="Aspec Logo" class="cs-logo" />
+        <span class="cs-brand-name">Aspec Captura</span>
+    </div>
+</header>
+
+@* ── Main canvas ── *@
+<main class="cs-main">
+
+    @* Section Header *@
+    <div class="cs-section-header">
+        <span class="cs-section-label">Parametrização do Sistema</span>
+        <h2 class="cs-section-title">Configuração de Sessão</h2>
+    </div>
+
+    @* Form *@
+    <div class="cs-form">
+
+        @* Esfera toggle (only when user has access to both) *@
+        @if (_usuario != null && !string.IsNullOrEmpty(_usuario.Esfera) && _usuario.Esfera == "A")
+        {
+            <div class="cs-field">
+                <label class="cs-label">
+                    <span class="material-symbols-outlined cs-label-icon">public</span>
+                    Esfera Governamental
+                </label>
+                <div class="cs-esfera-toggle">
+                    <button class="esfera-btn @(appState.EsferaAtual == "E" ? "active" : "")" @onclick='() => SetEsfera("E")'>EXECUTIVO</button>
+                    <button class="esfera-btn @(appState.EsferaAtual == "L" ? "active" : "")" @onclick='() => SetEsfera("L")'>LEGISLATIVO</button>
+                </div>
+            </div>
+        }
+
+        @* Órgão *@
+        <div class="cs-field">
+            <label class="cs-label">
+                <span class="material-symbols-outlined cs-label-icon">account_balance</span>
+                Órgão
+            </label>
+            <div class="cs-select-wrapper">
+                <select class="cs-select" @onchange="OnOrgaoSelectChanged"
+                        disabled="@(_usuario == null)">
+                    <option value="" disabled selected="@(string.IsNullOrEmpty(SelectedOrgaoId))">Selecione o órgão público...</option>
+                    @if (_usuario != null)
+                    {
+                        foreach (var orgao in GetOrgaosFiltered())
+                        {
+                            <option value="@orgao.IdOrgao" selected="@(SelectedOrgaoId == orgao.IdOrgao)">@orgao.NomeOrgao</option>
+                        }
+                    }
+                </select>
+                <span class="material-symbols-outlined cs-select-icon">expand_more</span>
+            </div>
+        </div>
+
+        @* Unidade Orçamentária *@
+        <div class="cs-field">
+            <label class="cs-label">
+                <span class="material-symbols-outlined cs-label-icon">domain</span>
+                Unidade Orçamentária
+            </label>
+            <div class="@UoWrapperClass">
+                <select class="cs-select" @onchange="OnUOSelectChanged"
+                        disabled="@(string.IsNullOrEmpty(SelectedOrgaoId))">
+                    <option value="" disabled selected="@(string.IsNullOrEmpty(SelectedUOId))">Selecione a unidade...</option>
+                    @foreach (var uo in GetUOsFiltered())
+                    {
+                        <option value="@uo.IdUO" selected="@(SelectedUOId == uo.IdUO)">@uo.NomeUO</option>
+                    }
+                </select>
+                <span class="material-symbols-outlined cs-select-icon">expand_more</span>
+            </div>
+        </div>
+
+        @* Área *@
+        <div class="cs-field">
+            <label class="cs-label">
+                <span class="material-symbols-outlined cs-label-icon">location_on</span>
+                Área
+            </label>
+            <div class="@AreaWrapperClass">
+                <select class="cs-select" @onchange="OnAreaSelectChanged"
+                        disabled="@(string.IsNullOrEmpty(SelectedUOId))">
+                    <option value="" disabled selected="@(string.IsNullOrEmpty(SelectedAreaId))">Selecione a área...</option>
+                    @foreach (var area in GetAreasFiltered())
+                    {
+                        <option value="@area.IdArea" selected="@(SelectedAreaId == area.IdArea)">@area.NomeArea</option>
+                    }
+                </select>
+                <span class="material-symbols-outlined cs-select-icon">expand_more</span>
+            </div>
+        </div>
+
+        @* Subárea *@
+        <div class="cs-field">
+            <label class="cs-label">
+                <span class="material-symbols-outlined cs-label-icon">meeting_room</span>
+                Subárea
+            </label>
+            <div class="@SubareaWrapperClass">
+                <select class="cs-select" @onchange="OnSubareaSelectChanged"
+                        disabled="@(string.IsNullOrEmpty(SelectedAreaId))">
+                    <option value="" disabled selected="@(string.IsNullOrEmpty(SelectedSubareaId))">Selecione a subárea...</option>
+                    @foreach (var sub in GetSubareasFiltered())
+                    {
+                        <option value="@sub.IdSubarea" selected="@(SelectedSubareaId == sub.IdSubarea)">@sub.NomeSubarea</option>
+                    }
+                </select>
+                <span class="material-symbols-outlined cs-select-icon">expand_more</span>
+            </div>
+        </div>
+
+        @* CTA Button *@
+        <div class="cs-cta">
+            <button class="@BtnPrimaryClass"
+                    disabled="@(!IsFormValid)"
+                    @onclick="ConfirmarSessao">
+                <span class="material-symbols-outlined">play_circle</span>
+                INICIAR SESSÃO
+            </button>
+            <p class="cs-disclaimer">
+                O início da sessão vincula todos os bens patrimoniais registrados à lotação selecionada.
+            </p>
+        </div>
+
+    </div>
+
+    @* Status do Terminal *@
+    <div class="cs-terminal-panel">
+        <div class="cs-terminal-header">
+            <span class="material-symbols-outlined cs-terminal-icon">monitoring</span>
+            <span class="cs-terminal-title">Status do Terminal</span>
+        </div>
+        <div class="cs-terminal-grid">
+            <div class="cs-terminal-card">
+                <span class="cs-tccard-label">Agente Público</span>
+                <span class="cs-tccard-value">@(_usuario?.UsuarioNome ?? "---")</span>
+            </div>
+            <div class="cs-terminal-card">
+                <span class="cs-tccard-label">Sincronismo</span>
+                <span class="cs-tccard-value">STATUS: OK</span>
+            </div>
+        </div>
+    </div>
+
+</main>
 
 <style>
-    /* Restaurar cores claras */
-    .sessao-container {
-        background: #FFFFFF;
-        min-height: 100vh;
-        padding: 32px 24px;
-        padding-bottom: calc(120px + env(safe-area-inset-bottom));
+    /* ── Header ── */
+    .cs-header {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 24px;
+        height: 64px;
+        background: #fff;
+        border-bottom: 2px solid rgba(0, 42, 107, 0.08);
     }
 
-    .sessao-card {
-        background: #FFFFFF;
-        border: 1px solid #E2E8F0;
+    .cs-brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .cs-logo {
+        height: 40px;
+        width: 40px;
+        object-fit: contain;
+    }
+
+    .cs-brand-name {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        color: #1b1b1b;
+        letter-spacing: -0.3px;
+    }
+
+    /* ── Main canvas ── */
+    .cs-main {
+        flex: 1;
+        padding: 32px 24px 40px;
+        max-width: 640px;
+        width: 100%;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    /* ── Section Header ── */
+    .cs-section-header {
+        margin-bottom: 40px;
+        border-left: 6px solid #002a6b;
+        padding-left: 20px;
+    }
+
+    .cs-section-label {
+        display: block;
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: #737784;
+        margin-bottom: 4px;
+    }
+
+    .cs-section-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 28px;
+        font-weight: 900;
+        text-transform: uppercase;
+        color: #1b1b1b;
+        margin: 0;
+        line-height: 1.1;
+        letter-spacing: -0.5px;
+    }
+
+    /* ── Form ── */
+    .cs-form {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+        margin-bottom: 0;
+    }
+
+    .cs-field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .cs-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #1b1b1b;
+    }
+
+    .cs-label-icon {
+        font-size: 16px;
+        color: #002a6b;
+    }
+
+    .cs-select-wrapper {
+        position: relative;
+    }
+
+    .cs-select-wrapper.disabled {
+        opacity: 0.45;
+    }
+
+    .cs-select {
+        width: 100%;
+        height: 56px;
+        background: #fff;
+        border: 2px solid rgba(27, 27, 27, 0.1);
+        border-radius: 8px;
+        padding: 0 48px 0 16px;
+        font-family: 'Roboto Mono', 'JetBrains Mono', monospace;
+        font-size: 13px;
+        font-weight: 500;
+        color: #1b1b1b;
+        appearance: none;
+        -webkit-appearance: none;
+        outline: none;
+        transition: border-color 0.2s;
+        cursor: pointer;
+    }
+
+    .cs-select:focus {
+        border-color: #002a6b;
+    }
+
+    .cs-select:disabled {
+        cursor: not-allowed;
+        background: #f9f9f9;
+    }
+
+    .cs-select-icon {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 20px;
+        color: #1b1b1b;
+        pointer-events: none;
+    }
+
+    /* ── Esfera Toggle ── */
+    .cs-esfera-toggle {
+        display: flex;
+        background: #f3f3f3;
+        border-radius: 8px;
+        padding: 4px;
+        gap: 4px;
+    }
+
+    .esfera-btn {
+        flex: 1;
+        border: none;
+        background: none;
+        padding: 10px 8px;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        border-radius: 6px;
+        color: #737784;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .esfera-btn.active {
+        background: #fff;
+        color: #002a6b;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    /* ── CTA ── */
+    .cs-cta {
+        padding-top: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .cs-btn-primary {
+        width: 100%;
+        background: #002a6b;
+        color: #fff;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        border: none;
+        border-radius: 12px;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(0, 42, 107, 0.3);
+        transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .cs-btn-primary:active {
+        transform: scale(0.97);
+        box-shadow: 0 4px 12px rgba(0,42,107,0.25);
+    }
+
+    .cs-btn-primary.disabled,
+    .cs-btn-primary:disabled {
+        background: #c3c6d5;
+        box-shadow: none;
+        cursor: not-allowed;
+    }
+
+    .cs-btn-primary .material-symbols-outlined {
+        font-size: 20px;
+    }
+
+    .cs-disclaimer {
+        font-family: 'Inter', sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        text-align: center;
+        color: #737784;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        line-height: 1.6;
+        opacity: 0.8;
+        margin: 0;
+        padding: 0 16px;
+    }
+
+    /* ── Status do Terminal ── */
+    .cs-terminal-panel {
+        margin-top: 48px;
+        padding: 24px;
+        background: #f3f3f3;
         border-radius: 16px;
-        padding: 32px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        border: 2px solid rgba(27, 27, 27, 0.05);
     }
 
-    /* Garantir alinhamento e largura dos MudSelect */
-    ::deep .mud-select {
-        width: 100%;
+    .cs-terminal-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 18px;
     }
 
-    ::deep .mud-input-control {
-        width: 100%;
+    .cs-terminal-icon {
+        font-size: 20px;
+        color: #002a6b;
+        font-variation-settings: 'FILL' 0, 'wght' 700, 'GRAD' 0, 'opsz' 24;
     }
 
-    ::deep .mud-select-input {
-        text-align: left;
+    .cs-terminal-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #1b1b1b;
     }
 
-    /* Garantir que o popover do dropdown fique alinhado com o campo */
-    ::deep .mud-popover {
-        min-width: 100% !important;
+    .cs-terminal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
     }
 
-    ::deep .mud-popover-open {
-        width: 100% !important;
+    .cs-terminal-card {
+        background: #fff;
+        border: 1px solid rgba(27, 27, 27, 0.1);
+        border-radius: 10px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     }
 
-    ::deep .mud-list {
-        width: 100%;
+    .cs-tccard-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 9px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #737784;
+    }
+
+    .cs-tccard-value {
+        font-family: 'Roboto Mono', monospace;
+        font-size: 12px;
+        font-weight: 700;
+        color: #002a6b;
     }
 </style>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="sessao-container">
-    <MudPaper Class="sessao-card" Elevation="0">
-        <MudText Typo="Typo.h5" Class="mb-2" Style="font-weight: 700; color: #1E293B;">Configuração da Sessão</MudText>
-        <MudText Typo="Typo.body2" Class="mb-6" Style="color: #64748B;">
-            Selecione as informações contábeis para iniciar o trabalho.
-        </MudText>
-
-        <MudForm>
-            <MudGrid Spacing="3">
-                <MudItem xs="12">
-                    <MudSelect T="Orgao" 
-                               Label="Órgão" 
-                               Value="@SelectedOrgao" 
-                               ValueChanged="OnOrgaoChanged"
-                               Variant="Variant.Outlined" 
-                               Margin="Margin.Dense"
-                               FullWidth="true"
-                               AnchorOrigin="Origin.BottomLeft"
-                               TransformOrigin="Origin.TopLeft">
-                        @foreach (var orgao in Orgaos)
-                        {
-                            <MudSelectItem Value="@orgao">@orgao.NomeOrgao</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-
-                <MudItem xs="12">
-                    <MudSelect T="UnidadeOrcamentaria" 
-                               Label="Unidade Orçamentária" 
-                               Value="@SelectedUO"
-                               ValueChanged="OnUOChanged" 
-                               Variant="Variant.Outlined" 
-                               Margin="Margin.Dense"
-                               FullWidth="true"
-                               AnchorOrigin="Origin.BottomLeft"
-                               TransformOrigin="Origin.TopLeft"
-                               Disabled="@(SelectedOrgao == null)">
-                        @foreach (var uo in UnidadesOrcamentarias)
-                        {
-                            <MudSelectItem Value="@uo">@uo.NomeUO</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-
-                <MudItem xs="12">
-                    <MudSelect T="Area" 
-                               Label="Área" 
-                               Value="@SelectedArea" 
-                               ValueChanged="OnAreaChanged"
-                               Variant="Variant.Outlined" 
-                               Margin="Margin.Dense"
-                               FullWidth="true"
-                               AnchorOrigin="Origin.BottomLeft"
-                               TransformOrigin="Origin.TopLeft"
-                               Disabled="@(SelectedUO == null)">
-                        @foreach (var area in Areas)
-                        {
-                            <MudSelectItem Value="@area">@area.NomeArea</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-
-                <MudItem xs="12">
-                    <MudSelect T="Subarea" 
-                               Label="Subárea" 
-                               Value="@SelectedSubarea" 
-                               ValueChanged="OnSubareaChanged"
-                               Variant="Variant.Outlined" 
-                               Margin="Margin.Dense"
-                               FullWidth="true"
-                               AnchorOrigin="Origin.BottomLeft"
-                               TransformOrigin="Origin.TopLeft"
-                               Disabled="@(SelectedArea == null)">
-                        @foreach (var sub in Subareas)
-                        {
-                            <MudSelectItem Value="@sub">@sub.NomeSubarea</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-
-                <MudItem xs="12" Class="mt-4">
-                    <MudButton Variant="Variant.Filled" 
-                               Color="Color.Primary" 
-                               Size="Size.Large" 
-                               FullWidth="true"
-                               Disabled="@(SelectedSubarea == null)" 
-                               OnClick="ConfirmarSessao"
-                               Style="padding: 16px; border-radius: 12px; text-transform: none; font-weight: 600;">
-                        Confirmar Seleção
-                    </MudButton>
-                </MudItem>
-            </MudGrid>
-        </MudForm>
-    </MudPaper>
-</MudContainer>
-
 @code {
-    private List<Orgao> Orgaos
-    {
-        get
-        {
-            if (_usuario == null) return new();
-            var esfera = appState.EsferaAtual ?? _usuario.Esfera;
-            if (string.IsNullOrEmpty(esfera) || esfera == "A")
-                return _usuario.Orgaos;
-            // Filtra orgaos pela esfera
-            return _usuario.Orgaos.Where(o => o.UnidadesOrcamentarias.Any(uo => uo.Areas.Any(a => a.Subareas.Any(s => esfera == "E" ? s.NomeSubarea.Contains("Executivo", StringComparison.OrdinalIgnoreCase) : esfera == "L" ? s.NomeSubarea.Contains("Legislativo", StringComparison.OrdinalIgnoreCase) : false)))).ToList();
-        }
-    }
-
-    private List<UnidadeOrcamentaria> UnidadesOrcamentarias
-    {
-        get
-        {
-            if (SelectedOrgao == null) return new();
-            var esfera = appState.EsferaAtual ?? _usuario?.Esfera;
-            if (string.IsNullOrEmpty(esfera) || esfera == "A")
-                return SelectedOrgao.UnidadesOrcamentarias;
-            // Filtra UOs pela esfera
-            return SelectedOrgao.UnidadesOrcamentarias.Where(uo => uo.Areas.Any(a => a.Subareas.Any(s => esfera == "E" ? s.NomeSubarea.Contains("Executivo", StringComparison.OrdinalIgnoreCase) : esfera == "L" ? s.NomeSubarea.Contains("Legislativo", StringComparison.OrdinalIgnoreCase) : false))).ToList();
-        }
-    }
-
-    private List<Area> Areas => SelectedUO?.Areas ?? new();
-    private List<Subarea> Subareas => SelectedArea?.Subareas ?? new();
-
     private Usuario? _usuario;
-    private Orgao? SelectedOrgao;
-    private UnidadeOrcamentaria? SelectedUO;
-    private Area? SelectedArea;
-    private Subarea? SelectedSubarea;
+    private string? SelectedOrgaoId;
+    private string? SelectedUOId;
+    private string? SelectedAreaId;
+    private string? SelectedSubareaId;
+
+    // ── CSS class helpers (avoid Razor string interpolation issues) ──
+    private string UoWrapperClass => string.IsNullOrEmpty(SelectedOrgaoId)
+        ? "cs-select-wrapper disabled" : "cs-select-wrapper";
+    private string AreaWrapperClass => string.IsNullOrEmpty(SelectedUOId)
+        ? "cs-select-wrapper disabled" : "cs-select-wrapper";
+    private string SubareaWrapperClass => string.IsNullOrEmpty(SelectedAreaId)
+        ? "cs-select-wrapper disabled" : "cs-select-wrapper";
+    private string BtnPrimaryClass => IsFormValid
+        ? "cs-btn-primary" : "cs-btn-primary disabled";
+
+    // ── Select change event handlers ──
+    private void OnOrgaoSelectChanged(ChangeEventArgs e) => OnOrgaoChanged(e.Value?.ToString() ?? string.Empty);
+    private void OnUOSelectChanged(ChangeEventArgs e) => OnUOChanged(e.Value?.ToString() ?? string.Empty);
+    private void OnAreaSelectChanged(ChangeEventArgs e) => OnAreaChanged(e.Value?.ToString() ?? string.Empty);
+    private void OnSubareaSelectChanged(ChangeEventArgs e) => OnSubareaChanged(e.Value?.ToString() ?? string.Empty);
+
+    private bool IsFormValid => !string.IsNullOrEmpty(SelectedOrgaoId) &&
+                                !string.IsNullOrEmpty(SelectedUOId) &&
+                                !string.IsNullOrEmpty(SelectedAreaId) &&
+                                !string.IsNullOrEmpty(SelectedSubareaId);
 
     protected override async Task OnInitializedAsync()
     {
@@ -189,57 +495,101 @@
             return;
         }
 
-        // CORREÇÃO BUG: Garantir que o AppState tenha a esfera atualizada
-        // Isso é necessário para que os dropdowns filtrem corretamente os dados
         if (string.IsNullOrEmpty(appState.EsferaAtual))
-        {
             appState.EsferaAtual = _usuario.Esfera;
-        }
 
-        // CORREÇÃO BUG: Forçar atualização da UI após carregar os dados
+        if (appState.CurrentOrgao != null)
+        {
+            SelectedOrgaoId = appState.CurrentOrgao.IdOrgao;
+            SelectedUOId = appState.CurrentUO?.IdUO;
+            SelectedAreaId = appState.CurrentArea?.IdArea;
+            SelectedSubareaId = appState.CurrentSubarea?.IdSubarea;
+        }
+    }
+
+    private void SetEsfera(string esfera)
+    {
+        appState.EsferaAtual = esfera;
+        SelectedOrgaoId = null;
+        SelectedUOId = null;
+        SelectedAreaId = null;
+        SelectedSubareaId = null;
         StateHasChanged();
     }
 
-    private void OnOrgaoChanged(Orgao value)
+    private void OnOrgaoChanged(string id)
     {
-        SelectedOrgao = value;
-        SelectedUO = null;
-        SelectedArea = null;
-        SelectedSubarea = null;
+        SelectedOrgaoId = id;
+        SelectedUOId = null;
+        SelectedAreaId = null;
+        SelectedSubareaId = null;
     }
 
-    private void OnUOChanged(UnidadeOrcamentaria value)
+    private void OnUOChanged(string id)
     {
-        SelectedUO = value;
-        SelectedArea = null;
-        SelectedSubarea = null;
+        SelectedUOId = id;
+        SelectedAreaId = null;
+        SelectedSubareaId = null;
     }
 
-    private void OnAreaChanged(Area value)
+    private void OnAreaChanged(string id)
     {
-        SelectedArea = value;
-        SelectedSubarea = null;
+        SelectedAreaId = id;
+        SelectedSubareaId = null;
     }
 
-    private void OnSubareaChanged(Subarea value)
+    private void OnSubareaChanged(string id) => SelectedSubareaId = id;
+
+    private IEnumerable<Orgao> GetOrgaosFiltered()
     {
-        SelectedSubarea = value;
+        if (_usuario == null) return Enumerable.Empty<Orgao>();
+        return _usuario.Orgaos;
+    }
+
+    private IEnumerable<UnidadeOrcamentaria> GetUOsFiltered()
+    {
+        if (_usuario == null || string.IsNullOrEmpty(SelectedOrgaoId)) return Enumerable.Empty<UnidadeOrcamentaria>();
+        return _usuario.Orgaos.FirstOrDefault(o => o.IdOrgao == SelectedOrgaoId)?.UnidadesOrcamentarias
+               ?? Enumerable.Empty<UnidadeOrcamentaria>();
+    }
+
+    private IEnumerable<Area> GetAreasFiltered()
+    {
+        if (_usuario == null || string.IsNullOrEmpty(SelectedUOId)) return Enumerable.Empty<Area>();
+        var orgao = _usuario.Orgaos.FirstOrDefault(o => o.IdOrgao == SelectedOrgaoId);
+        return orgao?.UnidadesOrcamentarias.FirstOrDefault(u => u.IdUO == SelectedUOId)?.Areas
+               ?? Enumerable.Empty<Area>();
+    }
+
+    private IEnumerable<Subarea> GetSubareasFiltered()
+    {
+        if (_usuario == null || string.IsNullOrEmpty(SelectedAreaId)) return Enumerable.Empty<Subarea>();
+        var orgao = _usuario.Orgaos.FirstOrDefault(o => o.IdOrgao == SelectedOrgaoId);
+        var uo = orgao?.UnidadesOrcamentarias.FirstOrDefault(u => u.IdUO == SelectedUOId);
+        return uo?.Areas.FirstOrDefault(a => a.IdArea == SelectedAreaId)?.Subareas
+               ?? Enumerable.Empty<Subarea>();
     }
 
     private async Task ConfirmarSessao()
     {
-        if (SelectedOrgao != null && SelectedUO != null && SelectedArea != null && SelectedSubarea != null)
+        if (!IsFormValid) return;
+
+        var orgao = _usuario?.Orgaos.FirstOrDefault(o => o.IdOrgao == SelectedOrgaoId);
+        var uo = orgao?.UnidadesOrcamentarias.FirstOrDefault(u => u.IdUO == SelectedUOId);
+        var area = uo?.Areas.FirstOrDefault(a => a.IdArea == SelectedAreaId);
+        var subarea = area?.Subareas.FirstOrDefault(s => s.IdSubarea == SelectedSubareaId);
+
+        if (orgao != null && uo != null && area != null && subarea != null)
         {
-            // Salvar no AppState
-            appState.CurrentOrgao = SelectedOrgao;
-            appState.CurrentUO = SelectedUO;
-            appState.CurrentArea = SelectedArea;
-            appState.CurrentSubarea = SelectedSubarea;
+            appState.CurrentOrgao = orgao;
+            appState.CurrentUO = uo;
+            appState.CurrentArea = area;
+            appState.CurrentSubarea = subarea;
+            appState.DtEstr = orgao.DtEstr;
+            appState.AnoExercicio = orgao.DtEstr / 10000;
 
-            // Salvar o estado para persistir a sessão
             await appState.SaveStateAsync();
-
-            Navigation.NavigateTo("/home");
+            Navigation.NavigateTo("/");
         }
     }
 }

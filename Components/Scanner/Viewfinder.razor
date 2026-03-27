@@ -1,0 +1,65 @@
+@namespace pwa_camera_poc_blazor.Components.Scanner
+
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64">
+    <div class="@GetFrameClasses()">
+        <!-- Top-left corner -->
+        <div class="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-primary"></div>
+        
+        <!-- Top-right corner -->
+        <div class="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-primary"></div>
+        
+        <!-- Bottom-left corner -->
+        <div class="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-primary"></div>
+        
+        <!-- Bottom-right corner -->
+        <div class="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-primary"></div>
+        
+        @if (Active)
+        {
+            <!-- Scan line animation -->
+            <div class="absolute left-0 right-0 h-0.5 bg-primary animate-scan"></div>
+        }
+        
+        @if (Success)
+        {
+            <!-- Success checkmark -->
+            <div class="absolute inset-0 flex items-center justify-center">
+                <span class="material-symbols-outlined text-6xl text-success">check_circle</span>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool Active { get; set; }
+    [Parameter] public bool Success { get; set; }
+
+    private string GetFrameClasses()
+    {
+        var classes = new List<string>
+        {
+            "relative",
+            "w-full",
+            "h-full",
+            "border-2",
+            "rounded-lg",
+            "transition-colors"
+        };
+
+        if (Success)
+        {
+            classes.Add("border-success");
+        }
+        else if (Active)
+        {
+            classes.Add("border-primary");
+            classes.Add("animate-pulse");
+        }
+        else
+        {
+            classes.Add("border-white/50");
+        }
+
+        return string.Join(" ", classes);
+    }
+}

@@ -1,27 +1,29 @@
 @page "/tombamentos-sync"
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
-@using MudBlazor
 @inject pwa_camera_poc_blazor.Services.Sync.SyncService SyncService
 @inject pwa_camera_poc_blazor.Services.Auth.IAuthService AuthService
-@inject ISnackbar Snackbar
+@inject pwa_camera_poc_blazor.Services.ToastService ToastService
 @inject NavigationManager Navigation
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
-    <MudPaper Class="pa-6 rounded-lg">
-        <MudText Typo="Typo.h5" Class="mb-4 font-weight-bold">Baixando Lotes de Tombamentos</MudText>
-        <MudText Typo="Typo.body2" Class="mb-2">Por favor aguarde, estamos atualizando a base local...</MudText>
+<div class="minimal-page" style="padding: 24px;">
+    <div class="minimal-card" style="padding: 24px; max-width: 600px; margin: 32px auto;">
+        <h2 style="font-size: 20px; font-weight: 700; color: #1e293b; margin: 0 0 16px 0;">Baixando Lotes de Tombamentos</h2>
+        <p style="font-size: 14px; color: #64748b; margin: 0 0 8px 0;">Por favor aguarde, estamos atualizando a base local...</p>
         
-        <div class="d-flex align-center justify-space-between mb-1">
-            <MudText Typo="Typo.caption">Lote @current de @total</MudText>
-            <MudText Typo="Typo.caption">@((int)ProgressValue)%</MudText>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+            <span style="font-size: 12px; color: #64748b;">Lote @current de @total</span>
+            <span style="font-size: 12px; color: #64748b;">@((int)ProgressValue)%</span>
         </div>
-        <MudProgressLinear Value="@ProgressValue" Color="Color.Primary" Class="mb-4" Striped="true" Size="Size.Large" />
         
-        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="d-block">
+        <div style="width: 100%; background: #f1f5f9; border-radius: 9999px; height: 12px; margin-bottom: 16px;">
+            <div style="background: #003366; height: 100%; border-radius: 9999px; width: @ProgressValue%; transition: width 0.3s ease;"></div>
+        </div>
+        
+        <p style="font-size: 12px; color: #64748b; text-align: center; margin: 0;">
             Processando e validando integridade dos dados...
-        </MudText>
-    </MudPaper>
-</MudContainer>
+        </p>
+    </div>
+</div>
 
 @code {
     private int current = 0;
@@ -50,7 +52,7 @@
             var user = await AuthService.GetCurrentUserAsync();
             if (user == null || string.IsNullOrEmpty(user.Prefixo))
             {
-                Snackbar.Add("Usuário não autenticado.", Severity.Warning);
+                ToastService.Show("Usuário não autenticado.", "warning");
                 Navigation.NavigateTo("/login");
                 return;
             }
@@ -68,11 +70,11 @@
             var result = await SyncService.SyncAsync(user.Prefixo, progress);
             if (result == pwa_camera_poc_blazor.Services.Sync.SyncResult.Success)
             {
-                Snackbar.Add("Sincronização concluída.", Severity.Success);
+                ToastService.Show("Sincronização concluída.", "success");
             }
             else
             {
-                Snackbar.Add("Dados já sincronizados.", Severity.Info);
+                ToastService.Show("Dados já sincronizados.", "info");
             }
 
             Navigation.NavigateTo("/configuracao-sessao");
@@ -80,7 +82,7 @@
         catch (HttpRequestException ex)
         {
             Console.Error.WriteLine($"Erro de conexão: {ex.Message}");
-            Snackbar.Add("Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.", Severity.Error);
+            ToastService.Show("Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.", "error");
             // Aguarda 2 segundos e redireciona para configuração de sessão (modo offline)
             await Task.Delay(2000);
             Navigation.NavigateTo("/configuracao-sessao");
@@ -88,14 +90,14 @@
         catch (TaskCanceledException ex)
         {
             Console.Error.WriteLine($"Timeout na sincronização: {ex.Message}");
-            Snackbar.Add("A sincronização demorou muito. Tente novamente mais tarde.", Severity.Warning);
+            ToastService.Show("A sincronização demorou muito. Tente novamente mais tarde.", "warning");
             await Task.Delay(2000);
             Navigation.NavigateTo("/configuracao-sessao");
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Erro na sincronização: {ex.Message}");
-            Snackbar.Add($"Erro ao sincronizar: {ex.Message}", Severity.Error);
+            ToastService.Show($"Erro ao sincronizar: {ex.Message}", "error");
             await Task.Delay(2000);
             Navigation.NavigateTo("/configuracao-sessao");
         }

@@ -1,0 +1,101 @@
+@namespace pwa_camera_poc_blazor.Components.Base
+
+<div class="flex flex-col gap-1">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="text-sm font-medium text-on-surface" for="@_selectId">@Label</label>
+    }
+    
+    <div class="relative">
+        <select 
+            id="@_selectId"
+            class="@GetSelectClasses()"
+            value="@Value"
+            disabled="@Disabled"
+            @onchange="HandleChange">
+            @if (!string.IsNullOrEmpty(Placeholder))
+            {
+                <option value="">@Placeholder</option>
+            }
+            @foreach (var option in GetOptions())
+            {
+                <option value="@option.Value" disabled="@option.Disabled">@option.Label</option>
+            }
+        </select>
+        
+        <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">
+            expand_more
+        </span>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public List<SelectOption>? Options { get; set; }
+    [Parameter] public Dictionary<string, string>? OptionsDict { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Required { get; set; }
+
+    private readonly string _selectId = $"select-{Guid.NewGuid():N}";
+
+    private IEnumerable<SelectOption> GetOptions()
+    {
+        if (Options != null)
+            return Options;
+        
+        if (OptionsDict != null)
+            return OptionsDict.Select(kvp => new SelectOption { Value = kvp.Key, Label = kvp.Value });
+        
+        return Enumerable.Empty<SelectOption>();
+    }
+
+    private async Task HandleChange(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString();
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private string GetSelectClasses()
+    {
+        var classes = new List<string>
+        {
+            "w-full",
+            "px-4",
+            "py-2",
+            "pr-10",
+            "border",
+            "border-outline",
+            "rounded-md",
+            "bg-surface",
+            "text-on-surface",
+            "appearance-none",
+            "transition-all",
+            "focus:ring-2",
+            "focus:ring-primary",
+            "focus:border-primary",
+            "focus:outline-none"
+        };
+
+        if (Disabled)
+        {
+            classes.Add("opacity-50");
+            classes.Add("cursor-not-allowed");
+        }
+        else
+        {
+            classes.Add("cursor-pointer");
+        }
+
+        return string.Join(" ", classes);
+    }
+
+    public class SelectOption
+    {
+        public string Value { get; set; } = "";
+        public string Label { get; set; } = "";
+        public bool Disabled { get; set; }
+    }
+}

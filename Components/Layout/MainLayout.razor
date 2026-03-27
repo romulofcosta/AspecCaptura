@@ -1,105 +1,93 @@
 @inherits LayoutComponentBase
 @implements IDisposable
-@inject pwa_camera_poc_blazor.Services.ToastService ToastService
-@inject NavigationManager Navigation
-@inject AppState appState
-@inject IIndexedDbService DbService
-@inject IAuthService AuthService
-@inject IJSRuntime JSRuntime
+
 @using System.Text
-@using MudBlazor
-@inject ISnackbar Snackbar
+@using System
+@using pwa_camera_poc_blazor.Components.Layout
+@using pwa_camera_poc_blazor.Components.Common
 
-<MudThemeProvider Theme="currentTheme" @bind-IsDarkMode="appState.IsDarkMode" />
-<MudDialogProvider />
-<MudSnackbarProvider />
-<MudPopoverProvider />
+<div class="app-shell">
+    @if (!IsAuthPage())
+    {
+        <AppHeader MunicipalityName="@appState.MunicipioNome" 
+                   IsOffline="@appState.IsOffline" 
+                   ShowBackButton="@ShowBackButton()"
+                   ShowProgress="@ShowProgress()"
+                   CurrentCount="@appState.InventariadosHoje"
+                   TotalCount="@appState.TotalParaInventariar" />
+    }
 
-<MudLayout>
-    <MudAppBar Elevation="2" Color="Color.Primary" Fixed="true">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleMenu" />
-        <MudImage Src="images/aspec_logo.png" Alt="Aspec Captura" Width="32" Height="32" Class="mr-2 ml-3" Style="border-radius: 4px;"/>
-        <MudText Typo="Typo.h6">Aspec Captura</MudText>
-        <MudSpacer />
-    </MudAppBar>
-
-    <MudDrawer @bind-Open="isMenuOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Variant="DrawerVariant.Responsive" Style="z-index: 10001;">
-        <NavMenu OnThemeToggle="ToggleTheme" OnMenuItemClick="@(() => isMenuOpen = false)" />
-    </MudDrawer>
-
-    <MudMainContent Class="mud-width-full" Style="display: flex; flex-direction: column; height: calc(100vh - 64px - 64px); overflow: hidden;">
+    <main class="main-content @(IsAuthPage() ? "p-0" : "")">
         @Body
-    </MudMainContent>
+    </main>
 
-    <Footer ActiveTab="@activeTab" PendingSyncCount="@appState.PendingSyncCount" OnTabChanged="HandleTabChanged"
-        OnCaptureClick="HandleCaptureClick" OnExportClick="HandleExportClick" IsHidden="@(appState.IsCameraActive || !appState.IsSessionConfigured())" />
-</MudLayout>
+    @if (!IsAuthPage())
+    {
+        <BottomNav PendingSyncCount="@appState.PendingSyncCount" />
+    }
+
+    <!-- Toast Notifications -->
+    <div class="toast-container">
+        @foreach (var toast in _toasts)
+        {
+            <div class="toast @toast.Type animate-bounce-in">
+                <span>@toast.Message</span>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .app-shell {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background-color: var(--color-background);
+    }
+
+    .main-content {
+        flex: 1;
+        padding: 16px;
+        padding-bottom: 80px; /* Safe area for BottomNav */
+        width: 100%;
+        max-width: 600px; /* Mobile focused max-width */
+        margin: 0 auto;
+    }
+
+    .main-content.p-0 {
+        padding: 0;
+    }
+
+    .toast-container {
+        position: fixed;
+        top: 24px;
+        right: 16px;
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        pointer-events: none;
+    }
+
+    .toast {
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        pointer-events: auto;
+        min-width: 200px;
+        max-width: 90vw;
+    }
+
+    .toast.success { background-color: var(--color-success, #16A34A); }
+    .toast.error { background-color: var(--color-danger, #DC2626); }
+    .toast.warning { background-color: #F59E0B; }
+    .toast.info { background-color: var(--color-primary, #1E3A5F); }
+</style>
 
 @code {
-    private bool isMenuOpen = false;
-    private string activeTab = "home";
-
-    // ASPEC Identity Theme Configuration
-    private MudTheme currentTheme = new MudTheme()
-    {
-        LayoutProperties = new LayoutProperties()
-        {
-            DefaultBorderRadius = "8px",
-            DrawerWidthLeft = "280px",
-            DrawerWidthRight = "300px"
-        },
-        Typography = new Typography()
-        {
-            Default = new DefaultTypography()
-            {
-                FontFamily = new[] { "Outfit", "Inter", "Roboto", "Helvetica", "Arial", "sans-serif" },
-                FontSize = "0.875rem",
-                FontWeight = "400",
-                LineHeight = "1.43",
-                LetterSpacing = ".01071em"
-            },
-            H3 = new H3Typography() { FontSize = "2rem", FontWeight = "700", LineHeight = "1.2" },
-            H4 = new H4Typography() { FontSize = "1.75rem", FontWeight = "700", LineHeight = "1.2" },
-            H5 = new H5Typography() { FontSize = "1.5rem", FontWeight = "600", LineHeight = "1.3" },
-            H6 = new H6Typography() { FontSize = "1.25rem", FontWeight = "600", LineHeight = "1.3" },
-            Button = new ButtonTypography() { TextTransform = "none", FontWeight = "600", FontSize = "0.875rem" }
-        },
-        PaletteLight = new PaletteLight()
-        {
-            Primary = "#0066CC", // ASPEC Corporate Blue
-            Secondary = "#6c757d",
-            Success = "#28a745",
-            Info = "#17a2b8",
-            Warning = "#ffc107",
-            Error = "#dc3545",
-            AppbarBackground = "#003366",
-            Background = "#f8f9fa",
-            Surface = "#ffffff",
-            DrawerBackground = "#ffffff",
-            TextPrimary = "#212529",
-            TextSecondary = "#6c757d",
-            ActionDefault = "#495057",
-            Divider = "#dee2e6"
-        },
-        PaletteDark = new PaletteDark()
-        {
-            Primary = "#4da3ff",
-            Secondary = "#adb5bd",
-            Success = "#34ce57",
-            Info = "#2dbbd2",
-            Warning = "#ffcd39",
-            Error = "#e35d6a",
-            AppbarBackground = "#1A2238", // ASPEC Dark Blue
-            Background = "#121212",
-            Surface = "#1e1e1e",
-            DrawerBackground = "#1e1e1e",
-            TextPrimary = "#FFFFFF", // Increased contrast
-            TextSecondary = "#B0BEC5", // Improved readability
-            ActionDefault = "#4da3ff", // Match primary for better visibility in dark mode
-            Divider = "rgba(255, 255, 255, 0.12)"
-        }
-    };
-
     protected override async Task OnInitializedAsync()
     {
         ToastService.OnShow += HandleToastShow;
@@ -108,45 +96,31 @@
 
         // Load saved app state
         await appState.LoadStateAsync();
-
-        UpdateActiveTab();
-
-        try
-        {
-            var theme = await JSRuntime.InvokeAsync<string>("appInterop.getTheme");
-            appState.IsDarkMode = theme == "dark";
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading theme: {ex.Message}");
-        }
-
-        try
-        {
-            await UpdateSyncCount();
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error updating sync count: {ex.Message}");
-            appState.PendingSyncCount = 0;
-        }
-
-        try
-        {
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error getting current user: {ex.Message}");
-        }
+        
+        await UpdateSyncCount();
     }
 
-    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    private bool IsAuthPage()
     {
-        InvokeAsync(() =>
-        {
-            UpdateActiveTab();
-            StateHasChanged();
-        });
+        var url = Navigation.ToBaseRelativePath(Navigation.Uri).ToLower();
+        return url.Contains("login");
+    }
+
+    private bool ShowBackButton()
+    {
+        var url = Navigation.ToBaseRelativePath(Navigation.Uri).ToLower();
+        return url.Contains("detalhe") || url.Contains("camera") || url.Contains("configuracao") || url.Contains("sync") || url.Contains("items");
+    }
+
+    private bool ShowProgress()
+    {
+        var url = Navigation.ToBaseRelativePath(Navigation.Uri).ToLower();
+        return url == "" || url == "/" || url.Contains("home");
+    }
+
+    private void HandleLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        StateHasChanged();
     }
 
     private void HandleAppStateChange()
@@ -154,118 +128,38 @@
         InvokeAsync(StateHasChanged);
     }
 
-    private void HandleToastShow(string message, string type)
+    private class ToastItem
     {
-        InvokeAsync(() => ShowSnackbar(message, type));
+        public string Message { get; set; } = "";
+        public string Type { get; set; } = "info";
     }
 
-    private void UpdateActiveTab()
-    {
-        var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri).ToLower();
-        if (string.IsNullOrEmpty(relativePath) || relativePath == "home") activeTab = "home";
-        else if (relativePath == "stats") activeTab = "stats";
-        else if (relativePath == "sync") activeTab = "sync";
-        else activeTab = ""; 
+    private List<ToastItem> _toasts = new();
 
-        if (relativePath != "camera" && appState.IsCameraActive)
-        {
-            appState.IsCameraActive = false;
-        }
+    private void HandleToastShow(string message, string type)
+    {
+        InvokeAsync(async () => {
+            var toast = new ToastItem { Message = message, Type = type };
+            _toasts.Add(toast);
+            StateHasChanged();
+            
+            await Task.Delay(3000);
+            _toasts.Remove(toast);
+            StateHasChanged();
+        });
     }
 
     private async Task UpdateSyncCount()
     {
         try
         {
-            var items = await DbService.GetAllAsync<InventoryItem>("items");
-            appState.PendingSyncCount = items.Count(i => !i.Synced);
+            var allItems = await DbService.GetAllAsync<InventoryItem>("items");
+            appState.PendingSyncCount = allItems.Count(i => !i.Synced);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Console.Error.WriteLine($"Error getting items for sync count: {ex.Message}");
             appState.PendingSyncCount = 0;
         }
-    }
-
-    private void ToggleMenu()
-    {
-        isMenuOpen = !isMenuOpen;
-    }
-
-    private async Task ToggleTheme()
-    {
-        appState.IsDarkMode = !appState.IsDarkMode;
-        await JSRuntime.InvokeVoidAsync("appInterop.setTheme", appState.IsDarkMode ? "dark" : "light");
-    }
-
-    private void ShowSnackbar(string message, string type)
-    {
-        try
-        {
-            Severity severity = type switch
-            {
-                "success" => Severity.Success,
-                "error" => Severity.Error,
-                "warning" => Severity.Warning,
-                "info" => Severity.Info,
-                _ => Severity.Normal
-            };
-            Snackbar.Add(message, severity);
-        }
-        catch { }
-    }
-
-    private void HandleTabChanged(string tab)
-    {
-        activeTab = tab;
-        if (tab == "home") Navigation.NavigateTo("/home");
-        else if (tab == "stats") Navigation.NavigateTo("/stats");
-        else if (tab == "sync") Navigation.NavigateTo("/sync");
-    }
-
-    private void HandleCaptureClick()
-    {
-        Navigation.NavigateTo("/camera");
-    }
-
-    private async Task HandleExportClick()
-    {
-        await ExportDataAsync();
-    }
-
-
-    private async Task ExportDataAsync()
-    {
-        try
-        {
-            var items = await DbService.GetAllAsync<InventoryItem>("items");
-            var csv = GenerateCsv(items);
-            await DownloadCsv(csv, "inventory_export.csv");
-            ShowSnackbar("Dados exportados com sucesso!", "success");
-        }
-        catch (Exception ex)
-        {
-            ShowSnackbar($"Erro ao exportar dados: {ex.Message}", "error");
-        }
-    }
-
-    private string GenerateCsv(IEnumerable<InventoryItem> items)
-    {
-        var csv = new StringBuilder();
-        csv.AppendLine("ID,Nome,Código,Categoria,Localização,Observações,Data de Criação,Sincronizado,Orgao,UO,Area,Subarea");
-
-        foreach (var item in items)
-        {
-            csv.AppendLine($"{item.Id},{item.Name},{item.Code},{item.Category},{item.Location},{item.Observations},{item.Timestamp:yyyy-MM-dd HH:mm:ss},{item.Synced},{item.IdOrgao},{item.IdUO},{item.IdArea},{item.IdSubarea}");
-        }
-
-        return csv.ToString();
-    }
-
-    private async Task DownloadCsv(string csvContent, string fileName)
-    {
-        var bytes = Encoding.UTF8.GetBytes(csvContent);
-        await JSRuntime.InvokeVoidAsync("appInterop.downloadFile", fileName, Convert.ToBase64String(bytes));
     }
 
     public void Dispose()

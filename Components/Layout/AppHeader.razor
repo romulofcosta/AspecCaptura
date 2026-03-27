@@ -1,0 +1,128 @@
+@namespace pwa_camera_poc_blazor.Components.Layout
+@inject NavigationManager Navigation
+
+<header class="app-header">
+    <div class="header-top">
+        @if (ShowBackButton)
+        {
+            <button class="back-button" @onclick="GoBack">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+        }
+        <div class="municipality-info">
+            <span class="municipality-name">@MunicipalityName</span>
+            @if (IsOffline)
+            {
+                <span class="offline-badge">OFFLINE</span>
+            }
+        </div>
+    </div>
+    
+    @if (ShowProgress)
+    {
+        <div class="header-bottom">
+            <div class="progress-info">
+                <span class="progress-count">@CurrentCount/@TotalCount</span>
+                <span class="progress-label">Inventariados</span>
+            </div>
+            <div class="mini-progress-bar">
+                <div class="mini-progress-fill" style="width: @(ProgressPercentage)%"></div>
+            </div>
+        </div>
+    }
+</header>
+
+<style>
+    .app-header {
+        background-color: var(--color-primary);
+        color: white;
+        padding: 12px 16px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .header-top {
+        display: flex;
+        align-items: center;
+        height: 40px;
+        gap: 12px;
+    }
+
+    .back-button {
+        background: none;
+        border: none;
+        color: white;
+        padding: 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+    }
+
+    .municipality-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .municipality-name {
+        font-weight: var(--font-weight-bold);
+        font-size: var(--font-size-title-md);
+    }
+
+    .offline-badge {
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: var(--font-weight-bold);
+    }
+
+    .header-bottom {
+        margin-top: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .progress-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        font-weight: var(--font-weight-medium);
+    }
+
+    .mini-progress-bar {
+        width: 100%;
+        height: 4px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .mini-progress-fill {
+        height: 100%;
+        background-color: var(--color-success);
+        transition: width 0.3s ease;
+    }
+</style>
+
+@code {
+    [Parameter] public string MunicipalityName { get; set; } = "CORTÊS - PE";
+    [Parameter] public bool IsOffline { get; set; } = true;
+    [Parameter] public bool ShowBackButton { get; set; }
+    [Parameter] public bool ShowProgress { get; set; }
+    [Parameter] public int CurrentCount { get; set; }
+    [Parameter] public int TotalCount { get; set; }
+
+    private int ProgressPercentage => TotalCount > 0 ? (CurrentCount * 100) / TotalCount : 0;
+
+    private void GoBack()
+    {
+        if (ShowBackButton)
+        {
+            Navigation.NavigateTo("javascript:history.back()");
+        }
+    }
+}

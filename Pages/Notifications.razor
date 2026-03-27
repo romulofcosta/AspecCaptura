@@ -3,19 +3,16 @@
 @using pwa_camera_poc_blazor.Models
 @using pwa_camera_poc_blazor.Services.Notification
 @inject INotificationService NotificationService
-@inject NavigationManager Navigation
-@inject AppState appState
 
 <PageTitle>Notificações - Aspec Capture</PageTitle>
 
 <!-- Header -->
 <div class="minimal-header">
     <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
-        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" 
-                       Color="Color.Default" 
-                       Size="Size.Medium"
-                       Style="background: #F8FAFC; border-radius: 12px; width: 44px; height: 44px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" 
-                       OnClick="GoBack" />
+        <button style="background: #F8FAFC; border-radius: 12px; width: 44px; height: 44px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; border: none; cursor: pointer;" 
+                @onclick="GoBack">
+            <span class="material-symbols-outlined text-gray-700">arrow_back</span>
+        </button>
         <h1 class="page-title" style="margin: 0; flex: 1;">Notificações</h1>
         @if (unreadCount > 0)
         {
@@ -31,13 +28,13 @@
     @if (isLoading)
     {
         <div style="display: flex; justify-content: center; padding: 40px 0;">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            <div class="spinner"></div>
         </div>
     }
     else if (notifications.Count == 0)
     {
         <div style="text-align: center; padding: 40px 0; color: #94A3B8;">
-            <MudIcon Icon="@Icons.Material.Filled.NotificationsNone" Size="Size.Large" Style="opacity: 0.3; font-size: 64px;" />
+            <span class="material-symbols-outlined" style="opacity: 0.3; font-size: 64px;">notifications_none</span>
             <p style="margin-top: 16px; font-size: 14px;">Nenhuma notificação</p>
         </div>
     }
@@ -54,7 +51,7 @@
                          @onclick="@(() => MarkAsRead(notification.Id))">
                         <div style="display: flex; align-items: center; gap: 16px;">
                             <div class="icon-box" style="@GetNotificationIconStyle(notification.Type)">
-                                <MudIcon Icon="@GetNotificationIcon(notification.Type)" Size="Size.Small" Color="Color.Surface" />
+                                <span class="material-symbols-outlined text-white text-sm">@GetNotificationIcon(notification.Type)</span>
                             </div>
                             <div style="flex: 1;">
                                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
@@ -217,12 +214,12 @@
     {
         return type switch
         {
-            NotificationType.SyncComplete => Icons.Material.Filled.CheckCircle,
-            NotificationType.SyncError => Icons.Material.Filled.Error,
-            NotificationType.SystemUpdate => Icons.Material.Filled.SystemUpdate,
-            NotificationType.SessionExpiring => Icons.Material.Filled.Schedule,
-            NotificationType.StorageLow => Icons.Material.Filled.Storage,
-            _ => Icons.Material.Filled.Notifications
+            NotificationType.SyncComplete => "check_circle",
+            NotificationType.SyncError => "error",
+            NotificationType.SystemUpdate => "system_update",
+            NotificationType.SessionExpiring => "schedule",
+            NotificationType.StorageLow => "storage",
+            _ => "notifications"
         };
     }
 

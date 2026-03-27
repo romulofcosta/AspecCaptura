@@ -15,8 +15,6 @@ using pwa_camera_poc_blazor.Services.Sync;
 using pwa_camera_poc_blazor.Services.Configuration;
 using pwa_camera_poc_blazor.Services.Capture;
 using pwa_camera_poc_blazor.Models;
-using MudBlazor.Services;
-using MudBlazor;
 using LocalStorageService = pwa_camera_poc_blazor.Services.Storage.LocalStorageService;
 using ILocalStorageService = pwa_camera_poc_blazor.Services.Storage.ILocalStorageService;
 
@@ -86,17 +84,6 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 // AWS Services (legacy)
 builder.Services.AddScoped<AwsConfig>();
 builder.Services.AddScoped<IAwsStorageService, AwsStorageService>();
-
-// UI Component Library
-// MudBlazor: Material Design component library (free & open-source)
-// Provides modern, responsive components with excellent mobile support
-builder.Services.AddMudServices(config =>
-{
-    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomRight;
-    config.SnackbarConfiguration.PreventDuplicates = false;
-    config.SnackbarConfiguration.ShowCloseIcon = true;
-    config.SnackbarConfiguration.VisibleStateDuration = 3000;
-});
 
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();

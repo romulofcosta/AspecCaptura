@@ -1,0 +1,70 @@
+@namespace pwa_camera_poc_blazor.Components.Common
+@using pwa_camera_poc_blazor.Components.Common
+
+<div class="asset-list-item" @onclick="OnClick">
+    <div class="asset-icon">
+        <span class="material-symbols-outlined">inventory_2</span>
+    </div>
+    <div class="asset-info">
+        <div class="asset-name">@Title</div>
+        <div class="asset-code">@Subtitle</div>
+    </div>
+    <div class="asset-status">
+        <StatusBadge Text="@StatusText" Variant="@StatusVariant" />
+    </div>
+</div>
+
+<style>
+    .asset-list-item {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        background: white;
+        border-bottom: 1px solid var(--color-border);
+        gap: 16px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .asset-list-item:active {
+        background-color: #F8FAFC;
+    }
+
+    .asset-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background-color: #F1F5F9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-primary);
+    }
+
+    .asset-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .asset-name {
+        font-size: var(--font-size-body);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+    }
+
+    .asset-code {
+        font-size: var(--font-size-small);
+        color: var(--color-text-secondary);
+        font-weight: var(--font-weight-medium);
+    }
+</style>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Subtitle { get; set; } = string.Empty;
+    [Parameter] public string StatusText { get; set; } = string.Empty;
+    [Parameter] public StatusBadge.BadgeVariant StatusVariant { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+}

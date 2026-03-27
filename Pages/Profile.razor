@@ -1,10 +1,7 @@
 @page "/profile"
 @using pwa_camera_poc_blazor.Models
 @inject IAuthService AuthService
-@inject IIndexedDbService DbService
-@inject NavigationManager Navigation
-@inject ISnackbar Snackbar
-@inject IJSRuntime JSRuntime
+@inject pwa_camera_poc_blazor.Services.Storage.IIndexedDbService DbService
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Perfil - Aspec Captura</PageTitle>
@@ -124,9 +121,9 @@
 <div class="profile-container">
     <div class="profile-card">
         <div class="profile-header">
-            <MudAvatar Color="Color.Primary" Size="Size.Large" Class="profile-avatar">
+            <div class="profile-avatar" style="border-radius: 50%; background: #003366; color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold;">
                 @UserInitials
-            </MudAvatar>
+            </div>
             <p class="profile-name">@FullName</p>
             <p class="profile-email">@Email</p>
         </div>
@@ -209,7 +206,7 @@
                 ? $"{names[0][0]}{names[^1][0]}".ToUpper() 
                 : names[0][0].ToString().ToUpper();
 
-            Snackbar.Add("Perfil atualizado com sucesso!", Severity.Success);
+            ToastService.Show("Perfil atualizado com sucesso!", "success");
             StateHasChanged();
         }
     }

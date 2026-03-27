@@ -1,498 +1,298 @@
 @page "/item/{Id}"
-@layout MinimalLayout
-@using pwa_camera_poc_blazor.Models
-@using pwa_camera_poc_blazor.Services.Storage
-@inject IIndexedDbService DbService
-@inject NavigationManager Navigation
-@inject pwa_camera_poc_blazor.Services.ToastService ToastService
-@inject IJSRuntime JSRuntime
-@using MudBlazor
-@inject AppState appState
-@inject IAuthService AuthService
-@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using pwa_camera_poc_blazor.Components.Common
+@using pwa_camera_poc_blazor.Components.Layout
+@inject pwa_camera_poc_blazor.Services.Storage.IIndexedDbService DbService
 
-<PageTitle>Detalhes - Aspec Captura</PageTitle>
+<PageTitle>Detalhes do Bem - Aspec Captura</PageTitle>
+
+@if (isLoading)
+{
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Carregando detalhes...</p>
+    </div>
+}
+else if (item == null)
+{
+    <div class="error-container">
+        <span class="material-symbols-outlined text-large">inventory_2</span>
+        <h2>Item não localizado</h2>
+        <p>O patrimônio solicitado não foi encontrado no banco de dados local.</p>
+        <PrimaryButton OnClick="GoBack">VOLTAR PARA LISTA</PrimaryButton>
+    </div>
+}
+else
+{
+    <div class="item-details-container">
+        @* Header Section *@
+        <div class="details-nav-header">
+            <button class="back-link" @onclick="GoBack">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <div class="header-center">
+                <img src="images/aspec_logo.png" alt="Logo" class="header-logo" />
+                <span class="header-app-name">Aspec Captura</span>
+                <span class="header-item-code">[@item.Code]</span>
+            </div>
+            <button class="close-link" @onclick="GoBack">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <PrimaryCard Class="details-card">
+            <div class="details-grid">
+                <div class="detail-item">
+                    <label>DESCRIÇÃO DO BEM</label>
+                    <div class="detail-value">@item.Name</div>
+                </div>
+                <div class="detail-item">
+                    <label>CONSERVAÇÃO</label>
+                    <div class="detail-value">
+                        <span class="status-badge-mini">@GetStateText(item.State)</span>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <label>SITUAÇÃO ATUAL</label>
+                    <div class="detail-value status-active">
+                        <span class="dot"></span> EM OPERAÇÃO
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <label>LOCALIZAÇÃO</label>
+                    <div class="detail-value text-blue">ALA NORTE</div>
+                </div>
+                <div class="detail-item">
+                    <label>DATA DE TOMBAMENTO</label>
+                    <div class="detail-value">13/05/2021</div>
+                </div>
+                <div class="detail-item">
+                    <label>VALOR CONTÁBIL</label>
+                    <div class="detail-value">R$ 42.800,00</div>
+                </div>
+            </div>
+
+            @* Photos Section *@
+            <div class="photos-section">
+                <div class="section-header">
+                    <span class="section-title">FOTOS</span>
+                    <span class="photo-count">@((item.Photos?.Count ?? 0)) ARQUIVOS</span>
+                </div>
+                <div class="photo-grid-mini">
+                    @if (item.Photos != null)
+                    {
+                        @foreach (var photo in item.Photos.Take(3))
+                        {
+                            <div class="photo-thumb-item">
+                                <img src="@photo" />
+                            </div>
+                        }
+                        @if (item.Photos.Count > 3)
+                        {
+                            <div class="photo-thumb-item more">
+                                <span class="material-symbols-outlined">add</span>
+                                <span>@(item.Photos.Count - 3)</span>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="details-actions">
+                <PrimaryButton FullWidth="true" OnClick="ToggleEditMode">
+                    <span class="material-symbols-outlined" style="margin-right: 8px;">edit_square</span>
+                    EDITAR INFORMAÇÕES
+                </PrimaryButton>
+                
+                <button class="history-link">
+                    <span class="material-symbols-outlined">history</span>
+                    HISTÓRICO
+                </button>
+            </div>
+        </PrimaryCard>
+    </div>
+}
 
 <style>
-    .details-container {
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        overflow: hidden;
+    .item-details-container {
+        background-color: #F8FAFC;
+        min-height: 100vh;
     }
 
-    .details-header {
+    .details-nav-header {
         display: flex;
         align-items: center;
-        padding: 48px 24px 24px;
-        flex-shrink: 0;
+        justify-content: space-between;
+        padding: 12px 16px;
         background: white;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid var(--color-border);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
 
-    .details-header-back {
+    .header-center {
         display: flex;
         align-items: center;
-        justify-content: center;
-        padding: 8px;
-        margin-left: -8px;
-        cursor: pointer;
-        color: #1e293b;
-        font-size: 24px;
+        gap: 8px;
     }
 
-    .details-header-content {
-        flex: 1;
-        padding: 0 16px;
+    .header-logo {
+        width: 18px;
+        height: 18px;
     }
 
-    .details-header-title {
-        font-size: 18px;
-        font-weight: 600;
-        letter-spacing: -0.02em;
-        color: #1e293b;
-    }
-
-    .details-header-subtitle {
-        font-size: 10px;
-        text-transform: uppercase;
-        letter-spacing: 0.15em;
-        font-weight: 500;
-        color: #94a3b8;
-        margin-top: 4px;
-    }
-
-    .details-header-user {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .details-header-user-info {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-    }
-
-    .details-header-user-name {
+    .header-app-name {
         font-size: 11px;
-        font-weight: 600;
+        font-weight: 700;
+        color: var(--color-text-primary);
+    }
+
+    .header-item-code {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--color-primary);
+        letter-spacing: 0.5px;
+    }
+
+    .back-link, .close-link {
+        background: none;
+        border: none;
+        color: var(--color-primary);
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .details-card {
+        margin: 24px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        background: white;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+
+    .detail-item label {
+        display: block;
+        font-size: 9px;
+        font-weight: 700;
+        color: var(--color-text-secondary);
+        margin-bottom: 4px;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+        font-size: 11px;
+        font-weight: 700;
         color: #1e293b;
     }
 
-    .details-header-user-status {
-        font-size: 9px;
-        color: #22c55e;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+    .status-badge-mini {
+        background: #F1F5F9;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 10px;
+        color: #1e293b;
+        border: 1px solid #E2E8F0;
     }
 
-    .details-header-avatar {
-        width: 40px;
-        height: 40px;
+    .status-active {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #10B981;
+    }
+
+    .status-active .dot {
+        width: 6px;
+        height: 6px;
         border-radius: 50%;
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
+        background: #10B981;
+    }
+
+    .text-blue {
+        color: #3B82F6;
+    }
+
+    .photos-section {
+        border-top: 1px solid #f1f5f9;
+        padding-top: 20px;
+        margin-bottom: 32px;
+    }
+
+    .section-header {
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        justify-content: center;
-        overflow: hidden;
+        margin-bottom: 12px;
     }
 
-    .details-main {
-        flex: 1;
-        overflow-y: auto;
-        padding-bottom: calc(120px + env(safe-area-inset-bottom));
+    .section-title {
+        font-size: 10px;
+        font-weight: 700;
+        color: #1e293b;
+        letter-spacing: 1px;
     }
 
-    .details-image-container {
-        position: relative;
-        margin: 24px;
+    .photo-count {
+        font-size: 9px;
+        font-weight: 700;
+        color: var(--color-primary);
     }
 
-    .details-image {
-        aspect-ratio: 16 / 10;
-        width: 100%;
-        overflow: hidden;
-        background: #f1f5f9;
-        border-radius: 0 0 24px 24px;
+    .photo-grid-mini {
         display: flex;
-        align-items: center;
-        justify-content: center;
+        gap: 8px;
     }
 
-    .details-image img {
+    .photo-thumb-item {
+        width: 64px;
+        height: 64px;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #E2E8F0;
+    }
+
+    .photo-thumb-item img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
 
-    .details-image-dots {
-        position: absolute;
-        bottom: 16px;
-        left: 50%;
-        transform: translateX(-50%);
+    .photo-thumb-item.more {
+        background: #F8FAFC;
         display: flex;
-        gap: 6px;
-    }
-
-    .details-image-dot {
-        width: 4px;
-        height: 4px;
-        border-radius: 50%;
-        background: white;
-    }
-
-    .details-image-dot.inactive {
-        opacity: 0.4;
-    }
-
-    .details-image-btn {
-        position: absolute;
-        bottom: 16px;
-        right: 16px;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        color: white;
+        color: var(--color-primary);
+        font-size: 10px;
+        font-weight: 700;
     }
 
-    .details-content {
-        padding: 24px;
-        space-y: 32px;
+    .details-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
     }
 
-    .details-section {
-        margin-bottom: 32px;
-    }
-
-    .field-container {
-        border-bottom: 1px solid #e2e8f0;
-        padding-bottom: 8px;
-        margin-bottom: 24px;
-    }
-
-    .field-label {
+    .history-link {
+        background: none;
+        border: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
         font-size: 11px;
         font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.15em;
-        color: #94a3b8;
-        margin-bottom: 8px;
-        display: block;
-    }
-
-    .field-value {
-        font-size: 16px;
-        font-weight: 500;
-        color: #1e293b;
-    }
-
-    .field-input {
-        width: 100%;
-        font-size: 16px;
-        font-weight: 500;
-        color: #1e293b;
-        background: transparent;
-        border: none;
-        padding: 0;
-        resize: none;
-    }
-
-    .field-input:focus {
-        outline: none;
-    }
-
-    .field-select {
-        width: 100%;
-        font-size: 16px;
-        font-weight: 500;
-        color: #1e293b;
-        background: transparent;
-        border: none;
-        padding: 0;
-    }
-
-    .field-select:focus {
-        outline: none;
-    }
-
-    .field-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 32px;
-    }
-
-    .conservation-buttons {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .conservation-btn {
-        padding: 8px 20px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 600;
-        border: 1px solid;
+        color: var(--color-primary);
+        letter-spacing: 0.5px;
         cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .conservation-btn.new {
-        background: #f0fdf4;
-        color: #16a34a;
-        border-color: #dcfce7;
-    }
-
-    .conservation-btn.good {
-        background: #eff6ff;
-        color: #2563eb;
-        border-color: #dbeafe;
-    }
-
-    .conservation-btn.regular {
-        background: #fffbeb;
-        color: #d97706;
-        border-color: #fef3c7;
-    }
-
-    .conservation-btn.recoverable {
-        background: #fef2f2;
-        color: #dc2626;
-        border-color: #fee2e2;
-    }
-
-    .conservation-btn.active {
-        font-weight: 700;
-        box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.2);
-    }
-
-    .history-btn {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 16px;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        background: white;
-        color: #64748b;
-        font-weight: 500;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .history-btn:hover {
-        background: #f8fafc;
-    }
-
-    .save-btn {
-        width: 100%;
-        padding: 16px;
-        border-radius: 12px;
-        background: #003366;
-        color: white;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        transition: transform 0.2s ease;
-        box-shadow: 0 4px 12px rgba(0, 51, 102, 0.2);
-    }
-
-    .save-btn:active {
-        transform: scale(0.98);
-    }
-
-    .save-btn-container {
-        position: fixed;
-        bottom: calc(80px + env(safe-area-inset-bottom));
-        left: 24px;
-        right: 24px;
-        z-index: 30;
-        max-width: calc(100% - 48px);
-    }
-
-    .loading-spinner {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 50vh;
-    }
-
-    .error-message {
-        padding: 16px;
-        background: #fee2e2;
-        border: 1px solid #fecaca;
-        border-radius: 12px;
-        color: #dc2626;
-        margin: 24px;
     }
 </style>
-
-@if (isLoading)
-{
-    <div class="loading-spinner">
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-    </div>
-}
-else if (!string.IsNullOrEmpty(errorMessage))
-{
-    <div class="error-message">
-        @errorMessage
-    </div>
-    <div style="padding: 24px;">
-        <button class="history-btn" @onclick="GoBack">
-            ← Voltar
-        </button>
-    </div>
-}
-else if (item == null)
-{
-    <div class="error-message">
-        Item não encontrado ou removido.
-    </div>
-    <div style="padding: 24px;">
-        <button class="history-btn" @onclick="GoBack">
-            ← Voltar
-        </button>
-    </div>
-}
-else
-{
-    <div class="details-container">
-        <!-- Header -->
-        <header class="details-header">
-            <button class="details-header-back" @onclick="GoBack" title="Voltar">
-                ←
-            </button>
-            <div class="details-header-content">
-                <h1 class="details-header-title">Detalhes</h1>
-                <p class="details-header-subtitle">Patrimônio #@item.Code</p>
-            </div>
-            <div class="details-header-user">
-                <div class="details-header-user-info">
-                    <span class="details-header-user-name">Aspec Avatar</span>
-                    <span class="details-header-user-status">Online</span>
-                </div>
-                <div class="details-header-avatar">
-                    <span class="material-symbols-outlined">account_circle</span>
-                </div>
-            </div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="details-main">
-            <!-- Image Section -->
-            <div class="details-image-container">
-                <div class="details-image">
-                    @if (!string.IsNullOrEmpty(item.CoverImage))
-                    {
-                        <img src="@item.CoverImage" alt="@item.Name" />
-                    }
-                    else
-                    {
-                        <span class="material-symbols-outlined" style="font-size: 48px; color: #cbd5e1;">image</span>
-                    }
-                </div>
-                <div class="details-image-dots">
-                    <div class="details-image-dot"></div>
-                    <div class="details-image-dot inactive"></div>
-                    <div class="details-image-dot inactive"></div>
-                </div>
-                <button class="details-image-btn" @onclick="AddPhotos">
-                    <span class="material-symbols-outlined">add_a_photo</span>
-                </button>
-            </div>
-
-            <!-- Content Section -->
-            <div class="details-content">
-                <div class="details-section">
-                    <!-- Description -->
-                    <div class="field-container">
-                        <label class="field-label">Descrição</label>
-                        <textarea class="field-input" placeholder="Descreva o item..." rows="4">@item.Name</textarea>
-                    </div>
-
-                    <!-- Value and Location Row -->
-                    <div class="field-row">
-                        <div class="field-container">
-                            <label class="field-label">Valor Estimado</label>
-                            <div style="display: flex; align-items: center;">
-                                <span style="color: #94a3b8; margin-right: 4px; font-size: 14px; font-weight: 500;">R$</span>
-                                <input type="text" class="field-input" value="@item.EstimatedValue.ToString("N2")" />
-                            </div>
-                        </div>
-                        <div class="field-container">
-                            <label class="field-label">Localização</label>
-                            <select class="field-select">
-                                <option selected>@item.Location</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Conservation State -->
-                    <div class="details-section">
-                        <label class="field-label">Estado de Conservação</label>
-                        <div class="conservation-buttons">
-                            <button class="conservation-btn new @(item.State == ConservationState.New ? "active" : "")" 
-                                @onclick="() => UpdateConservationState(ConservationState.New)">
-                                Novo
-                            </button>
-                            <button class="conservation-btn good @(item.State == ConservationState.Good ? "active" : "")" 
-                                @onclick="() => UpdateConservationState(ConservationState.Good)">
-                                Bom
-                            </button>
-                            <button class="conservation-btn regular @(item.State == ConservationState.Regular ? "active" : "")" 
-                                @onclick="() => UpdateConservationState(ConservationState.Regular)">
-                                Regular
-                            </button>
-                            <button class="conservation-btn recoverable @(item.State == ConservationState.Recoverable ? "active" : "")" 
-                                @onclick="() => UpdateConservationState(ConservationState.Recoverable)">
-                                Recuperável
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Observations -->
-                    <div class="field-container">
-                        <label class="field-label">Observações</label>
-                        <input type="text" class="field-input" placeholder="Adicionar nota..." value="@item.Observations" />
-                    </div>
-                </div>
-
-                <!-- History Button -->
-                <div>
-                    <button class="history-btn">
-                        <span class="material-symbols-outlined">history</span>
-                        Ver Histórico de Movimentações
-                    </button>
-                </div>
-            </div>
-        </main>
-
-        <!-- Save Button - Floating -->
-        <div class="save-btn-container">
-            <button class="save-btn" @onclick="SaveChanges">
-                <span>Salvar Alterações</span>
-            </button>
-        </div>
-    </div>
-}
 
 @code {
     [Parameter] public string Id { get; set; } = string.Empty;
@@ -553,40 +353,37 @@ else
         }
     }
 
-    private void AddPhotos()
+    private void ToggleEditMode()
     {
-        ToastService.ShowInfo("Funcionalidade de câmera em desenvolvimento");
+        ToastService.ShowInfo("Edição será disponibilizada na próxima versão.");
     }
 
-    private void UpdateConservationState(ConservationState state)
+    private string GetStateText(ConservationState state)
     {
-        if (item != null)
+        return state switch
         {
-            item.State = state;
-            StateHasChanged();
-        }
+            ConservationState.New => "NOVO",
+            ConservationState.Good => "BOM",
+            ConservationState.Regular => "REGULAR",
+            ConservationState.Recoverable => "RECUPERÁVEL",
+            ConservationState.Unrecoverable => "INSERVÍVEL",
+            _ => "INDEFINIDO"
+        };
     }
 
-    private async Task SaveChanges()
+    private StatusBadge.BadgeVariant GetStateVariant(ConservationState state)
     {
-        if (item == null) return;
-
-        try
+        return state switch
         {
-            item.UpdatedAt = DateTime.UtcNow;
-            await DbService.UpdateAsync("items", item);
-            ToastService.ShowSuccess("Item atualizado com sucesso!");
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Erro ao salvar alterações: {ex.Message}";
-            ToastService.ShowError(errorMessage);
-            Console.Error.WriteLine($"SaveChanges error: {ex}");
-        }
+            ConservationState.New or ConservationState.Good => StatusBadge.BadgeVariant.Completo,
+            ConservationState.Regular or ConservationState.Recoverable => StatusBadge.BadgeVariant.Alerta,
+            ConservationState.Unrecoverable => StatusBadge.BadgeVariant.Erro,
+            _ => StatusBadge.BadgeVariant.Pendente
+        };
     }
 
     private void GoBack()
     {
-        Navigation.NavigateTo("/dashboard");
+        Navigation.NavigateTo("/");
     }
 }

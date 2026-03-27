@@ -1,5 +1,6 @@
 @using pwa_camera_poc_blazor.Models
 @using pwa_camera_poc_blazor.Services.Configuration
+@using pwa_camera_poc_blazor.Components.Base
 @inject IConfigurationService ConfigurationService
 @inject ILogger<BarcodeConfigurationComponent> Logger
 
@@ -13,7 +14,7 @@
         @if (_isLoading)
         {
             <div class="loading-container">
-                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 <span>Carregando configurações...</span>
             </div>
         }
@@ -23,10 +24,8 @@
                 <!-- Enable/Disable Barcode Detection -->
                 <div class="config-item">
                     <div class="config-item-header">
-                        <MudSwitch T="bool" Checked="_configuration.Enabled" 
-                                   CheckedChanged="@((bool value) => { _configuration.Enabled = value; OnConfigurationChanged(); })"
-                                   Color="Color.Primary" 
-                                   Label="Habilitar Detecção de Códigos de Barras" />
+                        <Toggle @bind-value="_configuration.Enabled" 
+                                Label="Habilitar Detecção de Códigos de Barras" />
                     </div>
                     <p class="config-item-description">
                         Ativa ou desativa a detecção automática de códigos de barras
@@ -46,10 +45,13 @@
                         <div class="format-checkboxes">
                             @foreach (var format in _availableFormats)
                             {
-                                <MudCheckBox T="bool" Checked="@GetFormatEnabled(format)"
-                                             CheckedChanged="@((bool enabled) => SetFormatEnabled(format, enabled))"
-                                             Label="@GetFormatDisplayName(format)"
-                                             Color="Color.Primary" />
+                                <label class="flex items-center gap-2">
+                                    <input type="checkbox" 
+                                           checked="@GetFormatEnabled(format)"
+                                           @onchange="@((e) => SetFormatEnabled(format, (bool)(e.Value ?? false)))"
+                                           class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary" />
+                                    <span class="text-sm">@GetFormatDisplayName(format)</span>
+                                </label>
                             }
                         </div>
                     </div>
@@ -66,20 +68,23 @@
                         <div class="confidence-settings">
                             <div class="confidence-item">
                                 <label>Confiança Mínima Geral: @(_configuration.MinConfidence.ToString("P0"))</label>
-                                <MudSlider @bind-Value="_configuration.MinConfidence"
-                                           Min="0.1f" Max="1.0f" Step="0.05f"
-                                           Color="Color.Primary"
-                                           @onchange="OnConfigurationChanged" />
+                                <input type="range" 
+                                       @bind="_configuration.MinConfidence"
+                                       @bind:event="oninput"
+                                       @onchange="OnConfigurationChanged"
+                                       min="0.1" max="1.0" step="0.05"
+                                       class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-primary" />
                             </div>
 
                             @foreach (var format in _configuration.EnabledFormats)
                             {
                                 <div class="confidence-item">
                                     <label>@GetFormatDisplayName(format): @(GetFormatConfidence(format).ToString("P0"))</label>
-                                    <MudSlider T="float" Value="@GetFormatConfidence(format)"
-                                               ValueChanged="@(value => OnFormatConfidenceChanged(format, value))"
-                                               Min="0.1f" Max="1.0f" Step="0.05f"
-                                               Color="Color.Primary" />
+                                    <input type="range" 
+                                           value="@GetFormatConfidence(format)"
+                                           @oninput="@((e) => OnFormatConfidenceChanged(format, float.Parse(e.Value?.ToString() ?? "0.7")))"
+                                           min="0.1" max="1.0" step="0.05"
+                                           class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-primary" />
                                 </div>
                             }
                         </div>
@@ -92,32 +97,42 @@
                         </div>
                         
                         <div class="advanced-settings">
-                            <MudCheckBox T="bool" Checked="_configuration.ChecksumValidation"
-                                         CheckedChanged="@((bool value) => { _configuration.ChecksumValidation = value; OnConfigurationChanged(); })"
-                                         Label="Validação de Checksum"
-                                         Color="Color.Primary" />
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" 
+                                       checked="@_configuration.ChecksumValidation"
+                                       @onchange="@((e) => { _configuration.ChecksumValidation = (bool)(e.Value ?? false); OnConfigurationChanged(); })"
+                                       class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary" />
+                                <span class="text-sm font-medium">Validação de Checksum</span>
+                            </label>
                             <p class="setting-description">Valida checksums para códigos EAN e UPC</p>
 
-                            <MudCheckBox T="bool" Checked="_configuration.TryHarder"
-                                         CheckedChanged="@((bool value) => { _configuration.TryHarder = value; OnConfigurationChanged(); })"
-                                         Label="Processamento Intensivo"
-                                         Color="Color.Primary" />
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" 
+                                       checked="@_configuration.TryHarder"
+                                       @onchange="@((e) => { _configuration.TryHarder = (bool)(e.Value ?? false); OnConfigurationChanged(); })"
+                                       class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary" />
+                                <span class="text-sm font-medium">Processamento Intensivo</span>
+                            </label>
                             <p class="setting-description">Usa mais recursos para melhor detecção</p>
 
                             <div class="numeric-setting">
                                 <label>Timeout (ms): @_configuration.TimeoutMs</label>
-                                <MudSlider @bind-Value="_configuration.TimeoutMs"
-                                           Min="500" Max="5000" Step="100"
-                                           Color="Color.Primary"
-                                           @onchange="OnConfigurationChanged" />
+                                <input type="range" 
+                                       @bind="_configuration.TimeoutMs"
+                                       @bind:event="oninput"
+                                       @onchange="OnConfigurationChanged"
+                                       min="500" max="5000" step="100"
+                                       class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-primary" />
                             </div>
 
                             <div class="numeric-setting">
                                 <label>Máximo de Tentativas: @_configuration.MaxRetries</label>
-                                <MudSlider @bind-Value="_configuration.MaxRetries"
-                                           Min="1" Max="5" Step="1"
-                                           Color="Color.Primary"
-                                           @onchange="OnConfigurationChanged" />
+                                <input type="range" 
+                                       @bind="_configuration.MaxRetries"
+                                       @bind:event="oninput"
+                                       @onchange="OnConfigurationChanged"
+                                       min="1" max="5" step="1"
+                                       class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-primary" />
                             </div>
                         </div>
                     </div>
@@ -125,29 +140,19 @@
 
                 <!-- Action Buttons -->
                 <div class="config-actions">
-                    <MudButton Variant="Variant.Filled" 
-                               Color="Color.Primary" 
-                               @onclick="SaveConfiguration"
-                               Disabled="_isSaving">
-                        @if (_isSaving)
-                        {
-                            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
-                            <span>Salvando...</span>
-                        }
-                        else
-                        {
-                            <MudIcon Icon="@Icons.Material.Filled.Save" />
-                            <span>Salvar</span>
-                        }
-                    </MudButton>
+                    <Button Text="@(_isSaving ? "Salvando..." : "Salvar")"
+                            Variant="Button.ButtonVariant.Filled" 
+                            Color="Button.ButtonColor.Primary" 
+                            Icon="save"
+                            Disabled="_isSaving"
+                            OnClick="SaveConfiguration" />
 
-                    <MudButton Variant="Variant.Outlined" 
-                               Color="Color.Secondary" 
-                               @onclick="ResetToDefaults"
-                               Disabled="_isSaving">
-                        <MudIcon Icon="@Icons.Material.Filled.RestartAlt" />
-                        <span>Restaurar Padrões</span>
-                    </MudButton>
+                    <Button Text="Restaurar Padrões" 
+                            Variant="Button.ButtonVariant.Outlined" 
+                            Color="Button.ButtonColor.Secondary" 
+                            Icon="restart_alt"
+                            Disabled="_isSaving"
+                            OnClick="ResetToDefaults" />
                 </div>
             </div>
         }
@@ -156,22 +161,22 @@
 
 @if (_showSuccessMessage)
 {
-    <MudAlert Severity="Severity.Success" 
-              ShowCloseIcon="true" 
-              CloseIconClicked="() => _showSuccessMessage = false"
-              Class="config-alert">
-        Configurações salvas com sucesso!
-    </MudAlert>
+    <div class="config-alert bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded relative mt-4" role="alert">
+        <span class="block sm:inline">Configurações salvas com sucesso!</span>
+        <button @onclick="() => _showSuccessMessage = false" class="absolute top-0 bottom-0 right-0 px-4 py-3">
+            <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+    </div>
 }
 
 @if (!string.IsNullOrEmpty(_errorMessage))
 {
-    <MudAlert Severity="Severity.Error" 
-              ShowCloseIcon="true" 
-              CloseIconClicked="() => _errorMessage = string.Empty"
-              Class="config-alert">
-        @_errorMessage
-    </MudAlert>
+    <div class="config-alert bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded relative mt-4" role="alert">
+        <span class="block sm:inline">@_errorMessage</span>
+        <button @onclick="() => _errorMessage = string.Empty" class="absolute top-0 bottom-0 right-0 px-4 py-3">
+            <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+    </div>
 }
 
 <style>
@@ -289,6 +294,25 @@
 
     .config-alert {
         margin-top: 16px;
+    }
+    
+    /* Custom slider styling */
+    .slider-primary::-webkit-slider-thumb {
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #00327d;
+        cursor: pointer;
+    }
+    
+    .slider-primary::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #00327d;
+        cursor: pointer;
+        border: none;
     }
 
     @@media (max-width: 640px) {

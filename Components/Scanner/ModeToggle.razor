@@ -1,0 +1,70 @@
+@namespace pwa_camera_poc_blazor.Components.Scanner
+
+<div class="flex gap-2 justify-center">
+    @foreach (var mode in Enum.GetValues<RecognitionMode>())
+    {
+        var isSelected = mode == SelectedMode;
+        <button 
+            type="button"
+            class="@GetBadgeClasses(isSelected)"
+            @onclick="() => HandleModeChange(mode)"
+            aria-label="@GetModeLabel(mode)"
+            aria-pressed="@isSelected">
+            @GetModeLabel(mode)
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter] public RecognitionMode SelectedMode { get; set; }
+    [Parameter] public EventCallback<RecognitionMode> OnModeChanged { get; set; }
+
+    private async Task HandleModeChange(RecognitionMode mode)
+    {
+        SelectedMode = mode;
+        await OnModeChanged.InvokeAsync(mode);
+    }
+
+    private string GetBadgeClasses(bool isSelected)
+    {
+        var classes = new List<string>
+        {
+            "px-3",
+            "py-1.5",
+            "rounded-full",
+            "text-sm",
+            "font-medium",
+            "transition-all",
+            "cursor-pointer",
+            "transition-colors",
+            "duration-200"
+        };
+
+        if (isSelected)
+        {
+            classes.Add("bg-primary");
+            classes.Add("text-white");
+        }
+        else
+        {
+            classes.Add("bg-surface-container/80");
+            classes.Add("text-on-surface-variant");
+            classes.Add("backdrop-blur-sm");
+        }
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetModeLabel(RecognitionMode mode)
+    {
+        return mode switch
+        {
+            RecognitionMode.QR => "QR",
+            RecognitionMode.Barcode => "Barcode",
+            RecognitionMode.OCR => "OCR",
+            _ => mode.ToString()
+        };
+    }
+
+    public enum RecognitionMode { QR, Barcode, OCR }
+}

@@ -1,4 +1,4 @@
-﻿@using pwa_camera_poc_blazor.Components.Shared
+@using pwa_camera_poc_blazor.Components.Shared
 @using pwa_camera_poc_blazor.Components
 
 <CascadingAuthenticationState>
@@ -8,8 +8,10 @@
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MinimalLayout)">
                 <Authorizing>
                     <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #FFFFFF;">
-                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-                        <span style="margin-left: 16px; color: #64748B;">Verificando autorização...</span>
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            <span style="margin-left: 16px; color: #64748B;">Verificando autorização...</span>
+                        </div>
                     </div>
                 </Authorizing>
                 <NotAuthorized>
@@ -29,10 +31,31 @@
             <PageTitle>Not found</PageTitle>
             <LayoutView Layout="@typeof(MinimalLayout)">
                 <div style="text-align: center; padding: 40px 24px; color: #94A3B8;">
-                    <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Style="opacity: 0.3; font-size: 64px;" />
+                    <span class="material-symbols-outlined" style="opacity: 0.3; font-size: 64px;">search_off</span>
                     <p style="margin-top: 16px; font-size: 14px;">Desculpe, não há nada neste endereço.</p>
                 </div>
             </LayoutView>
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+
+<style>
+    .loading-spinner {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #e2e8f0;
+        border-top-color: #00327d;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>

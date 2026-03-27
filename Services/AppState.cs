@@ -24,6 +24,9 @@ public class AppState : INotifyPropertyChanged
     private bool _isOffline;
     private bool _isSyncing;
     private int _unreadNotifications;
+    private string _municipioNome = "CORTÊS - PE";
+    private int _inventariadosHoje = 23;
+    private int _totalParaInventariar = 247;
 
     // Navigation
     private string _currentRoute = "/";
@@ -34,6 +37,8 @@ public class AppState : INotifyPropertyChanged
     public Models.UnidadeOrcamentaria? CurrentUO { get; set; }
     public Models.Area? CurrentArea { get; set; }
     public Models.Subarea? CurrentSubarea { get; set; }
+    public int AnoExercicio { get; set; } = 0;
+    public int DtEstr { get; set; } = 0;
     private bool _isCameraActive;
     private bool _isDarkMode;
 
@@ -103,6 +108,24 @@ public class AppState : INotifyPropertyChanged
     {
         get => _unreadNotifications;
         set => SetProperty(ref _unreadNotifications, value);
+    }
+
+    public string MunicipioNome
+    {
+        get => _municipioNome;
+        set => SetProperty(ref _municipioNome, value);
+    }
+
+    public int InventariadosHoje
+    {
+        get => _inventariadosHoje;
+        set => SetProperty(ref _inventariadosHoje, value);
+    }
+
+    public int TotalParaInventariar
+    {
+        get => _totalParaInventariar;
+        set => SetProperty(ref _totalParaInventariar, value);
     }
 
     // Navigation Property
@@ -178,7 +201,9 @@ public class AppState : INotifyPropertyChanged
                 CurrentOrgao,
                 CurrentUO,
                 CurrentArea,
-                CurrentSubarea
+                CurrentSubarea,
+                AnoExercicio,
+                DtEstr
             };
             await _localStorage.SetItemAsync("app_state", state);
         }
@@ -221,6 +246,16 @@ public class AppState : INotifyPropertyChanged
                 if (stateObj.TryGetProperty("CurrentSubarea", out var subareaElement) && subareaElement.ValueKind == System.Text.Json.JsonValueKind.Object)
                 {
                     CurrentSubarea = System.Text.Json.JsonSerializer.Deserialize<Models.Subarea>(subareaElement.GetRawText());
+                }
+
+                if (stateObj.TryGetProperty("AnoExercicio", out var anoElement) && anoElement.ValueKind == System.Text.Json.JsonValueKind.Number)
+                {
+                    AnoExercicio = anoElement.GetInt32();
+                }
+
+                if (stateObj.TryGetProperty("DtEstr", out var dtEstrElement) && dtEstrElement.ValueKind == System.Text.Json.JsonValueKind.Number)
+                {
+                    DtEstr = dtEstrElement.GetInt32();
                 }
                 
                 OnPropertyChanged(string.Empty); // Notify all properties changed

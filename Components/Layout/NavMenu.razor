@@ -1,46 +1,39 @@
 @inject IAuthService AuthService
-@inject IIndexedDbService DbService
-@inject NavigationManager Navigation
-@inject AppState appState
+@inject pwa_camera_poc_blazor.Services.Storage.IIndexedDbService DbService
 
-<MudDrawerHeader Class="d-flex flex-column align-center pa-6"
-    Style="background-color: var(--mud-palette-background-grey);">
-    <div class="cursor-pointer d-flex flex-column align-center profile-section"
-        style="width: 100%; max-width: 200px; overflow: hidden;" @onclick="NavigateToProfile">
-        <MudAvatar Color="Color.Primary" Size="Size.Large" Class="mb-3 shadow-md border-white border-2 profile-avatar">
+<div style="display: flex; flex-direction: column; padding: 24px; background-color: #f1f5f9; align-items: center; border-bottom: 1px solid #e2e8f0;">
+    <div style="cursor: pointer; display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 200px; overflow: hidden;" @onclick="NavigateToProfile">
+        <div style="border-radius: 50%; background: #003366; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; width: 64px; height: 64px; margin-bottom: 12px; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             @UserInitials
-        </MudAvatar>
-        <MudText Typo="Typo.subtitle1" Class="font-weight-bold text-truncate" Style="max-width: 100%">@DisplayName
-        </MudText>
-        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-n1 text-truncate" Style="max-width: 100%">
-            @EmailDisplay</MudText>
+        </div>
+        <div style="font-weight: bold; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">@DisplayName</div>
+        <div style="font-size: 12px; color: #64748b; margin-top: -4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">@EmailDisplay</div>
     </div>
-</MudDrawerHeader>
+</div>
 
-<MudNavMenu>
-    <div class="pa-4 d-flex flex-column gap-1">
-        <MudText Typo="Typo.caption" Color="Color.Secondary">Sessão Atual</MudText>
-        <MudText Typo="Typo.body2" Class="mud-text-secondary">@(appState.CurrentUO?.NomeUO ?? "Sessão não configurada")
-        </MudText>
+<nav style="display: flex; flex-direction: column;">
+    <div style="padding: 16px; display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-size: 12px; color: #64748b;">Sessão Atual</span>
+        <span style="font-size: 14px; color: #475569;">@(appState.CurrentUO?.NomeUO ?? "Sessão não configurada")</span>
     </div>
 
-    <MudDivider Class="my-2" />
+    <hr style="margin: 8px 0; border: none; border-top: 1px solid #e2e8f0;" />
 
-    <div class="mud-nav-link mud-ripple py-3 px-4 d-flex align-center cursor-pointer" @onclick="ToggleTheme">
-        <MudIcon Icon="@Icons.Material.Filled.BrightnessMedium" Color="Color.Default" Class="mr-3" />
-        <MudText>Alternar Tema</MudText>
+    <div style="padding: 12px 16px; display: flex; align-items: center; cursor: pointer; transition: background 0.2s;" class="hover-bg-gray-100" @onclick="ToggleTheme">
+        <span class="material-symbols-outlined" style="margin-right: 12px; color: #475569;">brightness_medium</span>
+        <span style="font-size: 14px; color: #1e293b;">Alternar Tema</span>
     </div>
 
-    <MudNavLink Href="/tombamentos-sync" Class="mud-nav-link mud-ripple py-3 px-4 d-flex align-center" Match="NavLinkMatch.All">
-        <MudIcon Icon="@Icons.Material.Filled.CloudDownload" Color="Color.Default" Class="mr-3" />
-        <MudText>Sincronizar Tombamentos</MudText>
-    </MudNavLink>
+    <a href="/tombamentos-sync" style="padding: 12px 16px; display: flex; align-items: center; text-decoration: none; transition: background 0.2s;" class="hover-bg-gray-100">
+        <span class="material-symbols-outlined" style="margin-right: 12px; color: #475569;">cloud_download</span>
+        <span style="font-size: 14px; color: #1e293b;">Sincronizar Tombamentos</span>
+    </a>
 
-    <div class="mud-nav-link mud-ripple py-3 px-4 d-flex align-center cursor-pointer" @onclick="HandleLogout">
-        <MudIcon Icon="@Icons.Material.Filled.Logout" Color="Color.Error" Class="mr-3" />
-        <MudText>Sair</MudText>
+    <div style="padding: 12px 16px; display: flex; align-items: center; cursor: pointer; transition: background 0.2s;" class="hover-bg-gray-100" @onclick="HandleLogout">
+        <span class="material-symbols-outlined" style="margin-right: 12px; color: #ef4444;">logout</span>
+        <span style="font-size: 14px; color: #1e293b;">Sair</span>
     </div>
-</MudNavMenu>
+</nav>
 
 @code {
     [Parameter] public EventCallback<int> OnUnitSelected { get; set; }
@@ -50,7 +43,7 @@
     private string UserInitials = "U";
     private string DisplayName = "Usuário";
     private string EmailDisplay = "";
-    private Usuario? currentUser;
+    private pwa_camera_poc_blazor.Models.Usuario? currentUser;
 
     protected override async Task OnParametersSetAsync()
     {

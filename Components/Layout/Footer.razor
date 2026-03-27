@@ -1,22 +1,63 @@
-<MudPaper Elevation="8" Class="@($"d-flex justify-space-around align-center py-1 width-100 {(IsHidden ? "d-none" : "")}")"
-    Style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; height: 64px; padding-bottom: env(safe-area-inset-bottom);">
-    <MudIconButton Icon="@Icons.Material.Filled.Home" Color="@(ActiveTab == "home" ? Color.Primary : Color.Default)"
-        OnClick='() => OnTabChanged.InvokeAsync("home")' Size="Size.Large" />
-    <MudIconButton Icon="@Icons.Material.Filled.BarChart" Color="@(ActiveTab == "stats" ? Color.Primary : Color.Default)"
-        OnClick='() => OnTabChanged.InvokeAsync("stats")' Size="Size.Large" />
-    <MudIconButton Icon="@Icons.Material.Filled.CameraAlt" Color="Color.Primary"
-        OnClick="OnCaptureClick" Size="Size.Large" />
-    <MudBadge Content="@PendingSyncCount" Overlap="true" Bordered="true" Color="Color.Error"
-        Visible="@(PendingSyncCount > 0)">
-        <MudIconButton Icon="@Icons.Material.Filled.Sync" Color="@(ActiveTab == "sync" ? Color.Primary : Color.Default)"
-            OnClick='() => OnTabChanged.InvokeAsync("sync")' Size="Size.Large" />
-    </MudBadge>
-    <MudIconButton Icon="@Icons.Material.Filled.UploadFile" Color="Color.Default"
-        OnClick="OnExportClick" Size="Size.Large" />
-</MudPaper>
+@* Bottom Navigation matching the mockup: Scan | Lista | Sincronizar | Ajustes *@
+<div class="bottom-nav @(IsHidden ? "hidden" : "")"
+     style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+            background: white; border-top: 1px solid #e2e8f0;
+            height: 64px; padding-bottom: env(safe-area-inset-bottom);
+            display: flex; justify-content: space-around; align-items: stretch;">
+
+    @* SCAN *@
+    <button class="nav-item" @onclick='() => OnTabChanged.InvokeAsync("scan")'
+            style="background: none; border: none; cursor: pointer; flex: 1;
+                   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+                   color: @(ActiveTab == "scan" ? "#003366" : "#94a3b8");
+                   border-top: 2px solid @(ActiveTab == "scan" ? "#003366" : "transparent");">
+        <span class="material-symbols-outlined" style="font-size: 22px;">document_scanner</span>
+        <span style="font-size: 9px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">Scan</span>
+    </button>
+
+    @* LISTA *@
+    <button class="nav-item" @onclick='() => OnTabChanged.InvokeAsync("home")'
+            style="background: none; border: none; cursor: pointer; flex: 1;
+                   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+                   color: @(ActiveTab == "home" ? "#003366" : "#94a3b8");
+                   border-top: 2px solid @(ActiveTab == "home" ? "#003366" : "transparent");">
+        <span class="material-symbols-outlined" style="font-size: 22px;">list_alt</span>
+        <span style="font-size: 9px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">Lista</span>
+    </button>
+
+    @* SINCRONIZAÇÃO *@
+    <button class="nav-item" @onclick='() => OnTabChanged.InvokeAsync("sync")'
+            style="position: relative; background: none; border: none; cursor: pointer; flex: 1;
+                   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+                   color: @(ActiveTab == "sync" ? "#003366" : "#94a3b8");
+                   border-top: 2px solid @(ActiveTab == "sync" ? "#003366" : "transparent");">
+        <span class="material-symbols-outlined" style="font-size: 22px;">sync</span>
+        <span style="font-size: 9px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">Sincronizar</span>
+        @if (PendingSyncCount > 0)
+        {
+            <span style="position: absolute; top: 8px; right: calc(50% - 18px);
+                         background: #ef4444; color: white; font-size: 9px; font-weight: 700;
+                         border-radius: 9999px; min-width: 16px; height: 16px;
+                         display: flex; align-items: center; justify-content: center; padding: 0 3px;">
+                @PendingSyncCount
+            </span>
+        }
+    </button>
+
+    @* AJUSTES *@
+    <button class="nav-item" @onclick='() => OnTabChanged.InvokeAsync("settings")'
+            style="background: none; border: none; cursor: pointer; flex: 1;
+                   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+                   color: @(ActiveTab == "settings" ? "#003366" : "#94a3b8");
+                   border-top: 2px solid @(ActiveTab == "settings" ? "#003366" : "transparent");">
+        <span class="material-symbols-outlined" style="font-size: 22px;">settings</span>
+        <span style="font-size: 9px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">Ajustes</span>
+    </button>
+
+</div>
 
 @code {
-    [Parameter] public string ActiveTab { get; set; } = "home";
+    [Parameter] public string ActiveTab { get; set; } = "scan";
     [Parameter] public int PendingSyncCount { get; set; } = 0;
     [Parameter] public EventCallback<string> OnTabChanged { get; set; }
     [Parameter] public EventCallback OnCaptureClick { get; set; }

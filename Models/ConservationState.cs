@@ -23,5 +23,11 @@ public enum ConservationState
     /// <summary>
     /// Recuperável - Item que necessita reparos
     /// </summary>
-    Recoverable
+    Recoverable,
+
+    /// <summary>
+    /// Inservível - Item que não pode mais ser utilizado
+    /// </summary>
+    Unrecoverable
 }
+

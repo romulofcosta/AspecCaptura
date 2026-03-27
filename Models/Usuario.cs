@@ -21,6 +21,7 @@ namespace pwa_camera_poc_blazor.Models
         public string IdOrgao { get; set; } = string.Empty;
         public string NomeOrgao { get; set; } = string.Empty;
         public List<UnidadeOrcamentaria> UnidadesOrcamentarias { get; set; } = new();
+        public int DtEstr { get; set; } = 0;   // Exercício fiscal (YYYYMMDD); 0 quando ausente
     }
 
     public class UnidadeOrcamentaria

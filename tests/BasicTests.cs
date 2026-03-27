@@ -51,7 +51,7 @@ public class BasicTests
     public void Version_Format_Should_Be_Valid()
     {
         // Arrange
-        var version = "0.3.0";
+        var version = "0.3.1";
 
         // Act
         var isValidVersion = System.Version.TryParse(version, out var parsedVersion);
@@ -61,7 +61,7 @@ public class BasicTests
         Assert.NotNull(parsedVersion);
         Assert.Equal(0, parsedVersion!.Major);
         Assert.Equal(3, parsedVersion.Minor);
-        Assert.Equal(0, parsedVersion.Build);
+        Assert.Equal(1, parsedVersion.Build);
     }
 
     [Fact]

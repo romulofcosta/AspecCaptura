@@ -1,0 +1,57 @@
+@namespace pwa_camera_poc_blazor.Components.Common
+
+<button type="@Type" 
+        class="primary-button @(FullWidth ? "w-full" : "") @Class" 
+        disabled="@Disabled" 
+        @onclick="OnClick">
+    @ChildContent
+</button>
+
+<style>
+    .primary-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 48px;
+        padding: 0 24px;
+        background-color: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: var(--radius-input);
+        font-weight: var(--font-weight-bold);
+        font-size: var(--font-size-body);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .primary-button:hover:not(:disabled) {
+        background-color: var(--color-primary-dark);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .primary-button:active:not(:disabled) {
+        transform: scale(0.98);
+    }
+
+    .primary-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        filter: grayscale(1);
+    }
+
+    .primary-button.w-full {
+        width: 100%;
+    }
+</style>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool FullWidth { get; set; } = true;
+    [Parameter] public string Class { get; set; } = string.Empty;
+    [Parameter] public string Type { get; set; } = "button";
+}

@@ -1,0 +1,38 @@
+@namespace pwa_camera_poc_blazor.Components.Layout
+@inject NavigationManager NavigationManager
+
+<div class="flex items-center gap-4 p-4 border-b border-outline pt-safe bg-surface">
+    @if (ShowBackButton)
+    {
+        <button 
+            type="button"
+            class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-container transition-colors"
+            @onclick="GoBack"
+            aria-label="Voltar">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+    }
+    
+    @if (!string.IsNullOrEmpty(Title))
+    {
+        <h1 class="text-lg font-headline font-semibold text-on-surface flex-1">@Title</h1>
+    }
+    
+    @if (Actions != null)
+    {
+        <div class="flex items-center gap-2">
+            @Actions
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public bool ShowBackButton { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

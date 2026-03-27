@@ -1,0 +1,57 @@
+@namespace pwa_camera_poc_blazor.Components.Base
+
+<span class="@GetBadgeClasses()">
+    @if (Dot)
+    {
+        <span class="w-2 h-2 rounded-full bg-current"></span>
+    }
+    @if (!string.IsNullOrEmpty(Text))
+    {
+        <span>@Text</span>
+    }
+</span>
+
+@code {
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public BadgeColor Color { get; set; } = BadgeColor.Default;
+    [Parameter] public BadgeSize Size { get; set; } = BadgeSize.Medium;
+    [Parameter] public bool Dot { get; set; }
+
+    private string GetBadgeClasses()
+    {
+        var classes = new List<string>
+        {
+            "inline-flex",
+            "items-center",
+            "gap-1",
+            "font-medium",
+            "rounded-full"
+        };
+
+        // Color
+        classes.AddRange(Color switch
+        {
+            BadgeColor.Default => new[] { "bg-surface-container", "text-on-surface" },
+            BadgeColor.Primary => new[] { "bg-primary", "text-white" },
+            BadgeColor.Success => new[] { "bg-success", "text-white" },
+            BadgeColor.Warning => new[] { "bg-warning", "text-white" },
+            BadgeColor.Error => new[] { "bg-error", "text-white" },
+            BadgeColor.Info => new[] { "bg-info", "text-white" },
+            _ => new[] { "bg-surface-container", "text-on-surface" }
+        });
+
+        // Size
+        classes.AddRange(Size switch
+        {
+            BadgeSize.Small => new[] { "text-xs", "px-2", "py-0.5" },
+            BadgeSize.Medium => new[] { "text-sm", "px-3", "py-1" },
+            BadgeSize.Large => new[] { "text-base", "px-4", "py-1.5" },
+            _ => new[] { "text-sm", "px-3", "py-1" }
+        });
+
+        return string.Join(" ", classes);
+    }
+
+    public enum BadgeColor { Default, Primary, Success, Warning, Error, Info }
+    public enum BadgeSize { Small, Medium, Large }
+}

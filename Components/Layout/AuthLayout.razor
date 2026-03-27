@@ -3,24 +3,19 @@
 @inject AppState appState
 @implements IDisposable
 
-<MudThemeProvider Theme="currentTheme" @bind-IsDarkMode="appState.IsDarkMode" />
-<MudDialogProvider />
-<MudSnackbarProvider />
-<MudPopoverProvider />
-
-<MudLayout>
-    <div style="position: fixed; top: 16px; right: 24px; z-index: 1000;">
-        <MudIconButton Icon="@Icons.Material.Filled.BrightnessMedium" Color="Color.Default" OnClick="ToggleTheme"
-            Class="shadow-sm theme-toggle-btn"
-            Style="background-color: var(--mud-palette-surface); border: 1px solid rgba(0,0,0,0.1);" />
+<div class="min-h-screen bg-surface flex items-center justify-center p-4 sm:p-10">
+    <div class="fixed top-4 right-6 z-50">
+        <button @onclick="ToggleTheme" 
+                class="p-2 rounded-full bg-surface-container border border-outline shadow-sm hover:bg-surface-container-high transition-colors"
+                aria-label="Toggle theme">
+            <span class="material-symbols-outlined text-on-surface">brightness_medium</span>
+        </button>
     </div>
-    <MudMainContent Class="mud-width-full auth-background" Style="overflow-y: auto; height: 100vh;">
-        <div class="d-flex justify-center pt-4 pt-sm-10"
-             style="width: 100%; min-height: 100%;">
-            @Body
-        </div>
-    </MudMainContent>
-</MudLayout>
+    
+    <div class="w-full">
+        @Body
+    </div>
+</div>
 
 @code {
     protected override async Task OnInitializedAsync()
@@ -57,40 +52,4 @@
         }
         catch { }
     }
-
-    private MudTheme currentTheme = new MudTheme()
-        {
-            LayoutProperties = new LayoutProperties()
-            {
-                DefaultBorderRadius = "8px"
-            },
-            Typography = new Typography()
-            {
-                Default = new DefaultTypography()
-                {
-                    FontFamily = new[] { "Outfit", "Inter", "Roboto", "Helvetica", "Arial", "sans-serif" },
-                    FontSize = "0.875rem"
-                },
-                H3 = new H3Typography() { FontSize = "2rem", FontWeight = "700" },
-                H5 = new H5Typography() { FontSize = "1.5rem", FontWeight = "600" }
-            },
-            PaletteLight = new PaletteLight()
-            {
-                Primary = "#0066CC", // ASPEC Blue
-                AppbarBackground = "#003366",
-                Background = "#F5F7FA",
-                Surface = "#FFFFFF",
-                ActionDefault = "#0066CC"
-            },
-            PaletteDark = new PaletteDark()
-            {
-                Primary = "#4da3ff",
-                AppbarBackground = "#1A2238",
-                Background = "#121212",
-                Surface = "#1e1e1e",
-                ActionDefault = "#4da3ff", // Contrast high
-                TextPrimary = "#FFFFFF",
-                TextSecondary = "#B0BEC5"
-            }
-        };
 }

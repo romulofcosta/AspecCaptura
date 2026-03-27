@@ -1,0 +1,93 @@
+@namespace pwa_camera_poc_blazor.Components.Base
+
+<div class="flex items-center gap-3">
+    <button 
+        type="button"
+        role="switch"
+        aria-checked="@Value"
+        aria-pressed="@Value"
+        class="@GetTrackClasses()"
+        disabled="@Disabled"
+        @onclick="HandleToggle">
+        <span class="@GetThumbClasses()"></span>
+    </button>
+    
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <span class="text-sm font-medium text-on-surface">@Label</span>
+    }
+</div>
+
+@code {
+    [Parameter] public bool Value { get; set; }
+    [Parameter] public EventCallback<bool> ValueChanged { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    private async Task HandleToggle()
+    {
+        if (!Disabled)
+        {
+            Value = !Value;
+            await ValueChanged.InvokeAsync(Value);
+        }
+    }
+
+    private string GetTrackClasses()
+    {
+        var classes = new List<string>
+        {
+            "relative",
+            "w-11",
+            "h-6",
+            "rounded-full",
+            "transition-colors",
+            "focus:ring-2",
+            "focus:ring-primary",
+            "focus:outline-none"
+        };
+
+        if (Value)
+        {
+            classes.Add("bg-primary");
+        }
+        else
+        {
+            classes.Add("bg-outline");
+        }
+
+        if (Disabled)
+        {
+            classes.Add("opacity-50");
+            classes.Add("cursor-not-allowed");
+        }
+        else
+        {
+            classes.Add("cursor-pointer");
+        }
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetThumbClasses()
+    {
+        var classes = new List<string>
+        {
+            "absolute",
+            "top-0.5",
+            "left-0.5",
+            "w-5",
+            "h-5",
+            "bg-white",
+            "rounded-full",
+            "transition-transform"
+        };
+
+        if (Value)
+        {
+            classes.Add("translate-x-5");
+        }
+
+        return string.Join(" ", classes);
+    }
+}

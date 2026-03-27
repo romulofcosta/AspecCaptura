@@ -1,0 +1,66 @@
+@namespace pwa_camera_poc_blazor.Components.Base
+
+<div class="@GetChipClasses()" @onclick="HandleClick">
+    @if (!string.IsNullOrEmpty(Icon))
+    {
+        <span class="material-symbols-outlined text-base">@Icon</span>
+    }
+    @if (!string.IsNullOrEmpty(Text))
+    {
+        <span>@Text</span>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public bool Selected { get; set; }
+    [Parameter] public bool Clickable { get; set; } = true;
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public string? Icon { get; set; }
+
+    private async Task HandleClick()
+    {
+        if (Clickable)
+        {
+            await OnClick.InvokeAsync();
+        }
+    }
+
+    private string GetChipClasses()
+    {
+        var classes = new List<string>
+        {
+            "inline-flex",
+            "items-center",
+            "gap-1",
+            "px-3",
+            "py-1",
+            "rounded-full",
+            "text-sm",
+            "font-medium",
+            "transition-all",
+            "border"
+        };
+
+        if (Selected)
+        {
+            classes.Add("bg-primary");
+            classes.Add("text-white");
+            classes.Add("border-primary");
+        }
+        else
+        {
+            classes.Add("bg-surface-container");
+            classes.Add("text-on-surface");
+            classes.Add("border-outline");
+        }
+
+        if (Clickable)
+        {
+            classes.Add("cursor-pointer");
+            classes.Add("hover:shadow-md");
+        }
+
+        return string.Join(" ", classes);
+    }
+}

@@ -9,11 +9,13 @@
 @using Microsoft.JSInterop
 @using pwa_camera_poc_blazor
 @using pwa_camera_poc_blazor.Components.Layout
-@using pwa_camera_poc_blazor.Components.Shared
-@using pwa_camera_poc_blazor.Components.Cards
-@using pwa_camera_poc_blazor.Components.Navigation
+@using pwa_camera_poc_blazor.Components.Common
 @using pwa_camera_poc_blazor.Components.Forms
+@using pwa_camera_poc_blazor.Components.Shared
+@using pwa_camera_poc_blazor.Components.Navigation
 @using pwa_camera_poc_blazor.Models
+@using Microsoft.Extensions.Logging
+
 @using pwa_camera_poc_blazor.Services
 @using pwa_camera_poc_blazor.Services.Auth
 @using pwa_camera_poc_blazor.Services.Camera
@@ -22,4 +24,16 @@
 @using pwa_camera_poc_blazor.Services.Crypto
 @using pwa_camera_poc_blazor.Services.Sync
 @using pwa_camera_poc_blazor.Services.Notification
-@using MudBlazor
+@using pwa_camera_poc_blazor.Services.Recognition
+@using pwa_camera_poc_blazor.Services.Configuration
+@using pwa_camera_poc_blazor.Services.Capture
+@using pwa_camera_poc_blazor.Services.Image
+
+@inject AppState appState
+@inject NavigationManager Navigation
+@inject pwa_camera_poc_blazor.Services.ToastService ToastService
+@inject IJSRuntime JSRuntime
+@inject HttpClient HttpClient
+@inject pwa_camera_poc_blazor.Services.Auth.IAuthService AuthService
+@inject pwa_camera_poc_blazor.Services.Storage.IIndexedDbService DbService
+@inject pwa_camera_poc_blazor.Services.IAppInfo AppInfo
