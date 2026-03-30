@@ -191,13 +191,15 @@
     /* ── Main canvas ── */
     .cs-main {
         flex: 1;
-        padding: 32px 24px 40px;
+        padding: 24px 24px 120px; /* Maior padding-bottom para não conflitar com iOS bar */
         max-width: 640px;
         width: 100%;
         margin: 0 auto;
         display: flex;
         flex-direction: column;
         gap: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     /* ── Section Header ── */

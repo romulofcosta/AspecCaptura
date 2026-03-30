@@ -50,6 +50,9 @@ echo "=== Restaurando pacotes e workloads ==="
 "$DOTNET_EXEC" restore
 "$DOTNET_EXEC" workload install wasm-tools --skip-manifest-update
 
+echo "=== Instalando dependências Node/Tailwind CSS ==="
+npm install
+
 rm -rf bin/Release/net8.0/publish
 "$DOTNET_EXEC" publish pwa-camera-poc-blazor.csproj -c Release -o bin/Release/net8.0/publish
 
