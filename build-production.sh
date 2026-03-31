@@ -8,9 +8,27 @@ dotnet clean --configuration Release
 rm -rf bin/Release
 rm -rf obj/Release
 
-# Restore packages
-echo "📦 Restoring packages..."
+# Restore .NET packages
+echo "📦 Restoring .NET packages..."
 dotnet restore
+
+# Build Tailwind CSS
+echo "🎨 Building Tailwind CSS..."
+if [ -f "package.json" ]; then
+    echo "📦 Installing npm dependencies..."
+    npm install
+    echo "🏗️ Generating CSS output.css..."
+    npm run build:css:prod
+else
+    echo "⚠️ Warning: package.json not found, bypassing Tailwind build"
+fi
+
+# Verify CSS output
+if [ -f "wwwroot/css/output.css" ]; then
+    echo "✅ Tailwind CSS generated successfully"
+else
+    echo "⚠️ Warning: wwwroot/css/output.css not found"
+fi
 
 # Build for production (without AOT to avoid wasm-tools dependency)
 echo "🔨 Building for Release..."
@@ -30,6 +48,12 @@ if [ -f "dist/wwwroot/_framework/dotnet.wasm" ]; then
 else
     echo "❌ .NET WebAssembly runtime missing!"
     exit 1
+fi
+
+if [ -f "dist/wwwroot/css/output.css" ]; then
+    echo "✅ Production Tailwind CSS found"
+else
+    echo "⚠️ Production Tailwind CSS missing in dist!"
 fi
 
 # Check for compressed files

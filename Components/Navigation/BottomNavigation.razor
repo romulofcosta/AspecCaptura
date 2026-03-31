@@ -1,46 +1,45 @@
 @namespace pwa_camera_poc_blazor.Components.Navigation
+@using Microsoft.AspNetCore.Components.Routing
 
-<nav class="bottom-navigation">
-    <div class="bottom-navigation__item @(IsActive("/") ? "bottom-navigation__item--active" : "")" 
-         @onclick="@(() => OnNavigate.InvokeAsync("/"))">
-        <span class="bottom-navigation__icon">🏠</span>
+<nav class="bottom-navigation" role="navigation" aria-label="Navegação inferior">
+    <NavLink class="bottom-navigation__item" href="/" Match="NavLinkMatch.All" ActiveClass="bottom-navigation__item--active" @onclick="@(async () => await HandleNavigateAsync("/"))">
+        <span class="bottom-navigation__icon" aria-hidden="true">🏠</span>
         <span class="bottom-navigation__label">INÍCIO</span>
-    </div>
-    
-    <div class="bottom-navigation__item @(IsActive("/history") ? "bottom-navigation__item--active" : "")" 
-         @onclick="@(() => OnNavigate.InvokeAsync("/history"))">
-        <span class="bottom-navigation__icon">📋</span>
+    </NavLink>
+
+    <NavLink class="bottom-navigation__item" href="/history" Match="NavLinkMatch.Prefix" ActiveClass="bottom-navigation__item--active" @onclick="@(async () => await HandleNavigateAsync("/history"))">
+        <span class="bottom-navigation__icon" aria-hidden="true">📋</span>
         <span class="bottom-navigation__label">Histórico</span>
-    </div>
-    
-    <div class="bottom-navigation__item @(IsActive("/camera") ? "bottom-navigation__item--active" : "")" 
-         @onclick="@(() => OnNavigate.InvokeAsync("/camera"))">
-        <span class="bottom-navigation__icon">📷</span>
+    </NavLink>
+
+    <NavLink class="bottom-navigation__item" href="/camera" Match="NavLinkMatch.Prefix" ActiveClass="bottom-navigation__item--active" @onclick="@(async () => await HandleNavigateAsync("/camera"))">
+        <span class="bottom-navigation__icon" aria-hidden="true">📷</span>
         <span class="bottom-navigation__label">Câmera</span>
-    </div>
-    
-    <div class="bottom-navigation__item @(IsActive("/sync") ? "bottom-navigation__item--active" : "")" 
-         @onclick="@(() => OnNavigate.InvokeAsync("/sync"))">
-        <span class="bottom-navigation__icon">🔄</span>
+    </NavLink>
+
+    <NavLink class="bottom-navigation__item" href="/sync" Match="NavLinkMatch.Prefix" ActiveClass="bottom-navigation__item--active" @onclick="@(async () => await HandleNavigateAsync("/sync"))">
+        <span class="bottom-navigation__icon" aria-hidden="true">🔄</span>
         <span class="bottom-navigation__label">Sync</span>
-    </div>
-    
-    <div class="bottom-navigation__item @(IsActive("/settings") ? "bottom-navigation__item--active" : "")" 
-         @onclick="@(() => OnNavigate.InvokeAsync("/settings"))">
-        <span class="bottom-navigation__icon">⚙️</span>
+    </NavLink>
+
+    <NavLink class="bottom-navigation__item" href="/settings" Match="NavLinkMatch.Prefix" ActiveClass="bottom-navigation__item--active" @onclick="@(async () => await HandleNavigateAsync("/settings"))">
+        <span class="bottom-navigation__icon" aria-hidden="true">⚙️</span>
         <span class="bottom-navigation__label">Config</span>
-    </div>
+    </NavLink>
 </nav>
 
 @code {
     [Parameter]
-    public string ActiveRoute { get; set; } = "/";
-    
-    [Parameter]
     public EventCallback<string> OnNavigate { get; set; }
-    
-    private bool IsActive(string route)
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = default!;
+
+    private async Task HandleNavigateAsync(string href)
     {
-        return ActiveRoute.Contains(route, StringComparison.OrdinalIgnoreCase);
+        if (OnNavigate.HasDelegate)
+        {
+            await OnNavigate.InvokeAsync(href);
+        }
     }
 }

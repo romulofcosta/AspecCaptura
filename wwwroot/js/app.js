@@ -25,4 +25,10 @@ window.appInterop = {
         }
         return hasOverflow;
     }
+    ,
+    getVersion: () => {
+        const meta = document.querySelector('meta[name="version"]');
+        if (!meta) return '';
+        return meta.getAttribute('content') || '';
+    }
 };
