@@ -5,74 +5,60 @@
 @using System.ComponentModel.DataAnnotations
 @using pwa_camera_poc_blazor.Components.Base
 
-
 <PageTitle>Login - Aspec Captura</PageTitle>
 
-<div class="login-container">
+<div class="login-page">
     @if (!isPostLoginLoading)
     {
-        <div class="login-content">
-            <!-- Logo Section -->
-            <div class="logo-section">
-                <img src="images/aspec_logo.png" alt="Aspec Logo" class="app-logo" />
-                <h1 class="app-title">ASPEC CAPTURA</h1>
-                <p class="app-subtitle">Gestão Inteligente de Ativos</p>
-            </div>
-
-            <!-- Login Form -->
-            <div class="login-card">
-                <h2 class="card-title">Acesse sua conta</h2>
-
-                @if (!string.IsNullOrEmpty(alertMessage))
-                {
-                    <div class="alert @alertType">@alertMessage</div>
-                }
-
-                <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" style="width: 100%;">
-                    <DataAnnotationsValidator />
-                    
-                    <div class="form-group">
-                        <label class="input-label">USUÁRIO</label>
-                        <input type="text" class="input-field" placeholder="nome.usuario" @bind="loginModel.Usuario" disabled="@isLoading" />
-                        <ValidationMessage For="@(() => loginModel.Usuario)" class="validation-error" />
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">SENHA</label>
-                        <input type="password" class="input-field" placeholder="********" @bind="loginModel.Senha" disabled="@isLoading" />
-                        <ValidationMessage For="@(() => loginModel.Senha)" class="validation-error" />
-                    </div>
-
-                    <button type="submit" class="primary-button" disabled="@isLoading">
-                        @(isLoading ? "ENTRANDO..." : "ENTRAR")
-                        <span class="material-symbols-outlined" style="font-size: 18px; margin-left: 8px;">login</span>
-                    </button>
-                </EditForm>
-
-                <div class="config-section">
-                    <button class="text-button" @onclick="ShowConfig">
-                        <span class="material-symbols-outlined">settings</span>
-                        Configurações do Sistema
-                    </button>
+        <div class="login-header">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <img src="images/aspec_logo.png" alt="Aspec" class="aspec-logo" />
                 </div>
             </div>
+            <h1 class="app-title">Aspec Captura</h1>
+            <p class="app-subtitle">Inventário Patrimonial</p>
+        </div>
 
-            <!-- Footer Info -->
-            <div class="login-footer">
-                <span class="version-text">Versão @(AppInfo?.Version ?? "4.2.0")</span>
-                <div class="status-indicator">
-                    <span class="dot online"></span>
-                    <span class="status-text">SERVIDOR ONLINE</span>
+        <div class="login-form">
+            @if (!string.IsNullOrEmpty(alertMessage))
+            {
+                <div class="alert @alertType">@alertMessage</div>
+            }
+
+            <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+                <DataAnnotationsValidator />
+                
+                <div class="form-group">
+                    <label class="input-label">LOGIN</label>
+                    <input type="text" class="input-field" placeholder="Usuário" @bind="loginModel.Usuario" disabled="@isLoading" />
+                    <ValidationMessage For="@(() => loginModel.Usuario)" class="validation-error" />
                 </div>
-            </div>
+
+                <div class="form-group">
+                    <label class="input-label">SENHA</label>
+                    <input type="password" class="input-field" placeholder="********" @bind="loginModel.Senha" disabled="@isLoading" />
+                    <ValidationMessage For="@(() => loginModel.Senha)" class="validation-error" />
+                </div>
+
+                <button type="submit" class="login-button" disabled="@isLoading">
+                    @(isLoading ? "ENTRANDO..." : "Entrar")
+                </button>
+            </EditForm>
+        </div>
+
+        <div class="login-footer">
+            <span class="version-text">V@(AppInfo?.Version ?? "0.5.8") - BUILD 2026</span>
         </div>
     }
     else
     {
-        <!-- Post-Login Loading Flow -->
-        <div class="loading-workflow">
+        <!-- Post-Login Loading Flow (Existing) -->
+        <div class="loading-workflow"> 
             <div class="logo-section mb-xl">
-                <img src="images/aspec_logo.png" alt="Aspec Logo" class="app-logo-small" />
+                <div class="logo-icon small">
+                    <img src="images/aspec_logo.png" alt="Aspec" class="aspec-logo aspec-logo--small" />
+                </div>
             </div>
 
             <div class="progress-card">
@@ -95,6 +81,235 @@
         </div>
     }
 </div>
+
+<style>
+    .login-page {
+        width: 100%;
+        max-width: 400px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+    }
+
+    .login-header {
+        margin-top: 60px;
+        margin-bottom: 60px;
+        text-align: center;
+    }
+
+    .logo-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 24px;
+    }
+
+    .logo-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94A3B8;
+    }
+
+    .logo-icon .material-symbols-outlined {
+        font-size: 40px;
+    }
+
+    .aspec-logo {
+        width: 44px;
+        height: 44px;
+        object-fit: contain;
+        display: block;
+    }
+
+    .aspec-logo--small {
+        width: 34px;
+        height: 34px;
+    }
+
+    .app-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1E3A5F;
+        margin: 0 0 4px;
+    }
+
+    .app-subtitle {
+        font-size: 14px;
+        color: #94A3B8;
+        margin: 0;
+    }
+
+    .login-form {
+        width: 100%;
+        margin-bottom: auto;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .input-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: #94A3B8;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 16px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        font-size: 16px;
+        color: #1E293B;
+        transition: all 0.2s ease;
+    }
+
+    .input-field:focus {
+        outline: none;
+        border-color: #1E3A5F;
+        background: #FFFFFF;
+        box-shadow: 0 0 0 4px rgba(30, 58, 95, 0.05);
+    }
+
+    .input-field::placeholder {
+        color: #CBD5E1;
+    }
+
+    .login-button {
+        width: 100%;
+        padding: 16px;
+        background: #1E3A5F;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin-top: 12px;
+    }
+
+    .login-button:hover {
+        background: #16324F;
+    }
+
+    .login-button:disabled {
+        background: #CBD5E1;
+        cursor: not-allowed;
+    }
+
+    .login-footer {
+        padding: 40px 0;
+        text-align: center;
+    }
+
+    .version-text {
+        font-size: 12px;
+        color: #CBD5E1;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 24px;
+        font-size: 14px;
+    }
+
+    .alert.error {
+        background: #FEF2F2;
+        color: #DC2626;
+        border: 1px solid #FECACA;
+    }
+
+    .validation-error {
+        color: #DC2626;
+        font-size: 12px;
+        margin-top: 4px;
+        display: block;
+    }
+
+    /* Loading Workflow Styles */
+    .loading-workflow {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        padding: 40px 0;
+    }
+
+    .logo-icon.small {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+    }
+
+    .logo-icon.small .material-symbols-outlined {
+        font-size: 32px;
+    }
+
+    .progress-card {
+        width: 100%;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 24px;
+    }
+
+    .progress-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1E3A5F;
+        margin: 0 0 16px;
+    }
+
+    .progress-bar-container {
+        height: 8px;
+        background: #F1F5F9;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: #1E3A5F;
+        transition: width 0.3s ease;
+    }
+
+    .loading-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .loading-step {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+    }
+
+    .loading-step.completed {
+        color: #16A34A;
+    }
+
+    .loading-step.pending {
+        color: #94A3B8;
+    }
+</style>
 
 <style>
     .login-container {
@@ -429,21 +644,10 @@
         isPostLoginLoading = true;
         StateHasChanged();
 
-        // Simulate Loading Steps
-        for (int i = 0; i < loadingSteps.Count; i++)
-        {
-            // Update Progress
-            loadProgress = (i + 1) * 25;
-            
-            // Wait a bit to simulate work
-            await Task.Delay(800);
-            
-            // Mark step as completed
-            loadingSteps[i].IsCompleted = true;
-            StateHasChanged();
-        }
-
-        Navigation.NavigateTo("/configuracao-sessao");
+        loadProgress = 10;
+        StateHasChanged();
+        await Task.Delay(250);
+        Navigation.NavigateTo("/tombamentos-sync");
     }
 
     private void ShowConfig()

@@ -204,6 +204,32 @@ namespace pwa_camera_poc_blazor.Services.Storage
             }
         }
 
+        public async Task<List<PatrimonioItem>> GetPatrimonioByUOAsync(string idUO)
+        {
+            try
+            {
+                var items = await _jsRuntime.InvokeAsync<List<PatrimonioItem>>("dbInterop.getPatrimonioByUO", idUO);
+                if (items != null && items.Count > 0) return items;
+
+                var normalized = NormalizeCode(idUO);
+                if (string.IsNullOrEmpty(normalized)) return items ?? new List<PatrimonioItem>();
+
+                return await _jsRuntime.InvokeAsync<List<PatrimonioItem>>("dbInterop.getPatrimonioByUONormalized", normalized);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error getting patrimonio by UO {idUO}: {ex.Message}");
+                return new List<PatrimonioItem>();
+            }
+        }
+
+        private static string NormalizeCode(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+            var normalized = new string(value.Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant();
+            return normalized.TrimStart('0');
+        }
+
         public async Task SwapPatrimonioFromStagingAsync()
         {
             try

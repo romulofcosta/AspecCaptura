@@ -15,6 +15,7 @@ namespace Tests.Services.Sync;
 public class SyncServiceTests
 {
     private const string Prefix = "CE999";
+    private static string VersionKey => $"versao:{Prefix}";
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
@@ -24,6 +25,16 @@ public class SyncServiceTests
         HttpStatusCode statusCode = HttpStatusCode.OK)
     {
         var handler = new Mock<HttpMessageHandler>();
+
+        handler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync",
+                ItExpr.Is<HttpRequestMessage>(r => r.RequestUri!.PathAndQuery.Contains("localizacoes")),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("[]", Encoding.UTF8, "application/json")
+            });
 
         handler.Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync",
@@ -77,7 +88,7 @@ public class SyncServiceTests
     private static Mock<IIndexedDbService> BuildDbMock(string? storedVersion = null)
     {
         var db = new Mock<IIndexedDbService>();
-        db.Setup(x => x.GetMetadataAsync("versao")).ReturnsAsync(storedVersion);
+        db.Setup(x => x.GetMetadataAsync(VersionKey)).ReturnsAsync(storedVersion);
         db.Setup(x => x.ClearAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
         db.Setup(x => x.BulkAddRangeAsync(It.IsAny<string>(), It.IsAny<IEnumerable<object>>()))
             .Returns(Task.CompletedTask);
@@ -134,7 +145,7 @@ public class SyncServiceTests
 
         result.Should().Be(SyncResult.Success);
         db.Verify(x => x.SwapPatrimonioFromStagingAsync(), Times.Once);
-        db.Verify(x => x.SetMetadataAsync("versao", "v2"), Times.Once);
+        db.Verify(x => x.SetMetadataAsync(VersionKey, "v2"), Times.Once);
     }
 
     // ─── Progress reporting ───────────────────────────────────────────────────
@@ -180,7 +191,7 @@ public class SyncServiceTests
             .Setup<Task<HttpResponseMessage>>("SendAsync",
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage
+            .ReturnsAsync(() => new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new StringContent("null", Encoding.UTF8, "application/json")

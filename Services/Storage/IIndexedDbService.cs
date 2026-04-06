@@ -30,6 +30,7 @@ namespace pwa_camera_poc_blazor.Services.Storage
         // Queries Específicas (índices)
         Task<List<InventoryItem>> GetItemsByUOAsync(string idUO);
         Task<PatrimonioItem?> GetPatrimonioByNutombAsync(string nutomb);
+        Task<List<PatrimonioItem>> GetPatrimonioByUOAsync(string idUO);
         Task SwapPatrimonioFromStagingAsync();
     }
 }

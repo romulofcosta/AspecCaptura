@@ -1,0 +1,151 @@
+@inherits LayoutComponentBase
+@layout ShellLayout
+@inject NavigationManager Navigation
+@inject pwa_camera_poc_blazor.Services.ToastService ToastService
+@implements IDisposable
+
+<div class="app-layout">
+    <main class="app-layout__content">
+        @Body
+    </main>
+
+    @if (_isNavigating)
+    {
+        <div class="nav-progress" aria-hidden="true">
+            <div class="nav-progress__bar"></div>
+        </div>
+    }
+
+    <div class="toast-container">
+        @foreach (var toast in _toasts)
+        {
+            <div class="toast @toast.Type animate-bounce-in">
+                <span>@toast.Message</span>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .app-layout {
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+    }
+
+    .app-layout__content {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding-bottom: calc(var(--safe-area-inset-bottom) + 16px);
+    }
+
+    .toast-container {
+        position: fixed;
+        top: 24px;
+        right: 16px;
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        pointer-events: none;
+    }
+
+    .toast {
+        padding: 12px 20px;
+        border-radius: 10px;
+        color: white;
+        font-weight: var(--font-weight-semibold);
+        font-size: 14px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        pointer-events: auto;
+        min-width: 200px;
+        max-width: 90vw;
+    }
+
+    .toast.success { background-color: var(--success-color); }
+    .toast.error { background-color: var(--error-color); }
+    .toast.warning { background-color: var(--warning-color); }
+    .toast.info { background-color: var(--info-color); }
+
+    .nav-progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        z-index: 2500;
+        background: transparent;
+        pointer-events: none;
+    }
+
+    .nav-progress__bar {
+        height: 100%;
+        width: 40%;
+        background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+        animation: navProgress 700ms ease-in-out infinite;
+    }
+
+    @@keyframes navProgress {
+        0% { transform: translateX(-40%); opacity: 0.4; }
+        50% { opacity: 1; }
+        100% { transform: translateX(140%); opacity: 0.4; }
+    }
+</style>
+
+@code {
+    private readonly List<pwa_camera_poc_blazor.Services.ToastMessage> _toasts = new();
+    private bool _isNavigating;
+    private CancellationTokenSource? _navCts;
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnShow += HandleToastShow;
+        Navigation.LocationChanged += HandleLocationChanged;
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        _navCts?.Cancel();
+        _navCts?.Dispose();
+        _navCts = new CancellationTokenSource();
+
+        _isNavigating = true;
+        InvokeAsync(StateHasChanged);
+
+        var token = _navCts.Token;
+        _ = Task.Delay(450, token).ContinueWith(async t =>
+        {
+            if (t.IsCanceled) return;
+            _isNavigating = false;
+            await InvokeAsync(StateHasChanged);
+        }, CancellationToken.None);
+    }
+
+    private void HandleToastShow(string message, string type)
+    {
+        var toast = new pwa_camera_poc_blazor.Services.ToastMessage
+        {
+            Message = message,
+            Type = type,
+            Timestamp = DateTime.UtcNow
+        };
+
+        _toasts.Add(toast);
+        StateHasChanged();
+
+        Task.Delay(3000).ContinueWith(_ =>
+        {
+            _toasts.Remove(toast);
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnShow -= HandleToastShow;
+        Navigation.LocationChanged -= HandleLocationChanged;
+        _navCts?.Cancel();
+        _navCts?.Dispose();
+    }
+}

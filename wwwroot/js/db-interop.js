@@ -1,7 +1,7 @@
 window.dbInterop = {
     db: null,
     dbName: 'aspec-captura-db',
-    dbVersion: 7,
+    dbVersion: 10,
 
     init: async function () {
         return new Promise((resolve, reject) => {
@@ -15,6 +15,31 @@ window.dbInterop = {
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
                 const transaction = event.target.transaction;
+                const normalizeCode = (value) => {
+                    if (!value) return '';
+                    const normalized = String(value).replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                    return normalized.replace(/^0+/, '');
+                };
+                const backfillCdUnidNorm = (store) => {
+                    try {
+                        const req = store.openCursor();
+                        req.onsuccess = (e) => {
+                            const cursor = e.target.result;
+                            if (!cursor) return;
+                            const val = cursor.value || {};
+                            if (val.cdUnid) {
+                                const expected = normalizeCode(val.cdUnid);
+                                if (val.cdUnidNorm !== expected) {
+                                    val.cdUnidNorm = expected;
+                                    cursor.update(val);
+                                }
+                            }
+                            cursor.continue();
+                        };
+                    } catch (err) {
+                        console.warn('Backfill skipped:', err);
+                    }
+                };
 
                 // 1. Items Store (Patrimônios)
                 let itemsStore;
@@ -69,11 +94,41 @@ window.dbInterop = {
                 if (!db.objectStoreNames.contains('patrimonio')) {
                     const patrimonioStore = db.createObjectStore('patrimonio', { keyPath: 'idPatomb' });
                     patrimonioStore.createIndex('nutomb', 'nutomb', { unique: false });
+                    patrimonioStore.createIndex('cdUnid', 'cdUnid', { unique: false });
+                    patrimonioStore.createIndex('cdUnidNorm', 'cdUnidNorm', { unique: false });
+                    patrimonioStore.createIndex('esfera', 'esfera', { unique: false });
+                } else {
+                    const patrimonioStore = transaction.objectStore('patrimonio');
+                    if (!patrimonioStore.indexNames.contains('cdUnid')) {
+                        patrimonioStore.createIndex('cdUnid', 'cdUnid', { unique: false });
+                    }
+                    if (!patrimonioStore.indexNames.contains('cdUnidNorm')) {
+                        patrimonioStore.createIndex('cdUnidNorm', 'cdUnidNorm', { unique: false });
+                    }
+                    if (!patrimonioStore.indexNames.contains('esfera')) {
+                        patrimonioStore.createIndex('esfera', 'esfera', { unique: false });
+                    }
+                    backfillCdUnidNorm(patrimonioStore);
                 }
 
                 if (!db.objectStoreNames.contains('patrimonio_staging')) {
                     const staging = db.createObjectStore('patrimonio_staging', { keyPath: 'idPatomb' });
                     staging.createIndex('nutomb', 'nutomb', { unique: false });
+                    staging.createIndex('cdUnid', 'cdUnid', { unique: false });
+                    staging.createIndex('cdUnidNorm', 'cdUnidNorm', { unique: false });
+                    staging.createIndex('esfera', 'esfera', { unique: false });
+                } else {
+                    const staging = transaction.objectStore('patrimonio_staging');
+                    if (!staging.indexNames.contains('cdUnid')) {
+                        staging.createIndex('cdUnid', 'cdUnid', { unique: false });
+                    }
+                    if (!staging.indexNames.contains('cdUnidNorm')) {
+                        staging.createIndex('cdUnidNorm', 'cdUnidNorm', { unique: false });
+                    }
+                    if (!staging.indexNames.contains('esfera')) {
+                        staging.createIndex('esfera', 'esfera', { unique: false });
+                    }
+                    backfillCdUnidNorm(staging);
                 }
 
                 // 6. Metadata Store
@@ -325,6 +380,38 @@ window.dbInterop = {
             const store = transaction.objectStore('items');
             const index = store.index('idUO');
             const request = index.getAll(idUO);
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    },
+
+    getPatrimonioByUO: async function (cdUnid) {
+        return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized. Call init first.'));
+                return;
+            }
+            const transaction = this.db.transaction(['patrimonio'], 'readonly');
+            const store = transaction.objectStore('patrimonio');
+            const index = store.index('cdUnid');
+            const request = index.getAll(cdUnid);
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    },
+
+    getPatrimonioByUONormalized: async function (cdUnidNorm) {
+        return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized. Call init first.'));
+                return;
+            }
+            const transaction = this.db.transaction(['patrimonio'], 'readonly');
+            const store = transaction.objectStore('patrimonio');
+            const index = store.index('cdUnidNorm');
+            const request = index.getAll(cdUnidNorm);
 
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);

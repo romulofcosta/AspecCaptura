@@ -1,164 +1,303 @@
 @page "/dashboard"
-@layout MinimalLayout
+@layout MainLayout
 @using pwa_camera_poc_blazor.Models
 @inject IAuthService AuthService
 @inject pwa_camera_poc_blazor.Services.Storage.IIndexedDbService DbService
 @implements IDisposable
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
-<PageTitle>Inventário - Aspec Captura</PageTitle>
+<PageTitle>Dashboard - Aspec Captura</PageTitle>
 
-<div style="min-height: 100vh; background: #f5f7f8; font-family: 'Inter', sans-serif;">
-    <!-- Header -->
-    <header style="position: sticky; top: 0; z-index: 10; background: white; border-bottom: 1px solid #e2e8f0; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="width: 40px; height: 40px; border-radius: 50%; background: #e8eef7; display: flex; align-items: center; justify-content: center;">
-                <span class="material-symbols-outlined" style="color: #94a3b8; font-size: 24px;">person</span>
+<div class="dashboard-content">
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-label">TOTAL</span>
+            <span class="stat-value total">@TotalCount</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">SINCRO.</span>
+            <span class="stat-value synced">@SyncedCount</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">PEND.</span>
+            <span class="stat-value pending">@PendingCount</span>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-section">
+        <div class="search-input-wrapper">
+            <span class="material-symbols-outlined search-icon">search</span>
+            <input type="text" placeholder="Buscar bem..." @bind="searchQuery" @bind:event="oninput" class="search-input" />
+        </div>
+    </div>
+
+    <!-- Action Button -->
+    <button class="capture-button" @onclick="NavigateToCamera">
+        <span class="material-symbols-outlined">photo_camera</span>
+        Iniciar Captura
+    </button>
+
+    <!-- Recent Items -->
+    <div class="recent-items-header">
+        <h2 class="section-title">ITENS RECENTES</h2>
+        <button class="view-all-button" @onclick="ViewAllItems">VER TODOS</button>
+    </div>
+
+    <div class="recent-items-list">
+        @if (isLoading)
+        {
+            <div class="loading-container">
+                <div class="spinner"></div>
             </div>
-            <h1 style="font-size: 20px; font-weight: 700; color: #003366; margin: 0;">Inventário</h1>
-        </div>
-        <button @onclick="HandleLogout" style="padding: 8px; color: #64748b; background: none; border: none; cursor: pointer;">
-            <span class="material-symbols-outlined">logout</span>
-        </button>
-    </header>
-
-    <!-- Main Content -->
-    <main style="flex: 1; overflow-y: auto;">
-        <!-- Search Bar -->
-        <div style="padding: 16px;">
-            <div style="position: relative;">
-                <div style="position: absolute; top: 50%; left: 12px; transform: translateY(-50%); pointer-events: none; color: #94a3b8;">
-                    <span class="material-symbols-outlined">search</span>
-                </div>
-                <input type="text" 
-                       placeholder="Pesquisar itens ou etiquetas..." 
-                       @bind="searchQuery"
-                       @bind:event="oninput"
-                       style="display: block; width: 100%; padding: 12px 12px 12px 44px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 14px; color: #1e293b; outline: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" />
+        }
+        else if (!filteredItems.Any())
+        {
+            <div class="empty-state">
+                <span class="material-symbols-outlined">inventory_2</span>
+                <p>Nenhum item recente</p>
             </div>
-        </div>
-
-        <!-- Filter Tabs -->
-        <div style="display: flex; gap: 8px; padding: 0 16px 16px; overflow-x: auto;">
-            <button @onclick="@(() => SetFilter("all"))" 
-                    style="white-space: nowrap; padding: 6px 16px; border-radius: 9999px; font-size: 14px; font-weight: 500; border: none; cursor: pointer; @(currentFilter == "all" ? "background: #003366; color: white;" : "background: white; color: #64748b; border: 1px solid #e2e8f0;")">
-                Todos
-            </button>
-            <button @onclick="@(() => SetFilter("pending"))" 
-                    style="white-space: nowrap; padding: 6px 16px; border-radius: 9999px; font-size: 14px; font-weight: 500; border: none; cursor: pointer; @(currentFilter == "pending" ? "background: #003366; color: white;" : "background: white; color: #64748b; border: 1px solid #e2e8f0;")">
-                Pendentes
-            </button>
-            <button @onclick="@(() => SetFilter("synced"))" 
-                    style="white-space: nowrap; padding: 6px 16px; border-radius: 9999px; font-size: 14px; font-weight: 500; border: none; cursor: pointer; @(currentFilter == "synced" ? "background: #003366; color: white;" : "background: white; color: #64748b; border: 1px solid #e2e8f0;")">
-                Sincronizados
-            </button>
-        </div>
-
-        <!-- Items List -->
-        <div style="padding: 0 16px; padding-bottom: calc(80px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px;">
-            @if (isLoading)
+        }
+        else
+        {
+            @foreach (var item in filteredItems.Take(5))
             {
-                <div style="display: flex; justify-content: center; padding: 40px 0;">
-                    <div class="spinner"></div>
+                <div class="item-card" @onclick="@(() => NavigateToItem(item))">
+                    <div class="item-icon-container">
+                        <span class="material-symbols-outlined">inventory_2</span>
+                    </div>
+                    <div class="item-info">
+                        <h3 class="item-name">@item.Name</h3>
+                        <p class="item-meta">#@item.Code • @GetItemTime(item)</p>
+                    </div>
+                    <div class="item-status">
+                        @if (item.Synced)
+                        {
+                            <span class="material-symbols-outlined status-synced">check_circle</span>
+                        }
+                        else
+                        {
+                            <span class="material-symbols-outlined status-pending">cloud_upload</span>
+                        }
+                    </div>
                 </div>
             }
-            else if (!filteredItems.Any())
-            {
-                <div style="text-align: center; padding: 40px 24px; color: #94a3b8;">
-                    <span class="material-symbols-outlined" style="opacity: 0.3; font-size: 64px;">inventory_2</span>
-                    <p style="margin-top: 16px; font-size: 14px;">Nenhum item encontrado</p>
-                </div>
-            }
-            else
-            {
-                @foreach (var item in filteredItems.Take(displayCount))
-                {
-                    <div @onclick="@(() => NavigateToItem(item))"
-                         style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: white; border-radius: 12px; border: 1px solid #f1f5f9; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;">
-                        <div style="display: flex; align-items: flex-start; gap: 16px; flex: 1;">
-                            <div style="width: 48px; height: 48px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
-                                <span class="material-symbols-outlined text-2xl">@GetItemIcon(item.Category)</span>
-                            </div>
-                            <div style="flex: 1; min-width: 0;">
-                                <h3 style="font-weight: 600; color: #1e293b; font-size: 14px; margin: 0 0 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@item.Name</h3>
-                                <p style="font-size: 12px; color: #64748b; margin: 0;">@GetLocationText(item) • <span style="font-family: monospace;">#@item.Code</span></p>
-                            </div>
-                        </div>
-                        <div style="flex-shrink: 0; margin-left: 12px; color: @(item.Synced ? "#22c55e" : "#cbd5e1");">
-                            @if (item.Synced)
-                            {
-                                <span class="material-symbols-outlined text-green-500">cloud_done</span>
-                            }
-                            else
-                            {
-                                <span class="material-symbols-outlined text-gray-300">cloud_off</span>
-                            }
-                        </div>
-                    </div>
-                }
-
-                @if (filteredItems.Count() > displayCount && displayCount < 200)
-                {
-                    <div style="display: flex; justify-content: center; margin-top: 24px;">
-                        <button @onclick="LoadMore"
-                                style="padding: 12px 24px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-weight: 600; color: #003366; cursor: pointer;">
-                            Carregar mais
-                        </button>
-                    </div>
-                }
-            }
-        </div>
-    </main>
-
-    <!-- Floating Action Button -->
-    <div class="dashboard-fab">
-        <button @onclick="StartCapture"
-                style="width: 56px; height: 56px; border-radius: 50%; background: #003366; color: white; border: none; box-shadow: 0 4px 12px rgba(0,51,102,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer;">
-            <span class="material-symbols-outlined">add</span>
-        </button>
+        }
     </div>
 </div>
 
+<style>
+    .dashboard-content {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    .stat-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 16px 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .stat-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: #94A3B8;
+        letter-spacing: 0.05em;
+        margin-bottom: 4px;
+    }
+
+    .stat-value {
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .stat-value.total { color: #1E3A5F; }
+    .stat-value.synced { color: #16A34A; }
+    .stat-value.pending { color: #F97316; }
+
+    .search-section {
+        width: 100%;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 16px;
+        color: #94A3B8;
+        font-size: 20px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 14px 14px 14px 48px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 999px;
+        font-size: 14px;
+        color: #1E293B;
+        outline: none;
+        transition: all 0.2s;
+    }
+
+    .search-input:focus {
+        background: #FFFFFF;
+        border-color: #1E3A5F;
+        box-shadow: 0 0 0 4px rgba(30, 58, 95, 0.05);
+    }
+
+    .capture-button {
+        width: 100%;
+        padding: 16px;
+        background: #1E3A5F;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(30, 58, 95, 0.15);
+    }
+
+    .recent-items-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+    }
+
+    .section-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1E293B;
+        margin: 0;
+        letter-spacing: 0.05em;
+    }
+
+    .view-all-button {
+        background: none;
+        border: none;
+        color: #1E3A5F;
+        font-size: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 4px 8px;
+    }
+
+    .recent-items-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .item-card {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        background: #FFFFFF;
+        border: 1px solid #F1F5F9;
+        border-radius: 16px;
+        cursor: pointer;
+        transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .item-card:active {
+        transform: scale(0.98);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .item-icon-container {
+        width: 44px;
+        height: 44px;
+        background: #F8FAFC;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #CBD5E1;
+        margin-right: 16px;
+    }
+
+    .item-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .item-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1E293B;
+        margin: 0 0 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .item-meta {
+        font-size: 12px;
+        color: #94A3B8;
+        margin: 0;
+    }
+
+    .status-synced { color: #16A34A; }
+    .status-pending { color: #CBD5E1; }
+
+    .loading-container {
+        padding: 40px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .empty-state {
+        padding: 40px;
+        text-align: center;
+        color: #CBD5E1;
+    }
+
+    .empty-state .material-symbols-outlined {
+        font-size: 48px;
+        margin-bottom: 12px;
+    }
+</style>
+
 @code {
-    private List<InventoryItem> items = new();
     private string searchQuery = "";
-    private string currentFilter = "all";
     private bool isLoading = true;
+    private List<InventoryItem> items = new();
     private int displayCount = 20;
+
+    private int TotalCount => items.Count;
+    private int SyncedCount => items.Count(i => i.Synced);
+    private int PendingCount => items.Count(i => !i.Synced);
+
+    private IEnumerable<InventoryItem> filteredItems => string.IsNullOrWhiteSpace(searchQuery)
+        ? items
+        : items.Where(i => i.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) || i.Code.Contains(searchQuery));
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            // Aguardar um pouco para garantir que o estado seja carregado pelo layout
-            await Task.Delay(200);
-            
-            // Verificar sessão com retry se necessário
-            int retries = 0;
-            while (!appState.IsSessionConfigured() && retries < 3)
-            {
-                await Task.Delay(100);
-                retries++;
-            }
-            
-            if (!appState.IsSessionConfigured())
-            {
-                Navigation.NavigateTo("/configuracao-sessao");
-                return;
-            }
-            
-            appState.OnChange += HandleStateChange;
-            await LoadItems();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Dashboard: Erro em OnInitializedAsync: {ex.Message}");
-        }
-    }
-
-    private async void HandleStateChange()
-    {
-        await InvokeAsync(StateHasChanged);
+        await LoadItems();
     }
 
     private async Task LoadItems()
@@ -166,34 +305,13 @@
         isLoading = true;
         try
         {
-            var user = await AuthService.GetCurrentUserAsync();
-            string esfera = appState.EsferaAtual ?? user?.Esfera ?? string.Empty;
-            
-            if (appState.CurrentUO?.IdUO != null)
-            {
-                var allItems = await DbService.GetItemsByUOAsync(appState.CurrentUO.IdUO);
-                
-                if (esfera == "A")
-                {
-                    items = allItems.ToList();
-                }
-                else if (!string.IsNullOrEmpty(esfera))
-                {
-                    items = allItems.Where(i => i.Esfera == esfera).ToList();
-                }
-                else
-                {
-                    items = allItems.ToList();
-                }
-            }
-            else
-            {
-                items = new List<InventoryItem>();
-            }
+            items = (await DbService.GetAllAsync<InventoryItem>("items"))
+                    .OrderByDescending(i => i.CreatedAt)
+                    .ToList();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Console.WriteLine("Error loading items: " + ex.Message);
+            items = new List<InventoryItem>();
         }
         finally
         {
@@ -201,82 +319,15 @@
         }
     }
 
-    private void SetFilter(string filter)
+    private string GetItemTime(InventoryItem item)
     {
-        currentFilter = filter;
-        displayCount = 20;
+        // Simple mock time for now
+        return "Hoje 10:45";
     }
 
-    private IEnumerable<InventoryItem> filteredItems
-    {
-        get
-        {
-            var result = items.AsEnumerable();
+    private void NavigateToCamera() => Navigation.NavigateTo("/camera");
+    private void NavigateToItem(InventoryItem item) => Navigation.NavigateTo($"/item-details/{item.Id}");
+    private void ViewAllItems() => Navigation.NavigateTo("/items");
 
-            result = currentFilter switch
-            {
-                "pending" => result.Where(i => !i.Synced),
-                "synced" => result.Where(i => i.Synced),
-                _ => result
-            };
-
-            if (!string.IsNullOrWhiteSpace(searchQuery))
-            {
-                result = result.Where(i =>
-                    i.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                    i.Code.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
-                );
-            }
-
-            return result.OrderByDescending(i => i.UpdatedAt);
-        }
-    }
-
-    private void LoadMore()
-    {
-        displayCount = Math.Min(displayCount + 20, 200);
-    }
-
-    private string GetLocationText(InventoryItem item)
-    {
-        return !string.IsNullOrEmpty(item.Location) ? item.Location : "Local não informado";
-    }
-
-    private string GetItemIcon(string category)
-    {
-        return category?.ToLower() switch
-        {
-            "móveis" or "moveis" => "chair",
-            "eletrônicos" or "eletronicos" => "laptop_mac",
-            "equipamentos" => "print",
-            "ferramentas" => "build",
-            "materiais" => "inventory_2",
-            _ => "category"
-        };
-    }
-
-    private void StartCapture()
-    {
-        Navigation.NavigateTo("/camera");
-    }
-
-    private void NavigateToItem(InventoryItem item)
-    {
-        Navigation.NavigateTo($"/item/{item.Id}");
-    }
-
-    private async Task HandleLogout()
-    {
-        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Deseja realmente sair do sistema?");
-        if (confirmed)
-        {
-            await AuthService.LogoutAsync();
-            Navigation.NavigateTo("/login", forceLoad: true);
-        }
-    }
-
-    public void Dispose()
-    {
-        appState.OnChange -= HandleStateChange;
-    }
+    public void Dispose() { }
 }

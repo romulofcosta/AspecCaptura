@@ -2,461 +2,246 @@
 @using pwa_camera_poc_blazor.Components.Forms
 @inject IAuthService AuthService
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
-@layout MinimalLayout
+@layout AuthMinimalLayout
 
 <PageTitle>Configuração de Sessão - Aspec Captura</PageTitle>
 
-@* ── Top App Bar ── *@
-<header class="cs-header">
-    <div class="cs-brand">
-        <img src="images/aspec_logo.png" alt="Aspec Logo" class="cs-logo" />
-        <span class="cs-brand-name">Aspec Captura</span>
-    </div>
-</header>
-
-@* ── Main canvas ── *@
-<main class="cs-main">
-
-    @* Section Header *@
-    <div class="cs-section-header">
-        <span class="cs-section-label">Parametrização do Sistema</span>
-        <h2 class="cs-section-title">Configuração de Sessão</h2>
-    </div>
-
-    @* Form *@
-    <div class="cs-form">
-
-        @* Esfera toggle (only when user has access to both) *@
-        @if (_usuario != null && !string.IsNullOrEmpty(_usuario.Esfera) && _usuario.Esfera == "A")
-        {
-            <div class="cs-field">
-                <label class="cs-label">
-                    <span class="material-symbols-outlined cs-label-icon">public</span>
-                    Esfera Governamental
-                </label>
-                <div class="cs-esfera-toggle">
-                    <button class="esfera-btn @(appState.EsferaAtual == "E" ? "active" : "")" @onclick='() => SetEsfera("E")'>EXECUTIVO</button>
-                    <button class="esfera-btn @(appState.EsferaAtual == "L" ? "active" : "")" @onclick='() => SetEsfera("L")'>LEGISLATIVO</button>
-                </div>
+<div class="config-page">
+    <div class="config-header">
+        <div class="powered-by">
+            <div class="avatar-icon">
+                <span class="material-symbols-outlined">account_circle</span>
             </div>
-        }
+            <div class="powered-text">
+                <span class="powered-label">POWERED BY</span>
+                <span class="powered-brand">Aspec Avatar</span>
+            </div>
+        </div>
+        <h1 class="config-title">Configuração</h1>
+        <p class="config-subtitle">Configure o fluxo da sua sessão de inventário.</p>
+    </div>
 
+    <div class="config-form">
         @* Órgão *@
-        <div class="cs-field">
-            <label class="cs-label">
-                <span class="material-symbols-outlined cs-label-icon">account_balance</span>
-                Órgão
-            </label>
-            <div class="cs-select-wrapper">
-                <select class="cs-select" @onchange="OnOrgaoSelectChanged"
-                        disabled="@(_usuario == null)">
-                    <option value="" disabled selected="@(string.IsNullOrEmpty(SelectedOrgaoId))">Selecione o órgão público...</option>
+        <div class="form-group">
+            <label class="input-label">ÓRGÃO</label>
+            <div class="select-wrapper">
+                <select class="input-field" @onchange="OnOrgaoSelectChanged">
+                    <option value="" disabled selected="@(string.IsNullOrEmpty(SelectedOrgaoId))">Selecione o órgão</option>
                     @if (_usuario != null)
                     {
-                        foreach (var orgao in GetOrgaosFiltered())
+                        @foreach (var orgao in GetOrgaosFiltered())
                         {
                             <option value="@orgao.IdOrgao" selected="@(SelectedOrgaoId == orgao.IdOrgao)">@orgao.NomeOrgao</option>
                         }
                     }
                 </select>
-                <span class="material-symbols-outlined cs-select-icon">expand_more</span>
+                <span class="material-symbols-outlined select-icon">expand_more</span>
             </div>
         </div>
 
-        @* Unidade Orçamentária *@
-        <div class="cs-field">
-            <label class="cs-label">
-                <span class="material-symbols-outlined cs-label-icon">domain</span>
-                Unidade Orçamentária
-            </label>
-            <div class="@UoWrapperClass">
-                <select class="cs-select" @onchange="OnUOSelectChanged"
-                        disabled="@(string.IsNullOrEmpty(SelectedOrgaoId))">
-                    <option value="" disabled selected="@(string.IsNullOrEmpty(SelectedUOId))">Selecione a unidade...</option>
+        @* Unidade *@
+        <div class="form-group">
+            <label class="input-label">UNIDADE</label>
+            <div class="select-wrapper">
+                <select class="input-field" @onchange="OnUOSelectChanged" disabled="@(string.IsNullOrEmpty(SelectedOrgaoId))">
+                    <option value="" disabled selected="@(string.IsNullOrEmpty(SelectedUOId))">Selecione a unidade</option>
                     @foreach (var uo in GetUOsFiltered())
                     {
                         <option value="@uo.IdUO" selected="@(SelectedUOId == uo.IdUO)">@uo.NomeUO</option>
                     }
                 </select>
-                <span class="material-symbols-outlined cs-select-icon">expand_more</span>
+                <span class="material-symbols-outlined select-icon">expand_more</span>
             </div>
         </div>
 
         @* Área *@
-        <div class="cs-field">
-            <label class="cs-label">
-                <span class="material-symbols-outlined cs-label-icon">location_on</span>
-                Área
-            </label>
-            <div class="@AreaWrapperClass">
-                <select class="cs-select" @onchange="OnAreaSelectChanged"
-                        disabled="@(string.IsNullOrEmpty(SelectedUOId))">
-                    <option value="" disabled selected="@(string.IsNullOrEmpty(SelectedAreaId))">Selecione a área...</option>
+        <div class="form-group">
+            <label class="input-label">ÁREA</label>
+            <div class="select-wrapper">
+                <select class="input-field" @onchange="OnAreaSelectChanged" disabled="@(string.IsNullOrEmpty(SelectedUOId))">
+                    <option value="" disabled selected="@(string.IsNullOrEmpty(SelectedAreaId))">Selecione a área</option>
                     @foreach (var area in GetAreasFiltered())
                     {
                         <option value="@area.IdArea" selected="@(SelectedAreaId == area.IdArea)">@area.NomeArea</option>
                     }
                 </select>
-                <span class="material-symbols-outlined cs-select-icon">expand_more</span>
+                <span class="material-symbols-outlined select-icon">expand_more</span>
             </div>
         </div>
 
         @* Subárea *@
-        <div class="cs-field">
-            <label class="cs-label">
-                <span class="material-symbols-outlined cs-label-icon">meeting_room</span>
-                Subárea
-            </label>
-            <div class="@SubareaWrapperClass">
-                <select class="cs-select" @onchange="OnSubareaSelectChanged"
-                        disabled="@(string.IsNullOrEmpty(SelectedAreaId))">
-                    <option value="" disabled selected="@(string.IsNullOrEmpty(SelectedSubareaId))">Selecione a subárea...</option>
+        <div class="form-group">
+            <label class="input-label">SUBÁREA</label>
+            <div class="select-wrapper">
+                <select class="input-field" @onchange="OnSubareaSelectChanged" disabled="@(string.IsNullOrEmpty(SelectedAreaId))">
+                    <option value="" disabled selected="@(string.IsNullOrEmpty(SelectedSubareaId))">Selecione a subárea</option>
                     @foreach (var sub in GetSubareasFiltered())
                     {
                         <option value="@sub.IdSubarea" selected="@(SelectedSubareaId == sub.IdSubarea)">@sub.NomeSubarea</option>
                     }
                 </select>
-                <span class="material-symbols-outlined cs-select-icon">expand_more</span>
+                <span class="material-symbols-outlined select-icon">expand_more</span>
             </div>
         </div>
 
-        @* CTA Button *@
-        <div class="cs-cta">
-            <button class="@BtnPrimaryClass"
-                    disabled="@(!IsFormValid)"
-                    @onclick="ConfirmarSessao">
-                <span class="material-symbols-outlined">play_circle</span>
-                INICIAR SESSÃO
-            </button>
-            <p class="cs-disclaimer">
-                O início da sessão vincula todos os bens patrimoniais registrados à lotação selecionada.
-            </p>
-        </div>
+        <p class="config-note">
+            Sua localização será sincronizada automaticamente com o sistema central.
+        </p>
 
+        <button class="start-session-button" @onclick="ConfirmarSessao" disabled="@(!IsFormValid)">
+            Iniciar Sessão
+            <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
     </div>
-
-    @* Status do Terminal *@
-    <div class="cs-terminal-panel">
-        <div class="cs-terminal-header">
-            <span class="material-symbols-outlined cs-terminal-icon">monitoring</span>
-            <span class="cs-terminal-title">Status do Terminal</span>
-        </div>
-        <div class="cs-terminal-grid">
-            <div class="cs-terminal-card">
-                <span class="cs-tccard-label">Agente Público</span>
-                <span class="cs-tccard-value">@(_usuario?.UsuarioNome ?? "---")</span>
-            </div>
-            <div class="cs-terminal-card">
-                <span class="cs-tccard-label">Sincronismo</span>
-                <span class="cs-tccard-value">STATUS: OK</span>
-            </div>
-        </div>
-    </div>
-
-</main>
+</div>
 
 <style>
-    /* ── Header ── */
-    .cs-header {
+    .config-page {
         width: 100%;
+        max-width: 400px;
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 24px;
-        height: 64px;
-        background: #fff;
-        border-bottom: 2px solid rgba(0, 42, 107, 0.08);
-    }
-
-    .cs-brand {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-    }
-
-    .cs-logo {
-        height: 40px;
-        width: 40px;
-        object-fit: contain;
-    }
-
-    .cs-brand-name {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 18px;
-        font-weight: 700;
-        color: #1b1b1b;
-        letter-spacing: -0.3px;
-    }
-
-    /* ── Main canvas ── */
-    .cs-main {
+        flex-direction: column;
         flex: 1;
-        padding: 24px 24px 120px; /* Maior padding-bottom para não conflitar com iOS bar */
-        max-width: 640px;
-        width: 100%;
-        margin: 0 auto;
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
     }
 
-    /* ── Section Header ── */
-    .cs-section-header {
+    .config-header {
+        margin-top: 20px;
         margin-bottom: 40px;
-        border-left: 6px solid #002a6b;
-        padding-left: 20px;
     }
 
-    .cs-section-label {
-        display: block;
-        font-family: 'Inter', sans-serif;
-        font-size: 11px;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 0.15em;
-        color: #737784;
-        margin-bottom: 4px;
-    }
-
-    .cs-section-title {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 28px;
-        font-weight: 900;
-        text-transform: uppercase;
-        color: #1b1b1b;
-        margin: 0;
-        line-height: 1.1;
-        letter-spacing: -0.5px;
-    }
-
-    /* ── Form ── */
-    .cs-form {
-        display: flex;
-        flex-direction: column;
-        gap: 28px;
-        margin-bottom: 0;
-    }
-
-    .cs-field {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .cs-label {
+    .powered-by {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-family: 'Inter', sans-serif;
-        font-size: 11px;
-        font-weight: 900;
+        gap: 12px;
+        margin-bottom: 32px;
+        background: #F8FAFC;
+        padding: 8px 16px;
+        border-radius: 12px;
+        width: fit-content;
+    }
+
+    .avatar-icon {
+        color: #1E3A5F;
+    }
+
+    .powered-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .powered-label {
+        font-size: 8px;
+        font-weight: 700;
+        color: #94A3B8;
+        letter-spacing: 0.05em;
+    }
+
+    .powered-brand {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1E3A5F;
+    }
+
+    .config-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1E293B;
+        margin: 0 0 8px;
+    }
+
+    .config-subtitle {
+        font-size: 14px;
+        color: #94A3B8;
+        margin: 0;
+    }
+
+    .config-form {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .input-label {
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        color: #94A3B8;
+        margin-bottom: 8px;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: #1b1b1b;
+        letter-spacing: 0.05em;
     }
 
-    .cs-label-icon {
-        font-size: 16px;
-        color: #002a6b;
-    }
-
-    .cs-select-wrapper {
+    .select-wrapper {
         position: relative;
     }
 
-    .cs-select-wrapper.disabled {
-        opacity: 0.45;
-    }
-
-    .cs-select {
+    .input-field {
         width: 100%;
-        height: 56px;
-        background: #fff;
-        border: 2px solid rgba(27, 27, 27, 0.1);
-        border-radius: 8px;
-        padding: 0 48px 0 16px;
-        font-family: 'Roboto Mono', 'JetBrains Mono', monospace;
-        font-size: 13px;
-        font-weight: 500;
-        color: #1b1b1b;
+        padding: 14px 16px;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        font-size: 14px;
+        color: #1E293B;
         appearance: none;
-        -webkit-appearance: none;
-        outline: none;
-        transition: border-color 0.2s;
         cursor: pointer;
     }
 
-    .cs-select:focus {
-        border-color: #002a6b;
+    .input-field:focus {
+        outline: none;
+        border-color: #1E3A5F;
+        box-shadow: 0 0 0 4px rgba(30, 58, 95, 0.05);
     }
 
-    .cs-select:disabled {
+    .input-field:disabled {
+        background: #F8FAFC;
         cursor: not-allowed;
-        background: #f9f9f9;
+        color: #CBD5E1;
     }
 
-    .cs-select-icon {
+    .select-icon {
         position: absolute;
-        right: 14px;
+        right: 16px;
         top: 50%;
         transform: translateY(-50%);
-        font-size: 20px;
-        color: #1b1b1b;
+        color: #94A3B8;
         pointer-events: none;
     }
 
-    /* ── Esfera Toggle ── */
-    .cs-esfera-toggle {
-        display: flex;
-        background: #f3f3f3;
-        border-radius: 8px;
-        padding: 4px;
-        gap: 4px;
+    .config-note {
+        font-size: 12px;
+        color: #CBD5E1;
+        text-align: center;
+        margin: 40px 0 24px;
+        line-height: 1.5;
     }
 
-    .esfera-btn {
-        flex: 1;
-        border: none;
-        background: none;
-        padding: 10px 8px;
-        font-size: 11px;
-        font-weight: 900;
-        letter-spacing: 0.08em;
-        border-radius: 6px;
-        color: #737784;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .esfera-btn.active {
-        background: #fff;
-        color: #002a6b;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    }
-
-    /* ── CTA ── */
-    .cs-cta {
-        padding-top: 8px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
-
-    .cs-btn-primary {
+    .start-session-button {
         width: 100%;
-        background: #002a6b;
-        color: #fff;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 13px;
-        font-weight: 900;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
+        padding: 18px;
+        background: #1E293B;
+        color: #FFFFFF;
         border: none;
-        border-radius: 12px;
-        padding: 20px 24px;
+        border-radius: 999px;
+        font-size: 16px;
+        font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 12px;
         cursor: pointer;
-        box-shadow: 0 8px 24px rgba(0, 42, 107, 0.3);
-        transition: transform 0.15s, box-shadow 0.15s;
+        margin-top: auto;
+        margin-bottom: 20px;
     }
 
-    .cs-btn-primary:active {
-        transform: scale(0.97);
-        box-shadow: 0 4px 12px rgba(0,42,107,0.25);
-    }
-
-    .cs-btn-primary.disabled,
-    .cs-btn-primary:disabled {
-        background: #c3c6d5;
-        box-shadow: none;
+    .start-session-button:disabled {
+        background: #CBD5E1;
         cursor: not-allowed;
-    }
-
-    .cs-btn-primary .material-symbols-outlined {
-        font-size: 20px;
-    }
-
-    .cs-disclaimer {
-        font-family: 'Inter', sans-serif;
-        font-size: 10px;
-        font-weight: 700;
-        text-align: center;
-        color: #737784;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        line-height: 1.6;
-        opacity: 0.8;
-        margin: 0;
-        padding: 0 16px;
-    }
-
-    /* ── Status do Terminal ── */
-    .cs-terminal-panel {
-        margin-top: 48px;
-        padding: 24px;
-        background: #f3f3f3;
-        border-radius: 16px;
-        border: 2px solid rgba(27, 27, 27, 0.05);
-    }
-
-    .cs-terminal-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 18px;
-    }
-
-    .cs-terminal-icon {
-        font-size: 20px;
-        color: #002a6b;
-        font-variation-settings: 'FILL' 0, 'wght' 700, 'GRAD' 0, 'opsz' 24;
-    }
-
-    .cs-terminal-title {
-        font-family: 'Inter', sans-serif;
-        font-size: 12px;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: #1b1b1b;
-    }
-
-    .cs-terminal-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-    }
-
-    .cs-terminal-card {
-        background: #fff;
-        border: 1px solid rgba(27, 27, 27, 0.1);
-        border-radius: 10px;
-        padding: 14px 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-    }
-
-    .cs-tccard-label {
-        font-family: 'Inter', sans-serif;
-        font-size: 9px;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: #737784;
-    }
-
-    .cs-tccard-value {
-        font-family: 'Roboto Mono', monospace;
-        font-size: 12px;
-        font-weight: 700;
-        color: #002a6b;
     }
 </style>
 
@@ -467,17 +252,6 @@
     private string? SelectedAreaId;
     private string? SelectedSubareaId;
 
-    // ── CSS class helpers (avoid Razor string interpolation issues) ──
-    private string UoWrapperClass => string.IsNullOrEmpty(SelectedOrgaoId)
-        ? "cs-select-wrapper disabled" : "cs-select-wrapper";
-    private string AreaWrapperClass => string.IsNullOrEmpty(SelectedUOId)
-        ? "cs-select-wrapper disabled" : "cs-select-wrapper";
-    private string SubareaWrapperClass => string.IsNullOrEmpty(SelectedAreaId)
-        ? "cs-select-wrapper disabled" : "cs-select-wrapper";
-    private string BtnPrimaryClass => IsFormValid
-        ? "cs-btn-primary" : "cs-btn-primary disabled";
-
-    // ── Select change event handlers ──
     private void OnOrgaoSelectChanged(ChangeEventArgs e) => OnOrgaoChanged(e.Value?.ToString() ?? string.Empty);
     private void OnUOSelectChanged(ChangeEventArgs e) => OnUOChanged(e.Value?.ToString() ?? string.Empty);
     private void OnAreaSelectChanged(ChangeEventArgs e) => OnAreaChanged(e.Value?.ToString() ?? string.Empty);
@@ -497,8 +271,13 @@
             return;
         }
 
-        if (string.IsNullOrEmpty(appState.EsferaAtual))
-            appState.EsferaAtual = _usuario.Esfera;
+        var versionKey = $"versao:{_usuario.Prefixo?.Trim().ToUpperInvariant()}";
+        var baseVersion = await DbService.GetMetadataAsync(versionKey);
+        if (string.IsNullOrWhiteSpace(baseVersion))
+        {
+            Navigation.NavigateTo("/tombamentos-sync");
+            return;
+        }
 
         if (appState.CurrentOrgao != null)
         {
@@ -507,16 +286,6 @@
             SelectedAreaId = appState.CurrentArea?.IdArea;
             SelectedSubareaId = appState.CurrentSubarea?.IdSubarea;
         }
-    }
-
-    private void SetEsfera(string esfera)
-    {
-        appState.EsferaAtual = esfera;
-        SelectedOrgaoId = null;
-        SelectedUOId = null;
-        SelectedAreaId = null;
-        SelectedSubareaId = null;
-        StateHasChanged();
     }
 
     private void OnOrgaoChanged(string id)
@@ -579,18 +348,17 @@
         var orgao = _usuario?.Orgaos.FirstOrDefault(o => o.IdOrgao == SelectedOrgaoId);
         var uo = orgao?.UnidadesOrcamentarias.FirstOrDefault(u => u.IdUO == SelectedUOId);
         var area = uo?.Areas.FirstOrDefault(a => a.IdArea == SelectedAreaId);
-        var subarea = area?.Subareas.FirstOrDefault(s => s.IdSubarea == SelectedSubareaId);
+        var sub = area?.Subareas.FirstOrDefault(s => s.IdSubarea == SelectedSubareaId);
 
-        if (orgao != null && uo != null && area != null && subarea != null)
+        if (orgao != null && uo != null && area != null && sub != null)
         {
             appState.CurrentOrgao = orgao;
             appState.CurrentUO = uo;
             appState.CurrentArea = area;
-            appState.CurrentSubarea = subarea;
-            appState.DtEstr = orgao.DtEstr;
-            appState.AnoExercicio = orgao.DtEstr / 10000;
-
-            await appState.SaveStateAsync();
+            appState.CurrentSubarea = sub;
+            appState.UnidadeNome = uo.NomeUO;
+            
+            await appState.SaveStateAsync(); // Persistir a configuração da sessão
             Navigation.NavigateTo("/");
         }
     }

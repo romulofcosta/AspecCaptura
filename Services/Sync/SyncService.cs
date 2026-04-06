@@ -23,6 +23,7 @@ namespace pwa_camera_poc_blazor.Services.Sync
     }
 
     public record SyncInfoDto(int totalRegistros, int totalChunks, string versao, string hashGlobal);
+    public record LocalizacaoDto(long idlocalizacao, string cdorgao, string cdunid, string cdarea, string cdsarea);
 
     public class SyncService
     {
@@ -46,11 +47,23 @@ namespace pwa_camera_poc_blazor.Services.Sync
 
         public async Task<SyncResult> SyncAsync(string prefix, IProgress<SyncProgress>? progress = null, CancellationToken ct = default)
         {
+            var versionKey = $"versao:{prefix.Trim().ToUpperInvariant()}";
             var client = _httpClientFactory.CreateClient("BackendApi");
+
+            var localizacoes = await client.GetFromJsonAsync<List<LocalizacaoDto>>(
+                $"/api/tombamentos/localizacoes?prefix={Uri.EscapeDataString(prefix)}", ct) ?? new();
+
+            var locById = localizacoes
+                .GroupBy(l => l.idlocalizacao)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.First(),
+                    EqualityComparer<long>.Default);
+
             var info = await client.GetFromJsonAsync<SyncInfoDto>($"/api/tombamentos/sync-info?prefix={Uri.EscapeDataString(prefix)}", ct);
             if (info is null) throw new InvalidOperationException("sync-info inválido");
 
-            var currentVersion = await _db.GetMetadataAsync("versao");
+            var currentVersion = await _db.GetMetadataAsync(versionKey);
             if (currentVersion == info.versao) return SyncResult.AlreadySynced;
 
             await _db.ClearAsync("patrimonio_staging");
@@ -64,7 +77,8 @@ namespace pwa_camera_poc_blazor.Services.Sync
             {
                 int chunkId = i;
                 tasks.Add(ProcessChunk(client, prefix, chunkId, info, sem, progress, ct, 
-                    () => Interlocked.Increment(ref processed))
+                    () => Interlocked.Increment(ref processed),
+                    locById)
                     .ContinueWith(t =>
                     {
                         if (t.Status == TaskStatus.RanToCompletion) Interlocked.Increment(ref success);
@@ -79,12 +93,12 @@ namespace pwa_camera_poc_blazor.Services.Sync
             if (stagingCount != info.totalRegistros) throw new InvalidOperationException("contagem inválida");
 
             await _db.SwapPatrimonioFromStagingAsync();
-            await _db.SetMetadataAsync("versao", info.versao);
+            await _db.SetMetadataAsync(versionKey, info.versao);
 
             return SyncResult.Success;
         }
 
-        private async Task ProcessChunk(HttpClient client, string prefix, int chunkId, SyncInfoDto info, SemaphoreSlim sem, IProgress<SyncProgress>? progress, CancellationToken ct, Action onProcessed)
+        private async Task ProcessChunk(HttpClient client, string prefix, int chunkId, SyncInfoDto info, SemaphoreSlim sem, IProgress<SyncProgress>? progress, CancellationToken ct, Action onProcessed, Dictionary<long, LocalizacaoDto> locById)
         {
             await sem.WaitAsync(ct);
             try
@@ -98,7 +112,7 @@ namespace pwa_camera_poc_blazor.Services.Sync
                 if (!ValidateHash(data, hash)) throw new InvalidOperationException("hash inválido");
 
                 var wireList = JsonSerializer.Deserialize<List<TombamentoWire>>(data.GetRawText(), _json) ?? new();
-                var storeItems = wireList.Select(MapToStore).ToList();
+                var storeItems = wireList.Select(w => MapToStore(w, locById)).ToList();
                 await _db.BulkAddRangeAsync("patrimonio_staging", storeItems);
 
                 onProcessed();
@@ -147,8 +161,8 @@ namespace pwa_camera_poc_blazor.Services.Sync
             return string.Equals(hex, expectedHex, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static PatrimonioStoreItem MapToStore(TombamentoWire w) =>
-            new PatrimonioStoreItem
+        private static pwa_camera_poc_blazor.Models.PatrimonioItem MapToStore(TombamentoWire w) =>
+            new pwa_camera_poc_blazor.Models.PatrimonioItem
             {
                 IdPatomb = w.idpatomb,
                 Nutomb = w.nutomb ?? string.Empty,
@@ -156,9 +170,46 @@ namespace pwa_camera_poc_blazor.Services.Sync
                 Esfera = w.esfera ?? string.Empty,
                 CdOrgao = w.cdorgao,
                 CdUnid = w.cdunid,
+                CdUnidNorm = NormalizeCode(w.cdunid),
                 CdArea = w.cdarea,
                 CdSArea = w.cdsarea
             };
+
+        private static pwa_camera_poc_blazor.Models.PatrimonioItem MapToStore(TombamentoWire w, Dictionary<long, LocalizacaoDto> locById)
+        {
+            string cdOrgao = w.cdorgao;
+            string cdUnid = w.cdunid;
+            string cdArea = w.cdarea;
+            string cdSArea = w.cdsarea;
+
+            if (w.idlocalizacao.HasValue && locById.TryGetValue(w.idlocalizacao.Value, out var loc))
+            {
+                if (!string.IsNullOrWhiteSpace(loc.cdorgao)) cdOrgao = loc.cdorgao;
+                if (!string.IsNullOrWhiteSpace(loc.cdunid)) cdUnid = loc.cdunid;
+                if (!string.IsNullOrWhiteSpace(loc.cdarea)) cdArea = loc.cdarea;
+                if (!string.IsNullOrWhiteSpace(loc.cdsarea)) cdSArea = loc.cdsarea;
+            }
+
+            return new pwa_camera_poc_blazor.Models.PatrimonioItem
+            {
+                IdPatomb = w.idpatomb,
+                Nutomb = w.nutomb ?? string.Empty,
+                Deprod = w.deprod ?? string.Empty,
+                Esfera = w.esfera ?? string.Empty,
+                CdOrgao = cdOrgao ?? string.Empty,
+                CdUnid = cdUnid ?? string.Empty,
+                CdUnidNorm = NormalizeCode(cdUnid ?? string.Empty),
+                CdArea = cdArea ?? string.Empty,
+                CdSArea = cdSArea ?? string.Empty
+            };
+        }
+
+        private static string NormalizeCode(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+            var normalized = new string(value.Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant();
+            return normalized.TrimStart('0');
+        }
 
         private async Task ApplyGCAsync()
         {
@@ -180,22 +231,11 @@ namespace pwa_camera_poc_blazor.Services.Sync
         public string? nutomb { get; set; }
         public string? deprod { get; set; }
         public string? esfera { get; set; }
+        public long? idlocalizacao { get; set; }
         public string cdorgao { get; set; } = "";
         public string cdunid { get; set; } = "";
         public string cdarea { get; set; } = "";
         public string cdsarea { get; set; } = "";
-    }
-
-    public class PatrimonioStoreItem
-    {
-        public long IdPatomb { get; set; }
-        public string Nutomb { get; set; } = "";
-        public string Deprod { get; set; } = "";
-        public string Esfera { get; set; } = "";
-        public string CdOrgao { get; set; } = "";
-        public string CdUnid { get; set; } = "";
-        public string CdArea { get; set; } = "";
-        public string CdSArea { get; set; } = "";
     }
 
 }

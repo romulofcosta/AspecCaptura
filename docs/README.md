@@ -16,7 +16,7 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 - **PWA Real**: Instalável, offline-first, com logotipos oficiais da ASPEC e suporte a ícones **Maskable**.
 - **Temas Dinâmicos**: Suporte a modo claro/escuro com detecção automática de sistema e salvamento de preferência.
 - **Responsividade Mobile-First**: Interface otimizada com barra de navegação inferior (Bottom Navigation) e menu lateral para gestão de perfis e unidades.
-- **UI de Alta Fidelidade**: Baseada em MudBlazor, oferecendo uma experiência Material Design refinada e profissional.
+-- **UI de Alta Fidelidade**: Anteriormente baseada em MudBlazor (removido); atualmente usa componentes Blazor puros e utilitários CSS.
 - **Gestão de Unidades**: Sistema de filtragem e seleção de unidades gestoras (Prefeituras, Fundos, Câmaras) com nomes reais e seeding automático.
 
 ## Stack Tecnológica
@@ -24,12 +24,12 @@ O projeto visa criar uma aplicação web que funcione offline, permitindo aos us
 - **Frontend**: Blazor WebAssembly (.NET 8)
 - **Backend**: API BFF (`pwa-camera-poc-api`) para autenticação e geração de Pre-Signed URLs
 - **UI Framework**: 
-  - **MudBlazor 7.20.0** (MIT License) - Material Design components library
+  - **MudBlazor (removido)** - anteriormente usado como biblioteca de componentes Material Design
     - Componentes modernos e responsivos
     - Grids, Cards, Modals, Dialogs, Snackbars
     - Temas customizáveis
     - Mobile-first design
-- **Design System**: Material Design (via MudBlazor)
+-- **Design System**: Material Design (anteriormente via MudBlazor; agora implementado com estilos e componentes personalizados)
 - **Tipografia**: Roboto (Google Fonts) para Material Design
 - **Ícones**: Material Icons (5 variantes: Filled, Outlined, Two Tone, Round, Sharp)
 - **Layout System**: Flexbox e CSS Grid com variáveis CSS para consistência e responsividade
@@ -277,8 +277,8 @@ Este projeto é para fins educacionais e de demonstração. Não possui licença
 
 ## Melhorias Recentes
 
-### Integração MudBlazor
-- **Componentes Modernos**: Substituição de elementos HTML nativos por componentes MudBlazor (MudTextField, MudButton, MudSelect, MudCard) para interface mais profissional e alinhada ao Material Design.
+### Integração (MudBlazor removido)
+-- **Componentes Modernos**: O projeto migrou anteriormente para componentes MudBlazor; atualmente esses elementos foram substituídos por implementações puras em Blazor.
 - **Consistência Visual**: Padronização de design com sistema de temas do MudBlazor.
 - **Acessibilidade**: Componentes MudBlazor seguem padrões de acessibilidade.
 

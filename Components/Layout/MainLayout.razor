@@ -1,30 +1,39 @@
 @inherits LayoutComponentBase
+@layout ShellLayout
 @implements IDisposable
+@inject NavigationManager Navigation
+@inject AppState appState
+@inject pwa_camera_poc_blazor.Services.ToastService ToastService
 
-@using System.Text
-@using System
-@using pwa_camera_poc_blazor.Components.Layout
-@using pwa_camera_poc_blazor.Components.Common
+<div class="main-layout">
+    <header class="app-header">
+        <div class="user-info">
+            <div class="avatar">
+                <span class="material-symbols-outlined">person</span>
+            </div>
+            <div class="user-details">
+                <h1 class="user-greeting">Olá, @(appState.CurrentUser?.UsuarioNome ?? "Fiscal")</h1>
+                <p class="app-sublabel">Aspec Captura</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="icon-button">
+                <span class="material-symbols-outlined">notifications</span>
+            </button>
+        </div>
+    </header>
 
-<div class="app-shell">
-    @if (!IsAuthPage())
-    {
-        <AppHeader MunicipalityName="@appState.MunicipioNome" 
-                   IsOffline="@appState.IsOffline" 
-                   ShowBackButton="@ShowBackButton()"
-                   ShowProgress="@ShowProgress()"
-                   CurrentCount="@appState.InventariadosHoje"
-                   TotalCount="@appState.TotalParaInventariar" />
-    }
+    <div class="unit-selector">
+        <div class="unit-info">
+            <span class="material-symbols-outlined">domain</span>
+            <span class="unit-name">@(appState.UnidadeNome ?? "Secretaria de Educação")</span>
+        </div>
+        <button class="text-button" @onclick="ChangeUnit">ALTERAR</button>
+    </div>
 
-    <main class="main-content @(IsAuthPage() ? "p-0" : "")">
+    <main class="content">
         @Body
     </main>
-
-    @if (!IsAuthPage())
-    {
-        <BottomNav PendingSyncCount="@appState.PendingSyncCount" />
-    }
 
     <!-- Toast Notifications -->
     <div class="toast-container">
@@ -38,24 +47,103 @@
 </div>
 
 <style>
-    .app-shell {
+    .main-layout {
         display: flex;
         flex-direction: column;
-        min-height: 100vh;
-        background-color: var(--color-background);
-    }
-
-    .main-content {
         flex: 1;
-        padding: 16px;
-        padding-bottom: 80px; /* Safe area for BottomNav */
-        width: 100%;
-        max-width: 600px; /* Mobile focused max-width */
-        margin: 0 auto;
+        background-color: var(--background-color);
     }
 
-    .main-content.p-0 {
+    .app-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 40px 24px 20px;
+        background: var(--surface-color);
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--background-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-disabled);
+    }
+
+    .user-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .user-greeting {
+        font-size: 18px;
+        font-weight: var(--font-weight-semibold);
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .app-sublabel {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    .icon-button {
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        cursor: pointer;
+        padding: 8px;
+    }
+
+    .unit-selector {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 24px;
+        margin: 0 24px 24px;
+        background: var(--surface-color);
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+    }
+
+    .unit-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+
+    .unit-info .material-symbols-outlined {
+        font-size: 18px;
+    }
+
+    .text-button {
+        background: none;
+        border: none;
+        color: var(--primary-color);
+        font-size: 12px;
+        font-weight: var(--font-weight-semibold);
+        cursor: pointer;
         padding: 0;
+    }
+
+    .content {
+        flex: 1;
+        padding: 0 24px;
+        padding-bottom: calc(var(--safe-area-inset-bottom) + 24px);
+        min-height: 0;
+        overflow-y: auto;
     }
 
     .toast-container {
@@ -81,91 +169,44 @@
         max-width: 90vw;
     }
 
-    .toast.success { background-color: var(--color-success, #16A34A); }
-    .toast.error { background-color: var(--color-danger, #DC2626); }
+    .toast.success { background-color: #16A34A; }
+    .toast.error { background-color: #DC2626; }
     .toast.warning { background-color: #F59E0B; }
-    .toast.info { background-color: var(--color-primary, #1E3A5F); }
+    .toast.info { background-color: #1E3A5F; }
 </style>
 
 @code {
-    protected override async Task OnInitializedAsync()
+    private List<pwa_camera_poc_blazor.Services.ToastMessage> _toasts = new();
+
+    protected override void OnInitialized()
     {
         ToastService.OnShow += HandleToastShow;
-        appState.OnChange += HandleAppStateChange;
-        Navigation.LocationChanged += HandleLocationChanged;
-
-        // Load saved app state
-        await appState.LoadStateAsync();
-        
-        await UpdateSyncCount();
+        appState.OnChange += StateHasChanged;
     }
-
-    private bool IsAuthPage()
-    {
-        var url = Navigation.ToBaseRelativePath(Navigation.Uri).ToLower();
-        return url.Contains("login");
-    }
-
-    private bool ShowBackButton()
-    {
-        var url = Navigation.ToBaseRelativePath(Navigation.Uri).ToLower();
-        return url.Contains("detalhe") || url.Contains("camera") || url.Contains("configuracao") || url.Contains("sync") || url.Contains("items");
-    }
-
-    private bool ShowProgress()
-    {
-        var url = Navigation.ToBaseRelativePath(Navigation.Uri).ToLower();
-        return url == "" || url == "/" || url.Contains("home");
-    }
-
-    private void HandleLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
-    {
-        StateHasChanged();
-    }
-
-    private void HandleAppStateChange()
-    {
-        InvokeAsync(StateHasChanged);
-    }
-
-    private class ToastItem
-    {
-        public string Message { get; set; } = "";
-        public string Type { get; set; } = "info";
-    }
-
-    private List<ToastItem> _toasts = new();
 
     private void HandleToastShow(string message, string type)
     {
-        InvokeAsync(async () => {
-            var toast = new ToastItem { Message = message, Type = type };
-            _toasts.Add(toast);
-            StateHasChanged();
-            
-            await Task.Delay(3000);
+        var toast = new pwa_camera_poc_blazor.Services.ToastMessage 
+        { 
+            Message = message, 
+            Type = type, 
+            Timestamp = DateTime.UtcNow 
+        };
+        _toasts.Add(toast);
+        StateHasChanged();
+        
+        Task.Delay(3000).ContinueWith(_ => {
             _toasts.Remove(toast);
-            StateHasChanged();
+            InvokeAsync(StateHasChanged);
         });
     }
 
-    private async Task UpdateSyncCount()
-    {
-        try
-        {
-            var allItems = await DbService.GetAllAsync<InventoryItem>("items");
-            appState.PendingSyncCount = allItems.Count(i => !i.Synced);
-        }
-        catch (Exception)
-        {
-            appState.PendingSyncCount = 0;
-        }
+    private void ChangeUnit()
+    {            Navigation.NavigateTo("/configuracao-sessao");
     }
 
     public void Dispose()
-    {
-        ToastService.OnShow -= HandleToastShow;
-        appState.OnChange -= HandleAppStateChange;
-        Navigation.LocationChanged -= HandleLocationChanged;
+    {            ToastService.OnShow -= HandleToastShow;
+        appState.OnChange -= StateHasChanged;
     }
 }

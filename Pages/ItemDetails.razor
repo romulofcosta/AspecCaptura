@@ -1,351 +1,421 @@
-@page "/item/{Id}"
+@page "/item-details/{Nutomb}"
+@page "/item/{Nutomb}"
 @using pwa_camera_poc_blazor.Components.Common
 @using pwa_camera_poc_blazor.Components.Layout
 @inject pwa_camera_poc_blazor.Services.Storage.IIndexedDbService DbService
+@inject AppState appState
+@inject pwa_camera_poc_blazor.Services.Auth.IAuthService AuthService
+@layout pwa_camera_poc_blazor.Components.Layout.AppLayout
 
-<PageTitle>Detalhes do Bem - Aspec Captura</PageTitle>
+<PageTitle>Detalhes do Patrimônio - Aspec Captura</PageTitle>
 
 @if (isLoading)
 {
-    <div class="loading-container">
+    <div class="loading-overlay">
         <div class="spinner"></div>
-        <p>Carregando detalhes...</p>
     </div>
 }
 else if (item == null)
 {
-    <div class="error-container">
-        <span class="material-symbols-outlined text-large">inventory_2</span>
-        <h2>Item não localizado</h2>
-        <p>O patrimônio solicitado não foi encontrado no banco de dados local.</p>
-        <PrimaryButton OnClick="GoBack">VOLTAR PARA LISTA</PrimaryButton>
+    <div class="error-state">
+        <span class="material-symbols-outlined">search_off</span>
+        <p>Patrimônio não encontrado</p>
+        <button class="back-button" @onclick="GoBack">Voltar</button>
     </div>
 }
 else
 {
-    <div class="item-details-container">
-        @* Header Section *@
-        <div class="details-nav-header">
-            <button class="back-link" @onclick="GoBack">
-                <span class="material-symbols-outlined">arrow_back</span>
+    <div class="details-page">
+        @* Dark Blue Header *@
+        <header class="details-header">
+            <button class="icon-button back" @onclick="GoBack">
+                <span class="material-symbols-outlined">arrow_back_ios</span>
             </button>
-            <div class="header-center">
-                <img src="images/aspec_logo.png" alt="Logo" class="header-logo" />
-                <span class="header-app-name">Aspec Captura</span>
-                <span class="header-item-code">[@item.Code]</span>
+            <div class="header-content">
+                <h1 class="header-title">Detalhes</h1>
+                <p class="header-subtitle">PATRIMÔNIO #@item.Code</p>
             </div>
-            <button class="close-link" @onclick="GoBack">
-                <span class="material-symbols-outlined">close</span>
-            </button>
-        </div>
-
-        <PrimaryCard Class="details-card">
-            <div class="details-grid">
-                <div class="detail-item">
-                    <label>DESCRIÇÃO DO BEM</label>
-                    <div class="detail-value">@item.Name</div>
+            <div class="user-status">
+                <div class="status-info">
+                    <span class="brand-name">Aspec Avatar</span>
+                    <span class="status-label online">ONLINE</span>
                 </div>
-                <div class="detail-item">
-                    <label>CONSERVAÇÃO</label>
-                    <div class="detail-value">
-                        <span class="status-badge-mini">@GetStateText(item.State)</span>
-                    </div>
-                </div>
-                <div class="detail-item">
-                    <label>SITUAÇÃO ATUAL</label>
-                    <div class="detail-value status-active">
-                        <span class="dot"></span> EM OPERAÇÃO
-                    </div>
-                </div>
-                <div class="detail-item">
-                    <label>LOCALIZAÇÃO</label>
-                    <div class="detail-value text-blue">ALA NORTE</div>
-                </div>
-                <div class="detail-item">
-                    <label>DATA DE TOMBAMENTO</label>
-                    <div class="detail-value">13/05/2021</div>
-                </div>
-                <div class="detail-item">
-                    <label>VALOR CONTÁBIL</label>
-                    <div class="detail-value">R$ 42.800,00</div>
+                <div class="user-avatar">
+                    <img src="https://i.pravatar.cc/150?u=aspec" alt="User" />
                 </div>
             </div>
+        </header>
 
-            @* Photos Section *@
-            <div class="photos-section">
-                <div class="section-header">
-                    <span class="section-title">FOTOS</span>
-                    <span class="photo-count">@((item.Photos?.Count ?? 0)) ARQUIVOS</span>
-                </div>
-                <div class="photo-grid-mini">
-                    @if (item.Photos != null)
+        <main class="details-main">
+            @* Image Section *@
+            <div class="image-section">
+                <div class="image-container">
+                    @if (item.Photos?.Any() == true)
                     {
-                        @foreach (var photo in item.Photos.Take(3))
-                        {
-                            <div class="photo-thumb-item">
-                                <img src="@photo" />
-                            </div>
-                        }
-                        @if (item.Photos.Count > 3)
-                        {
-                            <div class="photo-thumb-item more">
-                                <span class="material-symbols-outlined">add</span>
-                                <span>@(item.Photos.Count - 3)</span>
-                            </div>
-                        }
+                        <img src="@item.Photos.First()" alt="Patrimônio" class="item-image" />
                     }
+                    else
+                    {
+                        <div class="image-placeholder">
+                            <span class="material-symbols-outlined">inventory_2</span>
+                        </div>
+                    }
+                    <button class="camera-fab">
+                        <span class="material-symbols-outlined">photo_camera</span>
+                    </button>
+                    <div class="image-dots">
+                        <span class="dot active"></span>
+                        <span class="dot"></span>
+                    </div>
                 </div>
             </div>
 
-            <div class="details-actions">
-                <PrimaryButton FullWidth="true" OnClick="ToggleEditMode">
-                    <span class="material-symbols-outlined" style="margin-right: 8px;">edit_square</span>
-                    EDITAR INFORMAÇÕES
-                </PrimaryButton>
-                
-                <button class="history-link">
-                    <span class="material-symbols-outlined">history</span>
-                    HISTÓRICO
+            @* Form Section *@
+            <div class="details-form">
+                <div class="form-group">
+                    <label class="section-label">DESCRIÇÃO</label>
+                    <p class="description-text">@item.Name</p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label class="section-label">VALOR ESTIMADO</label>
+                        <p class="value-text">R$ 1.450,00</p>
+                    </div>
+                    <div class="form-group half">
+                        <label class="section-label">LOCALIZAÇÃO</label>
+                        <p class="value-text">@LocationDisplay</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="section-label">ESTADO DE CONSERVAÇÃO</label>
+                    <div class="chip-group">
+                        @foreach (var state in Enum.GetValues<ConservationState>())
+                        {
+                            <button class="state-chip @(item.State == state ? "active" : "")" @onclick="() => item.State = state">
+                                @GetStateText(state)
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="section-label">OBSERVAÇÕES</label>
+                    <textarea class="observations-input" placeholder="Adicione observações..."></textarea>
+                </div>
+
+                <button class="save-button" @onclick="SaveItem">
+                    Salvar Patrimônio
                 </button>
             </div>
-        </PrimaryCard>
+        </main>
+
     </div>
 }
 
 <style>
-    .item-details-container {
-        background-color: #F8FAFC;
-        min-height: 100vh;
+    .details-page {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        background: #FFFFFF;
     }
 
-    .details-nav-header {
+    .details-header {
+        background: #1E3A5F;
+        color: #FFFFFF;
+        padding: 40px 24px 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 12px 16px;
-        background: white;
-        border-bottom: 1px solid var(--color-border);
-        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
 
-    .header-center {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .header-logo {
-        width: 18px;
-        height: 18px;
-    }
-
-    .header-app-name {
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--color-text-primary);
-    }
-
-    .header-item-code {
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--color-primary);
-        letter-spacing: 0.5px;
-    }
-
-    .back-link, .close-link {
+    .icon-button.back {
         background: none;
         border: none;
-        color: var(--color-primary);
-        display: flex;
-        align-items: center;
+        color: #FFFFFF;
         cursor: pointer;
+        padding: 8px;
+        margin-left: -8px;
     }
 
-    .details-card {
-        margin: 24px;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        background: white;
+    .header-content {
+        flex: 1;
+        margin-left: 12px;
     }
 
-    .details-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        margin-bottom: 24px;
-    }
-
-    .detail-item label {
-        display: block;
-        font-size: 9px;
+    .header-title {
+        font-size: 18px;
         font-weight: 700;
-        color: var(--color-text-secondary);
-        margin-bottom: 4px;
-        letter-spacing: 0.5px;
+        margin: 0;
     }
 
-    .detail-value {
-        font-size: 11px;
-        font-weight: 700;
-        color: #1e293b;
-    }
-
-    .status-badge-mini {
-        background: #F1F5F9;
-        padding: 4px 12px;
-        border-radius: 6px;
+    .header-subtitle {
         font-size: 10px;
-        color: #1e293b;
-        border: 1px solid #E2E8F0;
+        color: rgba(255,255,255,0.6);
+        margin: 2px 0 0;
+        letter-spacing: 0.05em;
     }
 
-    .status-active {
+    .user-status {
         display: flex;
         align-items: center;
-        gap: 6px;
-        color: #10B981;
+        gap: 12px;
     }
 
-    .status-active .dot {
-        width: 6px;
-        height: 6px;
+    .status-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .brand-name {
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    .status-label {
+        font-size: 8px;
+        font-weight: 700;
+    }
+
+    .status-label.online { color: #4ADE80; }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
-        background: #10B981;
-    }
-
-    .text-blue {
-        color: #3B82F6;
-    }
-
-    .photos-section {
-        border-top: 1px solid #f1f5f9;
-        padding-top: 20px;
-        margin-bottom: 32px;
-    }
-
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-    }
-
-    .section-title {
-        font-size: 10px;
-        font-weight: 700;
-        color: #1e293b;
-        letter-spacing: 1px;
-    }
-
-    .photo-count {
-        font-size: 9px;
-        font-weight: 700;
-        color: var(--color-primary);
-    }
-
-    .photo-grid-mini {
-        display: flex;
-        gap: 8px;
-    }
-
-    .photo-thumb-item {
-        width: 64px;
-        height: 64px;
-        border-radius: 8px;
         overflow: hidden;
-        border: 1px solid #E2E8F0;
+        border: 2px solid rgba(255,255,255,0.2);
     }
 
-    .photo-thumb-item img {
+    .user-avatar img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
 
-    .photo-thumb-item.more {
+    .details-main {
+        flex: 1;
+        padding-bottom: 100px;
+    }
+
+    .image-section {
+        padding: 24px;
+    }
+
+    .image-container {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4/3;
         background: #F8FAFC;
+        border-radius: 24px;
+        overflow: hidden;
+    }
+
+    .item-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .image-placeholder {
+        width: 100%;
+        height: 100%;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        color: var(--color-primary);
-        font-size: 10px;
-        font-weight: 700;
+        color: #CBD5E1;
     }
 
-    .details-actions {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 16px;
+    .image-placeholder .material-symbols-outlined {
+        font-size: 64px;
     }
 
-    .history-link {
-        background: none;
+    .camera-fab {
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.9);
         border: none;
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--color-primary);
-        letter-spacing: 0.5px;
+        justify-content: center;
+        color: #1E3A5F;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         cursor: pointer;
+    }
+
+    .image-dots {
+        position: absolute;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 4px;
+    }
+
+    .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.4);
+    }
+
+    .dot.active {
+        width: 16px;
+        border-radius: 3px;
+        background: #FFFFFF;
+    }
+
+    .details-form {
+        padding: 0 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .section-label {
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        color: #94A3B8;
+        margin-bottom: 8px;
+        letter-spacing: 0.05em;
+    }
+
+    .description-text {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1E293B;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 24px;
+    }
+
+    .form-group.half {
+        flex: 1;
+    }
+
+    .value-text {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1E293B;
+        margin: 0;
+    }
+
+    .chip-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .state-chip {
+        padding: 10px 20px;
+        border-radius: 12px;
+        border: 1px solid #E2E8F0;
+        background: #FFFFFF;
+        font-size: 14px;
+        font-weight: 600;
+        color: #64748B;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .state-chip.active {
+        background: #F1F5F9;
+        border-color: #1E3A5F;
+        color: #1E3A5F;
+    }
+
+    .observations-input {
+        width: 100%;
+        min-height: 44px;
+        padding: 12px 0;
+        border: none;
+        border-bottom: 1px solid #E2E8F0;
+        font-size: 14px;
+        color: #1E293B;
+        outline: none;
+        resize: none;
+    }
+
+    .save-button {
+        width: 100%;
+        padding: 18px;
+        background: #1E3A5F;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 16px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 12px;
+        box-shadow: 0 8px 16px rgba(30, 58, 95, 0.15);
+    }
+
+    .loading-overlay {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
     }
 </style>
 
 @code {
-    [Parameter] public string Id { get; set; } = string.Empty;
+    [Parameter] public string Nutomb { get; set; } = string.Empty;
     private InventoryItem? item;
+    private pwa_camera_poc_blazor.Models.PatrimonioItem? patrimonio;
     private bool isLoading = true;
-    private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            // Verificar se a sessão está configurada
-            if (!appState.IsSessionConfigured())
-            {
-                Navigation.NavigateTo("/configuracao-sessao");
-                return;
-            }
-            
-            await LoadItem();
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Erro ao inicializar página: {ex.Message}";
-            Console.Error.WriteLine($"ItemDetails OnInitializedAsync error: {ex}");
-            isLoading = false;
-        }
+        await LoadItem();
     }
 
     private async Task LoadItem()
     {
         isLoading = true;
-        errorMessage = null;
         try
         {
-            if (string.IsNullOrEmpty(Id))
-            {
-                errorMessage = "ID do item não fornecido";
-                isLoading = false;
-                return;
-            }
+            if (string.IsNullOrWhiteSpace(Nutomb)) return;
 
-            item = await DbService.GetAsync<InventoryItem>("items", Id);
-            
-            if (item == null)
+            patrimonio = await DbService.GetPatrimonioByNutombAsync(Nutomb);
+            item = await DbService.GetFromIndexAsync<InventoryItem>("items", "code", Nutomb);
+
+            if (item == null && patrimonio != null)
             {
-                errorMessage = "Item não encontrado no banco de dados";
+                var user = await AuthService.GetCurrentUserAsync();
+
+                item = new InventoryItem
+                {
+                    Code = patrimonio.Nutomb,
+                    Nutomb = patrimonio.Nutomb,
+                    Name = patrimonio.Deprod,
+                    Esfera = patrimonio.Esfera,
+                    Location = patrimonio.Localizacao ?? string.Empty,
+                    EstimatedValue = patrimonio.ValorEstimado ?? 0m,
+                    State = patrimonio.Estado ?? ConservationState.Good,
+                    IdOrgao = appState.CurrentOrgao?.IdOrgao,
+                    IdUO = appState.CurrentUO?.IdUO,
+                    IdArea = appState.CurrentArea?.IdArea,
+                    IdSubarea = appState.CurrentSubarea?.IdSubarea,
+                    CreatedBy = user?.UsuarioNome ?? string.Empty,
+                    UserId = user?.Prefixo ?? string.Empty
+                };
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            errorMessage = $"Erro ao carregar item: {ex.Message}";
-            Console.Error.WriteLine($"LoadItem error: {ex}");
-            ToastService.ShowError(errorMessage);
+            item = null;
         }
         finally
         {
@@ -353,37 +423,38 @@ else
         }
     }
 
-    private void ToggleEditMode()
-    {
-        ToastService.ShowInfo("Edição será disponibilizada na próxima versão.");
-    }
+    private string LocationDisplay =>
+        !string.IsNullOrWhiteSpace(item?.Location) ? item!.Location
+        : !string.IsNullOrWhiteSpace(patrimonio?.Localizacao) ? patrimonio!.Localizacao!
+        : "Não informada";
 
-    private string GetStateText(ConservationState state)
+    private string GetStateText(ConservationState state) => state switch
     {
-        return state switch
+        ConservationState.New => "Novo",
+        ConservationState.Good => "Bom",
+        ConservationState.Regular => "Regular",
+        ConservationState.Recoverable => "Recuperável",
+        ConservationState.Unrecoverable => "Inservível",
+        _ => "Desconhecido"
+    };
+
+    private void GoBack() => Navigation.NavigateTo("/");
+
+    private async Task SaveItem()
+    {
+        if (item == null) return;
+        
+        try
         {
-            ConservationState.New => "NOVO",
-            ConservationState.Good => "BOM",
-            ConservationState.Regular => "REGULAR",
-            ConservationState.Recoverable => "RECUPERÁVEL",
-            ConservationState.Unrecoverable => "INSERVÍVEL",
-            _ => "INDEFINIDO"
-        };
-    }
-
-    private StatusBadge.BadgeVariant GetStateVariant(ConservationState state)
-    {
-        return state switch
+            item.UpdatedAt = DateTime.Now;
+            item.Synced = false;
+            await DbService.UpdateAsync("items", item);
+            ToastService.ShowSuccess("Patrimônio salvo com sucesso!");
+            Navigation.NavigateTo("/");
+        }
+        catch (Exception)
         {
-            ConservationState.New or ConservationState.Good => StatusBadge.BadgeVariant.Completo,
-            ConservationState.Regular or ConservationState.Recoverable => StatusBadge.BadgeVariant.Alerta,
-            ConservationState.Unrecoverable => StatusBadge.BadgeVariant.Erro,
-            _ => StatusBadge.BadgeVariant.Pendente
-        };
-    }
-
-    private void GoBack()
-    {
-        Navigation.NavigateTo("/");
+            ToastService.ShowError("Erro ao salvar patrimônio.");
+        }
     }
 }

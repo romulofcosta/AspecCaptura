@@ -1,5 +1,5 @@
 @page "/notifications"
-@layout MinimalLayout
+@layout pwa_camera_poc_blazor.Components.Layout.AppLayout
 @using pwa_camera_poc_blazor.Models
 @using pwa_camera_poc_blazor.Services.Notification
 @inject INotificationService NotificationService
@@ -239,6 +239,6 @@
 
     private void GoBack()
     {
-        Navigation.NavigateTo("/dashboard");
+        Navigation.NavigateTo("/");
     }
 }

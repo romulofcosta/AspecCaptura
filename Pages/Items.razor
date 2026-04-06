@@ -1,6 +1,6 @@
 @page "/"
 @page "/items"
-@layout MinimalLayout
+@layout pwa_camera_poc_blazor.Components.Layout.AppLayout
 @using pwa_camera_poc_blazor.Models
 @using pwa_camera_poc_blazor.Components.Cards
 
@@ -27,15 +27,17 @@
 
 @* ── Sticky Search ── *@
 <div class="search-bar">
-    <span class="material-symbols-outlined search-icon">search</span>
-    <input type="search"
-           class="search-input"
-           placeholder="Buscar patrimônio ou descrição..."
-           @bind="searchQuery"
-           @bind:event="oninput" />
-    <button class="scan-btn-top" title="Nova Captura" @onclick='() => Navigation.NavigateTo("/camera")'>
+    <div class="search-row">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input type="search"
+               class="search-input"
+               placeholder="Buscar bem ou descrição..."
+               @bind="searchQuery"
+               @bind:event="oninput" />
+    </div>
+    <button class="scan-cta" title="Nova Captura" @onclick='() => Navigation.NavigateTo("/camera")'>
         <span class="material-symbols-outlined">qr_code_scanner</span>
-        <span class="scan-btn-text">SCAN</span>
+        <span class="scan-cta-text">ESCANEAR BEM</span>
     </button>
 </div>
 
@@ -81,7 +83,7 @@
     {
         @foreach (var item in pagedItems)
         {
-            <ItemCard Item="@item" OnView="NavigateToItem" />
+            <PatrimonioCard Item="@item" LocalItem="@TryGetLocal(item)" OnView="NavigateToItem" />
         }
 
         @if (totalPages > 1)
@@ -113,8 +115,8 @@
         align-items: center;
         justify-content: space-between;
         padding: 12px 16px;
-        background: #fff;
-        border-bottom: 1px solid #E2E8F0;
+        background: var(--surface-color);
+        border-bottom: 1px solid var(--divider-color);
         box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }
 
@@ -133,7 +135,7 @@
     .brand-name {
         font-size: 13px;
         font-weight: 700;
-        color: #003366;
+        color: var(--primary-color);
         letter-spacing: 0.3px;
     }
 
@@ -145,7 +147,7 @@
     .header-action {
         background: none;
         border: none;
-        color: #64748B;
+        color: var(--text-secondary);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -157,7 +159,7 @@
     }
 
     .header-action:active {
-        background: #F1F5F9;
+        background: var(--primary-light);
     }
 
     /* ── Search ── */
@@ -166,15 +168,21 @@
         top: 49px;
         z-index: 19;
         display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px 16px 12px;
+        background: var(--surface-color);
+        border-bottom: 1px solid var(--divider-color);
+    }
+
+    .search-row {
+        display: flex;
         align-items: center;
         gap: 10px;
-        padding: 10px 16px;
-        background: #fff;
-        border-bottom: 1px solid #F1F5F9;
     }
 
     .search-icon {
-        color: #94A3B8;
+        color: var(--text-disabled);
         font-size: 20px;
         flex-shrink: 0;
     }
@@ -184,47 +192,55 @@
         border: none;
         outline: none;
         font-size: 14px;
-        color: #1E293B;
+        color: var(--text-primary);
         background: transparent;
         font-family: inherit;
         min-width: 0;
     }
 
     .search-input::placeholder {
-        color: #94A3B8;
+        color: var(--text-disabled);
     }
     
-    .scan-btn-top {
-        background: #003366;
-        color: white;
+    .scan-cta {
+        width: 100%;
+        height: 44px;
+        background: var(--primary-color);
+        color: #fff;
         border: none;
-        border-radius: 8px;
-        height: 36px;
-        padding: 0 12px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
-        gap: 6px;
+        justify-content: center;
+        gap: 10px;
+        box-shadow: 0 8px 18px rgba(0, 51, 102, 0.25);
         cursor: pointer;
-        box-shadow: 0 2px 4px rgba(0, 51, 102, 0.2);
-        flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+        transition: transform 0.15s, box-shadow 0.15s;
     }
-    
-    .scan-btn-top .material-symbols-outlined {
-        font-size: 18px;
+
+    .scan-cta:active {
+        transform: scale(0.985);
+        box-shadow: 0 4px 12px rgba(0, 51, 102, 0.22);
     }
-    
-    .scan-btn-text {
+
+    .scan-cta .material-symbols-outlined {
+        font-size: 20px;
+    }
+
+    .scan-cta-text {
         font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
     }
 
     /* ── Filter Tabs ── */
     .filter-tabs-wrapper {
-        background: #fff;
-        border-bottom: 2px solid #E2E8F0;
+        background: var(--surface-color);
+        border-bottom: 2px solid var(--divider-color);
         position: sticky;
-        top: 97px;
+        top: 167px;
         z-index: 18;
     }
 
@@ -246,7 +262,7 @@
         background: transparent;
         font-size: 11px;
         font-weight: 700;
-        color: #94A3B8;
+        color: var(--text-disabled);
         text-transform: uppercase;
         letter-spacing: 0.08em;
         cursor: pointer;
@@ -257,8 +273,8 @@
     }
 
     .filter-tab.active {
-        color: #003366;
-        border-bottom-color: #003366;
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
     }
 
     /* ── Summary Bar ── */
@@ -267,14 +283,14 @@
         align-items: center;
         gap: 8px;
         padding: 8px 16px;
-        background: #F8FAFC;
-        border-bottom: 1px solid #E2E8F0;
+        background: var(--background-color);
+        border-bottom: 1px solid var(--divider-color);
     }
 
     .summary-count {
         font-size: 11px;
         font-weight: 700;
-        color: #003366;
+        color: var(--primary-color);
         display: flex;
         align-items: center;
         gap: 4px;
@@ -285,13 +301,13 @@
     }
 
     .summary-divider {
-        color: #CBD5E1;
+        color: var(--divider-color);
         font-size: 12px;
     }
 
     .summary-uo {
         font-size: 11px;
-        color: #64748B;
+        color: var(--text-secondary);
         font-weight: 500;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -305,7 +321,7 @@
         display: flex;
         flex-direction: column;
         gap: 8px;
-        background: #F8FAFC;
+        background: var(--background-color);
     }
 
     /* ── States ── */
@@ -321,27 +337,27 @@
 
     .state-icon {
         font-size: 56px;
-        color: #CBD5E1;
+        color: var(--divider-color);
     }
 
     .state-label {
         font-size: 13px;
         font-weight: 700;
-        color: #94A3B8;
+        color: var(--text-secondary);
         text-transform: uppercase;
         letter-spacing: 0.08em;
     }
 
     .state-hint {
         font-size: 12px;
-        color: #CBD5E1;
+        color: var(--text-disabled);
     }
 
     .spinner-ring {
         width: 36px;
         height: 36px;
-        border: 3px solid #E2E8F0;
-        border-top-color: #003366;
+        border: 3px solid var(--divider-color);
+        border-top-color: var(--primary-color);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
     }
@@ -364,12 +380,12 @@
         align-items: center;
         gap: 4px;
         padding: 8px 14px;
-        border: 1px solid #E2E8F0;
+        border: 1px solid var(--divider-color);
         border-radius: 8px;
-        background: #fff;
+        background: var(--surface-color);
         font-size: 11px;
         font-weight: 700;
-        color: #003366;
+        color: var(--primary-color);
         cursor: pointer;
         transition: all 0.2s;
     }
@@ -386,7 +402,7 @@
     .pag-info {
         font-size: 12px;
         font-weight: 600;
-        color: #64748B;
+        color: var(--text-secondary);
     }
 
     /* ── FAB ── */
@@ -397,13 +413,13 @@
         width: 52px;
         height: 52px;
         border-radius: 50%;
-        background: #003366;
+        background: var(--primary-color);
         color: #fff;
         border: none;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 16px rgba(0, 51, 102, 0.35);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
         cursor: pointer;
         z-index: 30;
         transition: transform 0.2s, box-shadow 0.2s;
@@ -411,7 +427,7 @@
 
     .fab:active {
         transform: scale(0.93);
-        box-shadow: 0 2px 8px rgba(0,51,102,0.3);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
     }
 
     .fab .material-symbols-outlined {
@@ -420,7 +436,8 @@
 </style>
 
 @code {
-    private List<InventoryItem> items = new();
+    private List<PatrimonioItem> items = new();
+    private Dictionary<string, InventoryItem> _localByNutomb = new(StringComparer.OrdinalIgnoreCase);
     private string searchQuery = "";
     private string selectedStatus = "todos";
     private int currentPage = 1;
@@ -435,6 +452,21 @@
             return;
         }
 
+        var user = await AuthService.GetCurrentUserAsync();
+        if (user == null)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        var versionKey = $"versao:{user.Prefixo?.Trim().ToUpperInvariant()}";
+        var baseVersion = await DbService.GetMetadataAsync(versionKey);
+        if (string.IsNullOrWhiteSpace(baseVersion))
+        {
+            Navigation.NavigateTo("/tombamentos-sync");
+            return;
+        }
+
         appState.OnChange += HandleStateChange;
         await LoadItems();
     }
@@ -444,6 +476,8 @@
     private async Task LoadItems()
     {
         isLoading = true;
+        await InvokeAsync(StateHasChanged);
+        await Task.Yield();
         try
         {
             var user = await AuthService.GetCurrentUserAsync();
@@ -451,11 +485,18 @@
 
             if (appState.CurrentUO != null)
             {
-                var allItems = await DbService.GetItemsByUOAsync(appState.CurrentUO.IdUO);
+                var localItems = await DbService.GetItemsByUOAsync(appState.CurrentUO.IdUO);
+                _localByNutomb = localItems
+                    .Where(i => !string.IsNullOrWhiteSpace(i.Code))
+                    .GroupBy(i => i.Code, StringComparer.OrdinalIgnoreCase)
+                    .ToDictionary(g => g.Key, g => g.OrderByDescending(x => x.UpdatedAt).First(), StringComparer.OrdinalIgnoreCase);
+
+                var allPatrimonio = await DbService.GetPatrimonioByUOAsync(appState.CurrentUO.IdUO);
                 var esfera = appState.EsferaAtual ?? user.Esfera;
+
                 items = (!string.IsNullOrEmpty(esfera) && esfera != "A")
-                    ? allItems.Where(i => i.Esfera == esfera).ToList()
-                    : allItems.ToList();
+                    ? allPatrimonio.Where(i => string.Equals(i.Esfera, esfera, StringComparison.OrdinalIgnoreCase)).ToList()
+                    : allPatrimonio.ToList();
             }
         }
         catch (Exception ex)
@@ -474,7 +515,10 @@
         currentPage = 1;
     }
 
-    private IEnumerable<InventoryItem> filteredItems
+    private InventoryItem? TryGetLocal(PatrimonioItem p)
+        => _localByNutomb.TryGetValue(p.Nutomb, out var local) ? local : null;
+
+    private IEnumerable<PatrimonioItem> filteredItems
     {
         get
         {
@@ -482,32 +526,56 @@
 
             result = selectedStatus switch
             {
-                "operacao" => result.Where(i => i.Status != "baixado" && (i.State == ConservationState.Good || i.State == ConservationState.New)),
-                "manutencao" => result.Where(i => i.Status != "baixado" && (i.State == ConservationState.Regular || i.State == ConservationState.Recoverable)),
-                "baixado" => result.Where(i => i.Status == "baixado"),
-                "inativos" => result.Where(i => i.State == ConservationState.Unrecoverable),
+                "operacao" => result.Where(p =>
+                {
+                    var local = TryGetLocal(p);
+                    if (local == null) return true;
+                    if (local.Status == "baixado") return false;
+                    return local.State == ConservationState.Good || local.State == ConservationState.New;
+                }),
+                "manutencao" => result.Where(p =>
+                {
+                    var local = TryGetLocal(p);
+                    if (local == null) return false;
+                    if (local.Status == "baixado") return false;
+                    return local.State == ConservationState.Regular || local.State == ConservationState.Recoverable;
+                }),
+                "baixado" => result.Where(p =>
+                {
+                    var local = TryGetLocal(p);
+                    return local?.Status == "baixado";
+                }),
+                "inativos" => result.Where(p =>
+                {
+                    var local = TryGetLocal(p);
+                    return local?.State == ConservationState.Unrecoverable;
+                }),
                 _ => result
             };
 
             if (!string.IsNullOrWhiteSpace(searchQuery))
             {
-                result = result.Where(i =>
-                    i.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                    i.Code.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                    i.Location.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
+                result = result.Where(p =>
+                {
+                    if (p.Deprod.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) return true;
+                    if (p.Nutomb.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) return true;
+                    var local = TryGetLocal(p);
+                    return local?.Location?.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) == true;
+                });
             }
 
-            return result.OrderByDescending(i => i.UpdatedAt);
+            return result.OrderByDescending(p => TryGetLocal(p)?.UpdatedAt ?? DateTime.MinValue)
+                .ThenBy(p => p.Nutomb);
         }
     }
 
     private int totalPages => (int)Math.Ceiling((double)filteredItems.Count() / PageSize);
-    private IEnumerable<InventoryItem> pagedItems => filteredItems.Skip((currentPage - 1) * PageSize).Take(PageSize);
+    private IEnumerable<PatrimonioItem> pagedItems => filteredItems.Skip((currentPage - 1) * PageSize).Take(PageSize);
 
     private void PrevPage() { if (currentPage > 1) currentPage--; }
     private void NextPage() { if (currentPage < totalPages) currentPage++; }
 
-    private void NavigateToItem(InventoryItem item) => Navigation.NavigateTo($"/item/{item.Id}");
+    private void NavigateToItem(PatrimonioItem item) => Navigation.NavigateTo($"/item/{item.Nutomb}");
 
     public void Dispose() => appState.OnChange -= HandleStateChange;
 }

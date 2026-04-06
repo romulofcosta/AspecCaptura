@@ -138,15 +138,17 @@ window.cameraTest = {
     }
 };
 
-// Auto-run tests when script loads (only in development, only on camera page)
-if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
-    window.location.pathname.includes('/camera')) {
-    // Wait for page to load
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => window.cameraTest.runAllTests(), 2000);
-        });
-    } else {
-        setTimeout(() => window.cameraTest.runAllTests(), 2000);
+// Auto-run tests only when explicitly enabled (avoid noise/errors on devices without camera)
+try {
+    const params = new URLSearchParams(window.location.search);
+    const enabled = params.get('debugCameraTests') === '1';
+    if (enabled) {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => window.cameraTest.runAllTests(), 500);
+            });
+        } else {
+            setTimeout(() => window.cameraTest.runAllTests(), 500);
+        }
     }
-}
+} catch { }

@@ -1,20 +1,40 @@
 @inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject AppState appState
 
 <div class="shell-layout">
-    <div class="shell-content">
+    <div class="mobile-frame">
         @Body
     </div>
-    <BottomNavigation ActiveRoute="@CurrentRoute" OnNavigate="@HandleNavigation" />
 </div>
 
+<style>
+    .shell-layout {
+        min-height: 100vh;
+        min-height: 100dvh;
+        background-color: #F5F7FA;
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .mobile-frame {
+        width: 100%;
+        max-width: 480px;
+        background: #FFFFFF;
+        min-height: 100vh;
+        min-height: 100dvh;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 0 40px rgba(0,0,0,0.05);
+        overflow-x: hidden;
+    }
+</style>
+
 @code {
-    private string CurrentRoute => NavigationManager.Uri;
-
-    [Inject]
-    private NavigationManager NavigationManager { get; set; } = default!;
-
-    private void HandleNavigation(string route)
+    protected override async Task OnInitializedAsync()
     {
-        NavigationManager.NavigateTo(route);
+        await appState.LoadStateAsync();
     }
 }

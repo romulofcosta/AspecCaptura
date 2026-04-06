@@ -24,7 +24,7 @@ Principais Pontos:
 - **PWA Real**: Instalável, offline-first, com logotipos oficiais da ASPEC e suporte a ícones **Maskable**.
 - **Temas Dinâmicos**: Suporte a modo claro/escuro com detecção automática de sistema e salvamento de preferência.
 - **Responsividade Mobile-First**: Interface otimizada com barra de navegação inferior (Bottom Navigation) e menu lateral para gestão de perfis e unidades.
-- **UI de Alta Fidelidade**: Baseada em MudBlazor, oferecendo uma experiência Material Design refinada e profissional.
+- **UI de Alta Fidelidade**: Anteriormente baseada em MudBlazor (removido); atualmente usa componentes Blazor puros e utilitários CSS.
 - **Gestão de Unidades**: Sistema de filtragem e seleção de unidades gestoras (Prefeituras, Fundos, Câmaras) com nomes reais e seeding automático.
 
 ## Stack Tecnológica
@@ -84,16 +84,9 @@ O projeto utiliza as seguintes bibliotecas principais:
 
 #### UI Component Libraries
 
-- **MudBlazor 7.20.0** (Gratuita, MIT License)
-  - **Propósito**: Biblioteca de componentes Material Design para Blazor
-  - **Instalação**: `dotnet add package MudBlazor --version 7.20.0`
-  - **Recursos**:
-    - +60 componentes prontos para uso
-    - Sistema de temas customizável
-    - Responsividade mobile-first
-    - Grids, Cards, Dialogs, Snackbars, DataTables
-    - Documentação completa: https://mudblazor.com
-  - **Motivo**: Proporcionar UI moderna, profissional e responsiva seguindo Material Design guidelines
+- **MudBlazor (removido)** (anteriormente usado)
+  - **Propósito**: Biblioteca de componentes Material Design para Blazor (removida)
+  - **Observação**: o projeto foi migrado para componentes Blazor puros e utilitários CSS; manter referência histórica.
 
 #### Fontes e Ícones (CDN - Gratuitas)
 

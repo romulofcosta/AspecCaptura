@@ -2,15 +2,19 @@
 
 :root {
     /* Primary Colors */
-    --color-primary: #1E3A5F;
-    --color-primary-dark: #16324F;
-    --color-background: #F5F7FA;
+    --color-primary: #1E5AA8;
+    --color-primary-dark: #174B8D;
+    --color-background: #F7F8FB;
     --color-surface: #FFFFFF;
-    --color-border: #E5E7EB;
-    --color-text-primary: #1F2937;
+    --color-border: #E6EAF2;
+    --color-text-primary: #111827;
     --color-text-secondary: #6B7280;
+    --color-text-disabled: #9CA3AF;
     --color-success: #16A34A;
-    --color-danger: #DC2626;
+    --color-warning: #F59E0B;
+    --color-info: #3B82F6;
+    --color-danger: #EF4444;
+    --color-primary-light: #E8F1FF;
 
     /* Legacy compatibility (Mapping to new tokens) */
     --primary-color: var(--color-primary);
@@ -19,8 +23,13 @@
     --surface-color: var(--color-surface);
     --text-primary: var(--color-text-primary);
     --text-secondary: var(--color-text-secondary);
+    --text-disabled: var(--color-text-disabled);
     --success-color: var(--color-success);
+    --warning-color: var(--color-warning);
+    --info-color: var(--color-info);
     --error-color: var(--color-danger);
+    --divider-color: var(--color-border);
+    --primary-light: var(--color-primary-light);
 
     /* Spacing (8px grid) */
     --spacing-xs: 8px;
@@ -31,6 +40,7 @@
     
     /* Typography */
     --font-family: 'Inter', sans-serif;
+    --font-family-display: 'Space Grotesk', 'Inter', sans-serif;
     --font-size-small: 12px;
     --font-size-body: 14px;
     --font-size-title-md: 16px;
@@ -45,11 +55,11 @@
     --font-weight-regular: 400;
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
-    --font-weight-bold: 700;
+    --font-weight-bold: 600;
     
     /* Border Radius */
-    --radius-input: 8px;
-    --radius-card: 12px;
+    --radius-input: 12px;
+    --radius-card: 16px;
     
     /* Legacy radius mapping */
     --radius-sm: 4px;
@@ -94,10 +104,22 @@
 
 /* Dark mode support - controlled by MudBlazor ThemeProvider, not system preference */
 [data-theme='dark'] {
-    --background-color: #121212;
-    --surface-color: #1E1E1E;
-    --text-primary: #FFFFFF;
-    --text-secondary: #B0B0B0;
-    --text-disabled: #6B6B6B;
-    --divider-color: #2C2C2C;
+    --color-primary: #5DA3FF;
+    --color-primary-dark: #2D7BE8;
+    --color-background: #0B1220;
+    --color-surface: #0F1B33;
+    --color-border: #22314D;
+    --color-text-primary: #E5E7EB;
+    --color-text-secondary: #A7B0C0;
+    --color-text-disabled: #64748B;
+    --color-primary-light: rgba(93, 163, 255, 0.16);
+
+    --background-color: var(--color-background);
+    --surface-color: var(--color-surface);
+    --text-primary: var(--color-text-primary);
+    --text-secondary: var(--color-text-secondary);
+    --text-disabled: var(--color-text-disabled);
+    --divider-color: var(--color-border);
+    --primary-color: var(--color-primary);
+    --primary-dark: var(--color-primary-dark);
 }

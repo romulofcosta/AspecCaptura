@@ -1,15 +1,8 @@
-# Guia de Uso do MudBlazor
+# Guia de Uso (MudBlazor removido)
 
-## Introdução
+Nota: o projeto não utiliza mais a biblioteca MudBlazor. Este arquivo foi mantido para referência histórica apenas — a UI foi migrada para componentes Blazor puros e estilos utilitários. Consulte o [MIGRATION_STATUS](MIGRATION_STATUS.md) para detalhes da migração.
 
-MudBlazor é uma biblioteca de componentes Blazor gratuita e open-source que implementa Material Design. Este guia mostra como usar os componentes MudBlazor neste projeto.
-
-## Documentação Oficial
-
-- **Site**: https://mudblazor.com/
-- **Exemplos**: https://try.mudblazor.com/
-- **GitHub**: https://github.com/MudBlazor/MudBlazor
-- **Licença**: MIT (gratuita para uso comercial)
+Se precisar reverter ou consultar exemplos antigos de MudBlazor, a documentação oficial ainda está disponível em https://mudblazor.com/.
 
 ## Componentes Disponíveis
 

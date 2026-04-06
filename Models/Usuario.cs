@@ -51,6 +51,11 @@ namespace pwa_camera_poc_blazor.Models
         public string Code => Nutomb; // Alias para compatibilidade
         public string Esfera { get; set; } = string.Empty;
         public string Deprod { get; set; } = string.Empty;
+        public string CdOrgao { get; set; } = string.Empty;
+        public string CdUnid { get; set; } = string.Empty;
+        public string CdUnidNorm { get; set; } = string.Empty;
+        public string CdArea { get; set; } = string.Empty;
+        public string CdSArea { get; set; } = string.Empty;
         public string? Descricao { get; set; }
         public string? Localizacao { get; set; }
         public decimal? ValorEstimado { get; set; }

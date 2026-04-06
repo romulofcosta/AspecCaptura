@@ -4,11 +4,12 @@
 @inject pwa_camera_poc_blazor.Services.Auth.IAuthService AuthService
 @inject pwa_camera_poc_blazor.Services.ToastService ToastService
 @inject NavigationManager Navigation
-
 <div class="minimal-page" style="padding: 24px;">
     <div class="minimal-card" style="padding: 24px; max-width: 600px; margin: 32px auto;">
         <h2 style="font-size: 20px; font-weight: 700; color: #1e293b; margin: 0 0 16px 0;">Baixando Lotes de Tombamentos</h2>
-        <p style="font-size: 14px; color: #64748b; margin: 0 0 8px 0;">Por favor aguarde, estamos atualizando a base local...</p>
+        <p style="font-size: 14px; color: #64748b; margin: 0 0 8px 0;">
+            @(_errorMessage is null ? "Por favor aguarde, estamos atualizando a base local..." : _errorMessage)
+        </p>
         
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
             <span style="font-size: 12px; color: #64748b;">Lote @current de @total</span>
@@ -19,9 +20,25 @@
             <div style="background: #003366; height: 100%; border-radius: 9999px; width: @ProgressValue%; transition: width 0.3s ease;"></div>
         </div>
         
-        <p style="font-size: 12px; color: #64748b; text-align: center; margin: 0;">
-            Processando e validando integridade dos dados...
-        </p>
+        @if (_errorMessage is null)
+        {
+            <p style="font-size: 12px; color: #64748b; text-align: center; margin: 0;">
+                Processando e validando integridade dos dados...
+            </p>
+        }
+        else
+        {
+            <div style="display: flex; gap: 12px; margin-top: 16px;">
+                <button style="flex: 1; height: 44px; border-radius: 10px; border: 1px solid #E2E8F0; background: #fff; font-weight: 700;"
+                        @onclick="Retry">
+                    Tentar Novamente
+                </button>
+                <button style="flex: 1; height: 44px; border-radius: 10px; border: none; background: #003366; color: #fff; font-weight: 800;"
+                        @onclick="BackToConfig">
+                    Voltar
+                </button>
+            </div>
+        }
     </div>
 </div>
 
@@ -30,6 +47,7 @@
     private int total = 1;
     private bool IsRunning = false;
     private bool _autoTriggered = false;
+    private string? _errorMessage;
     private double ProgressValue => total == 0 ? 0 : (double)current / total * 100;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -45,6 +63,7 @@
     {
         if (IsRunning) return;
         IsRunning = true;
+        _errorMessage = null;
         current = 0;
         total = 1;
         try
@@ -83,23 +102,19 @@
         {
             Console.Error.WriteLine($"Erro de conexão: {ex.Message}");
             ToastService.Show("Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.", "error");
-            // Aguarda 2 segundos e redireciona para configuração de sessão (modo offline)
-            await Task.Delay(2000);
-            Navigation.NavigateTo("/configuracao-sessao");
+            _errorMessage = "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.";
         }
         catch (TaskCanceledException ex)
         {
             Console.Error.WriteLine($"Timeout na sincronização: {ex.Message}");
             ToastService.Show("A sincronização demorou muito. Tente novamente mais tarde.", "warning");
-            await Task.Delay(2000);
-            Navigation.NavigateTo("/configuracao-sessao");
+            _errorMessage = "A sincronização demorou muito. Tente novamente.";
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Erro na sincronização: {ex.Message}");
             ToastService.Show($"Erro ao sincronizar: {ex.Message}", "error");
-            await Task.Delay(2000);
-            Navigation.NavigateTo("/configuracao-sessao");
+            _errorMessage = $"Erro ao sincronizar: {ex.Message}";
         }
         finally
         {
@@ -107,4 +122,12 @@
             StateHasChanged();
         }
     }
+
+    private Task Retry()
+    {
+        _autoTriggered = false;
+        return RunSync();
+    }
+
+    private void BackToConfig() => Navigation.NavigateTo("/configuracao-sessao");
 }

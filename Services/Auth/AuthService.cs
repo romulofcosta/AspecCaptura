@@ -33,7 +33,15 @@ namespace pwa_camera_poc_blazor.Services.Auth
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    result.ErrorMessage = "Credenciais inválidas ou erro no servidor.";
+                    try
+                    {
+                        var errorResp = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+                        result.ErrorMessage = errorResp?.Error ?? "Credenciais inválidas ou erro no servidor.";
+                    }
+                    catch
+                    {
+                        result.ErrorMessage = "Credenciais inválidas ou erro no servidor.";
+                    }
                     return result;
                 }
 
@@ -61,25 +69,21 @@ namespace pwa_camera_poc_blazor.Services.Auth
                 }
 
                 var received = loginResponse.Tombamentos ?? loginResponse.Patrimonio;
-                if (received != null && received.Count > 0)
-                {
-                    await dbService.InitializeAsync();
-                    await dbService.ClearAsync("patrimonio");
-                    foreach (var item in received)
-                    {
-                        var patr = new PatrimonioItem
-                        {
-                            IdPatomb = item.IdPatomb,
-                            Nutomb = item.Nutomb ?? string.Empty,
-                            Esfera = item.Esfera ?? string.Empty,
-                            Deprod = item.Deprod ?? string.Empty
-                        };
-                        await dbService.AddAsync("patrimonio", patr);
-                        user.Patrimonio.Add(patr);
-                    }
-                }
+                // Ignora carga pesada no login: sincronização completa acontece em /tombamentos-sync
 
-                await localStorage.SetItemAsync(user.UsuarioNome, user);
+                // Do not store the full `Patrimonio` list in localStorage (can be very large).
+                // Persist the user metadata only and keep patrimonio items in IndexedDB.
+                var userToStore = new Usuario
+                {
+                    UsuarioNome = user.UsuarioNome,
+                    NomeCompleto = user.NomeCompleto,
+                    Prefixo = user.Prefixo,
+                    Esfera = user.Esfera,
+                    Orgaos = user.Orgaos ?? new(),
+                    Token = user.Token,
+                    Patrimonio = new List<PatrimonioItem>()
+                };
+                await localStorage.SetItemAsync(user.UsuarioNome, userToStore);
 
                 var session = new UserSession { Username = user.UsuarioNome, Esfera = user.Esfera };
                 await localStorage.SetItemAsync(SESSION_KEY, session);
@@ -88,15 +92,23 @@ namespace pwa_camera_poc_blazor.Services.Auth
 
                 appState.ClearSessionData();
                 appState.EsferaAtual = user.Esfera;
+                appState.CurrentUser = user;
+                appState.IsAuthenticated = true;
+
+                _currentUser = user;
+                _currentToken = new SessionToken { Token = user.Token ?? string.Empty, IssuedAt = DateTime.UtcNow, ExpiresAt = DateTime.UtcNow.AddHours(8), UserId = user.UsuarioNome };
+
+                // Persistir o token para o CustomAuthStateProvider reconhecer após refresh
+                await localStorage.SetItemAsync("auth_token", _currentToken);
+                
+                // Salvar o estado global para garantir persistência após refresh
+                await appState.SaveStateAsync();
 
                 if (authStateProvider is CustomAuthStateProvider customProvider)
                 {
                     customProvider.NotifyAuthenticationStateChanged();
                     await Task.Delay(100);
                 }
-
-                _currentUser = user;
-                _currentToken = new SessionToken { Token = user.Token ?? string.Empty, IssuedAt = DateTime.UtcNow, ExpiresAt = DateTime.UtcNow.AddHours(8), UserId = user.UsuarioNome };
 
                 OnAuthStateChanged?.Invoke(this, new AuthStateChangedEventArgs { IsAuthenticated = true, User = user });
 
@@ -116,6 +128,7 @@ namespace pwa_camera_poc_blazor.Services.Auth
         {
             await localStorage.RemoveItemAsync(SESSION_KEY);
             await localStorage.RemoveItemAsync("session-config");
+            await localStorage.RemoveItemAsync("auth_token");
 
             appState.ClearSessionData();
 
@@ -231,7 +244,18 @@ namespace pwa_camera_poc_blazor.Services.Auth
 
         public async Task UpdateUserAsync(Usuario user)
         {
-            await localStorage.SetItemAsync(user.UsuarioNome, user);
+            // Avoid storing the full patrimonio collection in localStorage to prevent quota errors.
+            var userToStore = new Usuario
+            {
+                UsuarioNome = user.UsuarioNome,
+                NomeCompleto = user.NomeCompleto,
+                Prefixo = user.Prefixo,
+                Esfera = user.Esfera,
+                Orgaos = user.Orgaos ?? new(),
+                Token = user.Token,
+                Patrimonio = new List<PatrimonioItem>()
+            };
+            await localStorage.SetItemAsync(user.UsuarioNome, userToStore);
             _currentUser = user;
 
             var session = await localStorage.GetItemAsync<UserSession>(SESSION_KEY);
@@ -250,6 +274,12 @@ namespace pwa_camera_poc_blazor.Services.Auth
 }
 
 // DTO para consumir o novo contrato da API
+public class ApiErrorResponse
+{
+    public string? Error { get; set; }
+    public string? Detail { get; set; }
+}
+
 public class LoginResponse
 {
     public string NomeCompleto { get; set; } = string.Empty;
@@ -265,7 +295,7 @@ public class LoginResponse
 
 public class PatrimonioApiItem
 {
-    [JsonPropertyName("idpatomb")]
+    [JsonPropertyName("idPatomb")]
     public long IdPatomb { get; set; }
     [JsonPropertyName("nutomb")]
     public string? Nutomb { get; set; }

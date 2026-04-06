@@ -37,6 +37,7 @@ public class AppState : INotifyPropertyChanged
     public Models.UnidadeOrcamentaria? CurrentUO { get; set; }
     public Models.Area? CurrentArea { get; set; }
     public Models.Subarea? CurrentSubarea { get; set; }
+    public string? UnidadeNome { get; set; }
     public int AnoExercicio { get; set; } = 0;
     public int DtEstr { get; set; } = 0;
     private bool _isCameraActive;
@@ -197,6 +198,7 @@ public class AppState : INotifyPropertyChanged
                 PendingItems,
                 UnreadNotifications,
                 CurrentRoute,
+                IsDarkMode,
                 EsferaAtual,
                 CurrentOrgao,
                 CurrentUO,
@@ -223,6 +225,31 @@ public class AppState : INotifyPropertyChanged
                 var stateObj = state.Value;
                 
                 // Load session properties
+                if (stateObj.TryGetProperty("IsAuthenticated", out var authElement) && authElement.ValueKind != System.Text.Json.JsonValueKind.Null)
+                {
+                    IsAuthenticated = authElement.GetBoolean();
+                }
+
+                if (stateObj.TryGetProperty("CurrentUser", out var userElement) && userElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+                {
+                    CurrentUser = System.Text.Json.JsonSerializer.Deserialize<Usuario>(userElement.GetRawText());
+                }
+
+                if (stateObj.TryGetProperty("CurrentRoute", out var routeElement) && routeElement.ValueKind == System.Text.Json.JsonValueKind.String)
+                {
+                    CurrentRoute = routeElement.GetString() ?? "/";
+                }
+
+                if (stateObj.TryGetProperty("IsDarkMode", out var darkElement) && darkElement.ValueKind is System.Text.Json.JsonValueKind.True or System.Text.Json.JsonValueKind.False)
+                {
+                    IsDarkMode = darkElement.GetBoolean();
+                }
+
+                if (stateObj.TryGetProperty("UnidadeNome", out var unidadeElement) && unidadeElement.ValueKind == System.Text.Json.JsonValueKind.String)
+                {
+                    UnidadeNome = unidadeElement.GetString();
+                }
+
                 if (stateObj.TryGetProperty("EsferaAtual", out var esferaElement) && esferaElement.ValueKind == System.Text.Json.JsonValueKind.String)
                 {
                     EsferaAtual = esferaElement.GetString();

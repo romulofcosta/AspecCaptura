@@ -1,6 +1,8 @@
-# Correção de Bug - MudBlazor Providers no AuthMinimalLayout
+# Correção de Bug - Providers (referência histórica)
 
-## Data: 2026-03-12
+> Nota: este documento é histórico. A biblioteca MudBlazor foi removida do projeto; o conteúdo abaixo descreve um problema e correção aplicados quando MudBlazor estava em uso.
+
+## Data: 2026-03-12 (histórico)
 
 ## Problema Identificado
 
