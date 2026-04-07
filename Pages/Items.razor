@@ -1,13 +1,14 @@
 @page "/"
-@page "/items"
+@page "/bens"
 @layout pwa_camera_poc_blazor.Components.Layout.AppLayout
 @using pwa_camera_poc_blazor.Models
 @using pwa_camera_poc_blazor.Components.Cards
+@using pwa_camera_poc_blazor.Services.Utils
 
 @implements IDisposable
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
-<PageTitle>Itens - Aspec Captura</PageTitle>
+<PageTitle>Bens - Aspec Captura</PageTitle>
 
 @* ── App Header ── *@
 <header class="app-header">
@@ -32,8 +33,8 @@
         <input type="search"
                class="search-input"
                placeholder="Buscar bem ou descrição..."
-               @bind="searchQuery"
-               @bind:event="oninput" />
+               value="@searchQuery"
+               @oninput="OnSearchChanged" />
     </div>
     <button class="scan-cta" title="Nova Captura" @onclick='() => Navigation.NavigateTo("/camera")'>
         <span class="material-symbols-outlined">qr_code_scanner</span>
@@ -44,26 +45,28 @@
 @* ── Horizontal Filter Tabs ── *@
 <div class="filter-tabs-wrapper">
     <div class="filter-tabs">
-        <button class="filter-tab @(selectedStatus == "todos" ? "active" : "")" @onclick='() => SetStatus("todos")'>TODOS</button>
-        <button class="filter-tab @(selectedStatus == "operacao" ? "active" : "")" @onclick='() => SetStatus("operacao")'>EM OPERAÇÃO</button>
-        <button class="filter-tab @(selectedStatus == "manutencao" ? "active" : "")" @onclick='() => SetStatus("manutencao")'>MANUTENÇÃO</button>
-        <button class="filter-tab @(selectedStatus == "baixado" ? "active" : "")" @onclick='() => SetStatus("baixado")'>BAIXADO</button>
-        <button class="filter-tab @(selectedStatus == "inativos" ? "active" : "")" @onclick='() => SetStatus("inativos")'>EM BAIXA</button>
+        <button class="filter-tab @(selectedStatus == null ? "active" : "")" @onclick='() => SetStatus(null)'>TODOS</button>
+        @foreach (var status in Enum.GetValues<BemStatus>())
+        {
+            <button class="filter-tab @(selectedStatus == status ? "active" : "")" @onclick='() => SetStatus(status)'>
+                @status.ToDisplayText().ToUpper()
+            </button>
+        }
     </div>
 </div>
 
 @* ── Summary Bar ── *@
 <div class="summary-bar">
     <span class="summary-count">
-        <span class="summary-number">@filteredItems.Count()</span>
+        <span class="summary-number">@filteredBens.Count()</span>
         BENS
     </span>
     <span class="summary-divider">|</span>
     <span class="summary-uo">@(appState.CurrentUO?.NomeUO ?? "Unidade não selecionada")</span>
 </div>
 
-@* ── Items List ── *@
-<div class="items-list">
+@* ── Bens List ── *@
+<div class="bens-list">
     @if (isLoading)
     {
         <div class="state-container">
@@ -71,7 +74,7 @@
             <span class="state-label">Carregando bens...</span>
         </div>
     }
-    else if (!filteredItems.Any())
+    else if (!filteredBens.Any())
     {
         <div class="state-container">
             <span class="material-symbols-outlined state-icon">inventory_2</span>
@@ -81,9 +84,9 @@
     }
     else
     {
-        @foreach (var item in pagedItems)
+        @foreach (var bem in pagedBens)
         {
-            <PatrimonioCard Item="@item" LocalItem="@TryGetLocal(item)" OnView="NavigateToItem" />
+            <PatrimonioCard Item="@bem" LocalItem="@TryGetLocal(bem)" OnView="NavigateToBem" />
         }
 
         @if (totalPages > 1)
@@ -315,7 +318,7 @@
     }
 
     /* ── Items List ── */
-    .items-list {
+    .bens-list {
         flex: 1;
         padding: 12px 12px 120px;
         display: flex;
@@ -436,10 +439,11 @@
 </style>
 
 @code {
-    private List<PatrimonioItem> items = new();
+    private List<PatrimonioItem> bens = new();
+    private List<PatrimonioItem> filteredBens = new();
     private Dictionary<string, InventoryItem> _localByNutomb = new(StringComparer.OrdinalIgnoreCase);
     private string searchQuery = "";
-    private string selectedStatus = "todos";
+    private BemStatus? selectedStatus = null;
     private int currentPage = 1;
     private const int PageSize = 20;
     private bool isLoading = true;
@@ -468,16 +472,21 @@
         }
 
         appState.OnChange += HandleStateChange;
-        await LoadItems();
+        await LoadBens();
     }
 
-    private async void HandleStateChange() => await InvokeAsync(StateHasChanged);
+    private async void HandleStateChange()
+    {
+        await LoadBens();
+        await InvokeAsync(StateHasChanged);
+    }
 
-    private async Task LoadItems()
+    private async Task LoadBens()
     {
         isLoading = true;
         await InvokeAsync(StateHasChanged);
         await Task.Yield();
+        
         try
         {
             var user = await AuthService.GetCurrentUserAsync();
@@ -485,97 +494,178 @@
 
             if (appState.CurrentUO != null)
             {
-                var localItems = await DbService.GetItemsByUOAsync(appState.CurrentUO.IdUO);
-                _localByNutomb = localItems
-                    .Where(i => !string.IsNullOrWhiteSpace(i.Code))
-                    .GroupBy(i => i.Code, StringComparer.OrdinalIgnoreCase)
+                var localBens = await DbService.GetItemsByUOAsync(appState.CurrentUO.IdUO);
+                _localByNutomb = localBens
+                    .Where(b => !string.IsNullOrWhiteSpace(b.Code))
+                    .GroupBy(b => b.Code, StringComparer.OrdinalIgnoreCase)
                     .ToDictionary(g => g.Key, g => g.OrderByDescending(x => x.UpdatedAt).First(), StringComparer.OrdinalIgnoreCase);
 
-                var allPatrimonio = await DbService.GetPatrimonioByUOAsync(appState.CurrentUO.IdUO);
-                var esfera = appState.EsferaAtual ?? user.Esfera;
+                Console.WriteLine($"[Bens.LoadBens] Local bens loaded: {localBens.Count}");
 
-                items = (!string.IsNullOrEmpty(esfera) && esfera != "A")
-                    ? allPatrimonio.Where(i => string.Equals(i.Esfera, esfera, StringComparison.OrdinalIgnoreCase)).ToList()
+                // Carrega patrimônio filtrado por subárea (se configurada)
+                var allPatrimonio = await DbService.GetPatrimonioBySubareaAsync(
+                    appState.CurrentUO.IdUO,
+                    appState.CurrentArea?.IdArea,
+                    appState.CurrentSubarea?.IdSubarea
+                );
+                
+                Console.WriteLine($"[Bens.LoadBens] Patrimonio loaded from DB: {allPatrimonio.Count}");
+                Console.WriteLine($"[Bens.LoadBens] UO: {appState.CurrentUO.IdUO}, Area: {appState.CurrentArea?.IdArea}, Subarea: {appState.CurrentSubarea?.IdSubarea}");
+                
+                // Debug: verificar valores de esfera nos dados
+                if (allPatrimonio.Count > 0)
+                {
+                    var esferasDistintas = allPatrimonio.Select(b => b.Esfera).Distinct().ToList();
+                    Console.WriteLine($"[Bens.LoadBens] Esferas distintas no DB: {string.Join(", ", esferasDistintas.Select(e => $"'{e}'"))}");
+                }
+                
+                var esfera = appState.EsferaAtual ?? user.Esfera;
+                Console.WriteLine($"[Bens.LoadBens] Esfera do filtro: '{esfera}' (EsferaAtual: '{appState.EsferaAtual}', user.Esfera: '{user.Esfera}')");
+
+                bens = (!string.IsNullOrEmpty(esfera) && esfera != "A")
+                    ? allPatrimonio.Where(b => string.Equals(b.Esfera, esfera, StringComparison.OrdinalIgnoreCase)).ToList()
                     : allPatrimonio.ToList();
+                
+                Console.WriteLine($"[Bens.LoadBens] Bens after esfera filter ({esfera}): {bens.Count}");
+                
+                // Aplica filtros após carregar
+                ApplyFilters();
+            }
+            else
+            {
+                Console.WriteLine("[Bens.LoadBens] CurrentUO is null!");
+                bens = new List<PatrimonioItem>();
+                filteredBens = new List<PatrimonioItem>();
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error loading items: {ex.Message}");
+            Console.Error.WriteLine($"Error loading bens: {ex.Message}");
+            Console.Error.WriteLine($"Stack trace: {ex.StackTrace}");
+            bens = new List<PatrimonioItem>();
+            filteredBens = new List<PatrimonioItem>();
         }
         finally
         {
             isLoading = false;
+            await InvokeAsync(StateHasChanged);
         }
     }
 
-    private void SetStatus(string status)
+    private void ApplyFilters()
+    {
+        Console.WriteLine($"[Bens.ApplyFilters] Starting with {bens.Count} bens");
+        Console.WriteLine($"[Bens.ApplyFilters] Selected status: {selectedStatus?.ToString() ?? "null (TODOS)"}");
+        Console.WriteLine($"[Bens.ApplyFilters] Local items count: {_localByNutomb.Count}");
+        
+        var result = bens.AsEnumerable();
+
+        // Filtro por situação (BemStatus)
+        // IMPORTANTE: Quando selectedStatus é null (aba "TODOS"), NENHUM filtro é aplicado
+        // Todos os bens da localização são exibidos, independente de terem captura local
+        if (selectedStatus.HasValue)
+        {
+            var beforeFilter = result.Count();
+            result = FilterByStatus(result, selectedStatus.Value);
+            var afterFilter = result.Count();
+            Console.WriteLine($"[Bens.ApplyFilters] After status filter ({selectedStatus.Value.ToDisplayText()}): {afterFilter} (removed {beforeFilter - afterFilter})");
+        }
+        else
+        {
+            Console.WriteLine($"[Bens.ApplyFilters] No status filter applied (showing all {result.Count()} bens)");
+        }
+
+        // Filtro por busca (termo de pesquisa)
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            var beforeSearch = result.Count();
+            result = FilterBySearchQuery(result, searchQuery);
+            var afterSearch = result.Count();
+            Console.WriteLine($"[Bens.ApplyFilters] After search filter: {afterSearch} (removed {beforeSearch - afterSearch})");
+        }
+
+        // Ordena e materializa a lista
+        // Bens com captura local mais recente aparecem primeiro
+        filteredBens = result
+            .OrderByDescending(b => TryGetLocal(b)?.UpdatedAt ?? DateTime.MinValue)
+            .ThenBy(b => b.Nutomb)
+            .ToList();
+        
+        Console.WriteLine($"[Bens.ApplyFilters] Final filtered bens: {filteredBens.Count}");
+        
+        // Reset para primeira página quando filtros mudam
+        currentPage = 1;
+    }
+
+    /// <summary>
+    /// Filtra bens por situação (BemStatus).
+    /// Retorna apenas bens que possuem captura local E o status correspondente.
+    /// Bens sem captura local são automaticamente excluídos deste filtro.
+    /// </summary>
+    private IEnumerable<PatrimonioItem> FilterByStatus(IEnumerable<PatrimonioItem> bens, BemStatus status)
+    {
+        return bens.Where(b =>
+        {
+            var local = TryGetLocal(b);
+            // Apenas bens com captura local (local != null) E status correspondente
+            return local != null && local.Status == status;
+        });
+    }
+
+    /// <summary>
+    /// Filtra bens por termo de busca.
+    /// Busca em: código (nutomb), descrição (deprod) e localização.
+    /// </summary>
+    private IEnumerable<PatrimonioItem> FilterBySearchQuery(IEnumerable<PatrimonioItem> bens, string query)
+    {
+        return bens.Where(b =>
+        {
+            if (b.Deprod.Contains(query, StringComparison.OrdinalIgnoreCase)) return true;
+            if (b.Nutomb.Contains(query, StringComparison.OrdinalIgnoreCase)) return true;
+            var local = TryGetLocal(b);
+            return local?.Location?.Contains(query, StringComparison.OrdinalIgnoreCase) == true;
+        });
+    }
+
+    private void SetStatus(BemStatus? status)
     {
         selectedStatus = status;
-        currentPage = 1;
+        ApplyFilters();
+        StateHasChanged();
+    }
+
+    private void OnSearchChanged(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? "";
+        ApplyFilters();
+        StateHasChanged();
     }
 
     private InventoryItem? TryGetLocal(PatrimonioItem p)
         => _localByNutomb.TryGetValue(p.Nutomb, out var local) ? local : null;
 
-    private IEnumerable<PatrimonioItem> filteredItems
-    {
-        get
+    private int totalPages => filteredBens.Count == 0 ? 1 : (int)Math.Ceiling((double)filteredBens.Count / PageSize);
+    private IEnumerable<PatrimonioItem> pagedBens => filteredBens.Skip((currentPage - 1) * PageSize).Take(PageSize);
+
+    private void PrevPage() 
+    { 
+        if (currentPage > 1) 
         {
-            var result = items.AsEnumerable();
-
-            result = selectedStatus switch
-            {
-                "operacao" => result.Where(p =>
-                {
-                    var local = TryGetLocal(p);
-                    if (local == null) return true;
-                    if (local.Status == "baixado") return false;
-                    return local.State == ConservationState.Good || local.State == ConservationState.New;
-                }),
-                "manutencao" => result.Where(p =>
-                {
-                    var local = TryGetLocal(p);
-                    if (local == null) return false;
-                    if (local.Status == "baixado") return false;
-                    return local.State == ConservationState.Regular || local.State == ConservationState.Recoverable;
-                }),
-                "baixado" => result.Where(p =>
-                {
-                    var local = TryGetLocal(p);
-                    return local?.Status == "baixado";
-                }),
-                "inativos" => result.Where(p =>
-                {
-                    var local = TryGetLocal(p);
-                    return local?.State == ConservationState.Unrecoverable;
-                }),
-                _ => result
-            };
-
-            if (!string.IsNullOrWhiteSpace(searchQuery))
-            {
-                result = result.Where(p =>
-                {
-                    if (p.Deprod.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) return true;
-                    if (p.Nutomb.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) return true;
-                    var local = TryGetLocal(p);
-                    return local?.Location?.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) == true;
-                });
-            }
-
-            return result.OrderByDescending(p => TryGetLocal(p)?.UpdatedAt ?? DateTime.MinValue)
-                .ThenBy(p => p.Nutomb);
+            currentPage--;
+            StateHasChanged();
+        }
+    }
+    
+    private void NextPage() 
+    { 
+        if (currentPage < totalPages) 
+        {
+            currentPage++;
+            StateHasChanged();
         }
     }
 
-    private int totalPages => (int)Math.Ceiling((double)filteredItems.Count() / PageSize);
-    private IEnumerable<PatrimonioItem> pagedItems => filteredItems.Skip((currentPage - 1) * PageSize).Take(PageSize);
-
-    private void PrevPage() { if (currentPage > 1) currentPage--; }
-    private void NextPage() { if (currentPage < totalPages) currentPage++; }
-
-    private void NavigateToItem(PatrimonioItem item) => Navigation.NavigateTo($"/item/{item.Nutomb}");
+    private void NavigateToBem(PatrimonioItem bem) => Navigation.NavigateTo($"/bem/{bem.Nutomb}");
 
     public void Dispose() => appState.OnChange -= HandleStateChange;
 }

@@ -56,6 +56,7 @@ namespace pwa_camera_poc_blazor.Models
         public string CdUnidNorm { get; set; } = string.Empty;
         public string CdArea { get; set; } = string.Empty;
         public string CdSArea { get; set; } = string.Empty;
+        public int ExercicioFiscal { get; set; } = 0; // Ano do exercício fiscal (YYYY); 0 quando ausente
         public string? Descricao { get; set; }
         public string? Localizacao { get; set; }
         public decimal? ValorEstimado { get; set; }

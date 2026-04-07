@@ -1,0 +1,500 @@
+﻿{
+   "cliente": "ce999",
+   "usuarios": [
+      {
+         "idusuario": "1",
+         "nmusuario": "ce999.nome1.sbnome1",
+         "pwdusuario": "passwd",
+         "esfera": "E"
+      },
+      {
+         "idusuario": "2",
+         "nmusuario": "ce999.nome2.sbnome2",
+         "pwdusuario": "passwd",
+         "esfera": "L"
+      },
+      {
+         "idusuario": "3",
+         "nmusuario": "ce999.nome3.sbnome3",
+         "pwdusuario": "passwd",
+         "esfera": "A"
+      }
+   ],
+   "tabelas": {
+      "xxorga": [
+         {
+            "dtestr": 19930101,
+            "cdorgao": "99",
+            "nmorgao": "ï¿½rgï¿½o 99 do Exercï¿½cio 1993"
+         },
+         {
+            "dtestr": 19940101,
+            "cdorgao": "99",
+            "nmorgao": "ï¿½rgï¿½o 99 do Exercï¿½cio 1994"
+         },
+         {
+            "dtestr": 19950101,
+            "cdorgao": "99",
+            "nmorgao": "ï¿½rgï¿½o 99 do Exercï¿½cio 1995"
+         },
+         {
+            "dtestr": 19960101,
+            "cdorgao": "01",
+            "nmorgao": "ï¿½rgï¿½o 01 do Exercï¿½cio 1996"
+         },
+         {
+            "dtestr": 19960101,
+            "cdorgao": "99",
+            "nmorgao": "ï¿½rgï¿½o 99 do Exercï¿½cio 1996"
+         },
+         {
+            "dtestr": 19970101,
+            "cdorgao": "01",
+            "nmorgao": "Cï¿½MARA MUNICIPAL DE AQUIRAZ"
+         },
+         {
+            "dtestr": 19970101,
+            "cdorgao": "02",
+            "nmorgao": "GABINETE DO PREFEITO DE AQUIRAZ"
+         },
+         {
+            "dtestr": 19970101,
+            "cdorgao": "03",
+            "nmorgao": "PROCURADORIA GERAL DE AQUIRAZ"
+         },
+         {
+            "dtestr": 19970101,
+            "cdorgao": "04",
+            "nmorgao": "SEC. DE ADMINISTRAï¿½ï¿½O DE AQUIRAZ"
+         },
+         {
+            "dtestr": 19970101,
+            "cdorgao": "05",
+            "nmorgao": "SEC. DE FINANï¿½AS DE AQUIRAZ"
+         },
+         {
+            "dtestr": 19970101,
+            "cdorgao": "06",
+            "nmorgao": "SEC. DE SAï¿½DE DE AQUIRAZ"
+         },
+         {
+            "dtestr": 19970101,
+            "cdorgao": "07",
+            "nmorgao": "SECRETARIA DE  TURISMO  E DESPORTO"
+         },
+         {
+            "dtestr": 19970101,
+            "cdorgao": "08",
+            "nmorgao": "SEC.  DO TRABALHO E Aï¿½ï¿½O SOCIAL"
+         },
+         {
+            "dtestr": 19970101,
+            "cdorgao": "09",
+            "nmorgao": "SECRETARIA DE INFRA ESTRUTURA"
+         },
+         {
+            "dtestr": 19970101,
+            "cdorgao": "10",
+            "nmorgao": "SECRETARIA DE EDUCAï¿½ï¿½O DE AQUIRAZ"
+         },
+         {
+            "dtestr": 19970101,
+            "cdorgao": "11",
+            "nmorgao": "SECRETARIA ESPECIAL DE GOVERNO"
+         },
+         {
+            "dtestr": 19980101,
+            "cdorgao": "01",
+            "nmorgao": "Cï¿½MARA MUNICIPAL DE AQUIRAZ"
+         },
+         {
+            "dtestr": 19980101,
+            "cdorgao": "02",
+            "nmorgao": "GABINETE DO PREFEITO"
+         },
+         {
+            "dtestr": 19980101,
+            "cdorgao": "03",
+            "nmorgao": "SECRETARIA DE ADMINISTRAï¿½ï¿½O"
+         },
+         {
+            "dtestr": 19980101,
+            "cdorgao": "04",
+            "nmorgao": "SECRETARIA DE DESENVOLVIMENTO ECONï¿½MICO"
+         },
+         {
+            "dtestr": 19980101,
+            "cdorgao": "05",
+            "nmorgao": "SECRETARIA DE SAï¿½DE"
+         },
+         {
+            "dtestr": 19980101,
+            "cdorgao": "06",
+            "nmorgao": "SEC. DE TURISMO E DESENVOLV. INDUSTRIAL"
+         },
+         {
+            "dtestr": 19980101,
+            "cdorgao": "07",
+            "nmorgao": "SECRETARIA DE TRABALHO E Aï¿½ï¿½O SOCIAL"
+         },
+         {
+            "dtestr": 19980101,
+            "cdorgao": "08",
+            "nmorgao": "SECRETARIA DE INFRA-ESTRUTURA"
+         },
+         {
+            "dtestr": 19980101,
+            "cdorgao": "09",
+            "nmorgao": "SEC. DE EDUCAï¿½ï¿½O, CULTURA E DESPORTO"
+         },
+         {
+            "dtestr": 19980101,
+            "cdorgao": "10",
+            "nmorgao": "SECRETARIA DE ASSUNTOS EXTRAORDINï¿½RIOS"
+         },
+         {
+            "dtestr": 19980101,
+            "cdorgao": "99",
+            "nmorgao": "RESERVA DE CONTINGï¿½NCIA"
+         },
+         {
+            "dtestr": 19990101,
+            "cdorgao": "01",
+            "nmorgao": "Cï¿½MARA MUNICIPAL DE AQUIRAZ"
+         },
+         {
+            "dtestr": 19990101,
+            "cdorgao": "02",
+            "nmorgao": "GABINETE DO PREFEITO"
+         },
+         {
+            "dtestr": 19990101,
+            "cdorgao": "03",
+            "nmorgao": "SECRETARIA DE ADMINISTRAï¿½ï¿½O"
+         },
+         {
+            "dtestr": 19990101,
+            "cdorgao": "04",
+            "nmorgao": "SECRETARIA DE DESENVOLVIMENTO ECONï¿½MICO"
+         },
+         {
+            "dtestr": 19990101,
+            "cdorgao": "05",
+            "nmorgao": "SECRETARIA DE SAï¿½DE"
+         },
+         {
+            "dtestr": 19990101,
+            "cdorgao": "06",
+            "nmorgao": "SEC. DE TURISMO E DESENVOLV. INDUSTRIAL"
+         },
+         {
+            "dtestr": 19990101,
+            "cdorgao": "07",
+            "nmorgao": "SECRETARIA DE TRABALHO E Aï¿½ï¿½O SOCIAL"
+         },
+         {
+            "dtestr": 19990101,
+            "cdorgao": "08",
+            "nmorgao": "SECRETARIA DE INFRA-ESTRUTURA"
+         },
+         {
+            "dtestr": 19990101,
+            "cdorgao": "09",
+            "nmorgao": "SEC. DE EDUCAï¿½ï¿½O, CULTURA E DESPORTO"
+         },
+         {
+            "dtestr": 19990101,
+            "cdorgao": "10",
+            "nmorgao": "SECRETARIA DE ASSUNTOS EXTRAORDINï¿½RIOS"
+         },
+         {
+            "dtestr": 19990101,
+            "cdorgao": "99",
+            "nmorgao": "RESERVA DE CONTINGï¿½NCIA"
+         },
+         {
+            "dtestr": 20000101,
+            "cdorgao": "01",
+            "nmorgao": "Cï¿½MARA MUNICIPAL DE AQUIRAZ"
+         },
+         {
+            "dtestr": 20000101,
+            "cdorgao": "02",
+            "nmorgao": "GABINETE DO PREFEITO"
+         },
+         {
+            "dtestr": 20000101,
+            "cdorgao": "03",
+            "nmorgao": "SECRETARIA DE ADMINISTRAï¿½ï¿½O"
+         },
+         {
+            "dtestr": 20000101,
+            "cdorgao": "04",
+            "nmorgao": "SECRETARIA DE DESENVOLVIMENTO ECONï¿½MICO"
+         },
+         {
+            "dtestr": 20000101,
+            "cdorgao": "05",
+            "nmorgao": "SECRETARIA DE SAï¿½DE"
+         },
+         {
+            "dtestr": 20000101,
+            "cdorgao": "06",
+            "nmorgao": "SEC. DE TURISMO E DESENVOLV. INDUSTRIAL"
+         },
+         {
+            "dtestr": 20000101,
+            "cdorgao": "07",
+            "nmorgao": "SECRETARIA DE TRABALHO E Aï¿½ï¿½O SOCIAL"
+         },
+         {
+            "dtestr": 20000101,
+            "cdorgao": "08",
+            "nmorgao": "SECRETARIA DE INFRA-ESTRUTURA"
+         },
+         {
+            "dtestr": 20000101,
+            "cdorgao": "09",
+            "nmorgao": "SEC. DE EDUCAï¿½ï¿½O, CULTURA E DESPORTO"
+         },
+         {
+            "dtestr": 20000101,
+            "cdorgao": "10",
+            "nmorgao": "SECRETARIA DE ASSUNTOS EXTRAORDINï¿½RIOS"
+         },
+         {
+            "dtestr": 20000101,
+            "cdorgao": "99",
+            "nmorgao": "RESERVA DE CONTINGï¿½NCIA"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "01",
+            "nmorgao": "Cï¿½MARA MUNICIPAL DE AQUIRAZ"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "02",
+            "nmorgao": "GABINETE DO PREFEITO"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "03",
+            "nmorgao": "SECRETARIA DE ADMINISTRAï¿½ï¿½O"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "04",
+            "nmorgao": "SECRETARIA DE DESENVOLVIMENTO ECONï¿½MICO"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "05",
+            "nmorgao": "SECRETARIA DE SAï¿½DE"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "06",
+            "nmorgao": "SEC. DE TURISMO E DESENVOLV. INDUSTRIAL"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "07",
+            "nmorgao": "SECRETARIA DE TRABALHO E Aï¿½ï¿½O SOCIAL"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "08",
+            "nmorgao": "SECRETARIA DE INFRA-ESTRUTURA"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "09",
+            "nmorgao": "SEC. DE EDUCAï¿½ï¿½O, CULTURA E DESPORTO"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "10",
+            "nmorgao": "SECRETARIA DE ASSUNTOS EXTRAORDINï¿½RIOS"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "11",
+            "nmorgao": "SECRETARIA DE ADMINISTRAï¿½ï¿½O E FINANï¿½AS"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "12",
+            "nmorgao": "SECRETARIA DE PLANEJAMENTO E COORDENAï¿½ï¿½O"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "13",
+            "nmorgao": "SEC.DE DES.ECONï¿½MICO,TURISMO E MEIO AMBI"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "14",
+            "nmorgao": "SEC.DE INFRA-ESTRUTURA, DES.RURAL E RECU"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "15",
+            "nmorgao": "SECRETARIA DE EDUCAï¿½ï¿½O - SEME"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "16",
+            "nmorgao": "SECRETARIA DE CULTURA E DESPORTO-SEMCULT"
+         },
+         {
+            "dtestr": 20010101,
+            "cdorgao": "99",
+            "nmorgao": "RESERVA DE CONTINGï¿½NCIA"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "01",
+            "nmorgao": "Cï¿½MARA MUNICIPAL DE AQUIRAZ"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "02",
+            "nmorgao": "GABINETE DO PREFEITO"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "03",
+            "nmorgao": "SECRETARIA DE ADMINISTRAï¿½ï¿½O E FINANï¿½AS"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "04",
+            "nmorgao": "SECRETARIA DE PLANEJAMENTO E COORDENAï¿½AO"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "05",
+            "nmorgao": "SECRETARIA DE SAï¿½DE"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "06",
+            "nmorgao": "SEC. DE CULTURA E DESPORTO"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "07",
+            "nmorgao": "SECRETARIA DO TRABALHO E Aï¿½ï¿½O SOCIAL"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "08",
+            "nmorgao": "SEC.DE DES.ECON.,TURISMO E MEIO AMBIENTE"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "09",
+            "nmorgao": "SEC. MUNICIPAL DE EDUCAï¿½ï¿½O"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "10",
+            "nmorgao": "SEC.DE INFRA-ESTRUT.,DES.RURAL E REC.HID"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "13",
+            "nmorgao": "SEC.DE DES.ECONï¿½MICO,TURISMO E MEIO AMBI"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "14",
+            "nmorgao": "SEC.DE INFRA-ESTRUTURA, DES.RURAL E RECU"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "15",
+            "nmorgao": "SECRETARIA DE EDUCAï¿½ï¿½O - SEME"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "16",
+            "nmorgao": "SECRETARIA DE CULTURA E DESPORTO-SEMCULT"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "17",
+            "nmorgao": "SECRETARIA DE ADMINISTRAï¿½ï¿½O"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "18",
+            "nmorgao": "SECRETARIA DE FINANï¿½AS"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "19",
+            "nmorgao": "SEC.DO TRAB., DESENV. SOCIAL E CIDADANIA"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "20",
+            "nmorgao": "SEC. DE DESENV. ECONï¿½MICO E TURISMO"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "21",
+            "nmorgao": "SECRETARIA DE INFRA ESTRUTURA"
+         },
+         {
+            "dtestr": 20020101,
+            "cdorgao": "22",
+            "nmorgao": "SEC.DE AGRIC.,REC.Hï¿½DRICOS E MEIO AMBIEN"
+         },
+         {
+            "dtestr": 20030101,
+            "cdorgao": "01",
+            "nmorgao": "Cï¿½MARA MUNICIPAL DE AQUIRAZ"
+         },
+         {
+            "dtestr": 20030101,
+            "cdorgao": "02",
+            "nmorgao": "GABINETE DO PREFEITO"
+         },
+         {
+            "dtestr": 20030101,
+            "cdorgao": "03",
+            "nmorgao": "SECRETARIA DE ADMINISTRAï¿½ï¿½O E FINANï¿½AS"
+         },
+         {
+            "dtestr": 20030101,
+            "cdorgao": "04",
+            "nmorgao": "SECRETARIA DE PLANEJAMENTO E COORDENAï¿½AO"
+         },
+         {
+            "dtestr": 20030101,
+            "cdorgao": "05",
+            "nmorgao": "SECRETARIA DE SAï¿½DE"
+         },
+         {
+            "dtestr": 20030101,
+            "cdorgao": "06",
+            "nmorgao": "SEC. DE CULTURA E DESPORTO"
+         },
+         {
+            "dtestr": 20030101,
+            "cdorgao": "07",
+            "nmorgao": "SECRETARIA DO TRABALHO E Aï¿½ï¿½O SOCIAL"
+         },
+         {
+            "dtestr": 20030101,
+            "cdorgao": "08",
+            "nmorgao": "SEC.DE DES.ECON.,TURISMO E MEIO AMBIENTE"
+         },
+         {
+            "dtestr": 20030101,
+            "cdorgao": "09",
+            "nmorgao": "SEC. MUNICIPAL DE EDUCAï¿½ï¿½O"
+         },
+         {

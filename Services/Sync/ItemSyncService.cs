@@ -260,8 +260,10 @@ public class ItemSyncService : ISyncService
         {
             Id = item.Id,
             Code = item.Code,
-            EstimatedValue = item.EstimatedValue,
+            ValorLiquidoContabil = item.ValorLiquidoContabil,
             State = item.State,
+            Status = item.Status,
+            DataTombamento = item.DataTombamento,
             PhotoPath = item.PhotoPath,
             IsSynchronized = item.IsSynchronized,
             CreatedAt = item.CreatedAt,

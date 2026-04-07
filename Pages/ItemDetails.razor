@@ -1,13 +1,14 @@
-@page "/item-details/{Nutomb}"
-@page "/item/{Nutomb}"
+@page "/bem-detalhes/{Nutomb}"
+@page "/bem/{Nutomb}"
 @using pwa_camera_poc_blazor.Components.Common
 @using pwa_camera_poc_blazor.Components.Layout
+@using pwa_camera_poc_blazor.Services.Utils
 @inject pwa_camera_poc_blazor.Services.Storage.IIndexedDbService DbService
 @inject AppState appState
 @inject pwa_camera_poc_blazor.Services.Auth.IAuthService AuthService
 @layout pwa_camera_poc_blazor.Components.Layout.AppLayout
 
-<PageTitle>Detalhes do Patrimônio - Aspec Captura</PageTitle>
+<PageTitle>Detalhes do Bem - Aspec Captura</PageTitle>
 
 @if (isLoading)
 {
@@ -15,11 +16,11 @@
         <div class="spinner"></div>
     </div>
 }
-else if (item == null)
+else if (bem == null)
 {
     <div class="error-state">
         <span class="material-symbols-outlined">search_off</span>
-        <p>Patrimônio não encontrado</p>
+        <p>Bem não encontrado</p>
         <button class="back-button" @onclick="GoBack">Voltar</button>
     </div>
 }
@@ -32,8 +33,8 @@ else
                 <span class="material-symbols-outlined">arrow_back_ios</span>
             </button>
             <div class="header-content">
-                <h1 class="header-title">Detalhes</h1>
-                <p class="header-subtitle">PATRIMÔNIO #@item.Code</p>
+                <h1 class="header-title">Detalhes do Bem</h1>
+                <p class="header-subtitle">BEM #@bem.Code</p>
             </div>
             <div class="user-status">
                 <div class="status-info">
@@ -50,9 +51,9 @@ else
             @* Image Section *@
             <div class="image-section">
                 <div class="image-container">
-                    @if (item.Photos?.Any() == true)
+                    @if (bem.Photos?.Any() == true)
                     {
-                        <img src="@item.Photos.First()" alt="Patrimônio" class="item-image" />
+                        <img src="@bem.Photos.First()" alt="Bem" class="bem-image" />
                     }
                     else
                     {
@@ -73,19 +74,29 @@ else
             @* Form Section *@
             <div class="details-form">
                 <div class="form-group">
-                    <label class="section-label">DESCRIÇÃO</label>
-                    <p class="description-text">@item.Name</p>
+                    <label class="section-label">NÚMERO DE TOMBAMENTO</label>
+                    <p class="value-text">@bem.Nutomb</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="section-label">DESCRIÇÃO DO BEM</label>
+                    <p class="description-text">@bem.Name</p>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group half">
-                        <label class="section-label">VALOR ESTIMADO</label>
-                        <p class="value-text">R$ 1.450,00</p>
+                        <label class="section-label">VALOR LÍQUIDO CONTÁBIL</label>
+                        <p class="value-text">@FormatCurrency(bem.ValorLiquidoContabil)</p>
                     </div>
                     <div class="form-group half">
-                        <label class="section-label">LOCALIZAÇÃO</label>
-                        <p class="value-text">@LocationDisplay</p>
+                        <label class="section-label">DATA DE TOMBAMENTO</label>
+                        <p class="value-text">@FormatDate(bem.DataTombamento)</p>
                     </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="section-label">LOCALIZAÇÃO</label>
+                    <p class="value-text">@LocationDisplay</p>
                 </div>
 
                 <div class="form-group">
@@ -93,8 +104,22 @@ else
                     <div class="chip-group">
                         @foreach (var state in Enum.GetValues<ConservationState>())
                         {
-                            <button class="state-chip @(item.State == state ? "active" : "")" @onclick="() => item.State = state">
-                                @GetStateText(state)
+                            <button class="state-chip @(bem.State == state ? "active" : "")" 
+                                    @onclick="() => bem.State = state">
+                                @state.ToDisplayText()
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="section-label">SITUAÇÃO ATUAL</label>
+                    <div class="chip-group">
+                        @foreach (var status in Enum.GetValues<BemStatus>())
+                        {
+                            <button class="status-chip @(bem.Status == status ? "active" : "")" 
+                                    @onclick="() => bem.Status = status">
+                                @status.ToDisplayText()
                             </button>
                         }
                     </div>
@@ -102,11 +127,13 @@ else
 
                 <div class="form-group">
                     <label class="section-label">OBSERVAÇÕES</label>
-                    <textarea class="observations-input" placeholder="Adicione observações..."></textarea>
+                    <textarea class="observations-input" 
+                              placeholder="Adicione observações..."
+                              @bind="bem.Observations"></textarea>
                 </div>
 
-                <button class="save-button" @onclick="SaveItem">
-                    Salvar Patrimônio
+                <button class="save-button" @onclick="SaveBem">
+                    Salvar Bem
                 </button>
             </div>
         </main>
@@ -214,7 +241,7 @@ else
         overflow: hidden;
     }
 
-    .item-image {
+    .bem-image {
         width: 100%;
         height: 100%;
         object-fit: cover;
@@ -318,7 +345,7 @@ else
         gap: 8px;
     }
 
-    .state-chip {
+    .state-chip, .status-chip {
         padding: 10px 20px;
         border-radius: 12px;
         border: 1px solid #E2E8F0;
@@ -330,7 +357,7 @@ else
         transition: all 0.2s;
     }
 
-    .state-chip.active {
+    .state-chip.active, .status-chip.active {
         background: #F1F5F9;
         border-color: #1E3A5F;
         color: #1E3A5F;
@@ -372,16 +399,16 @@ else
 
 @code {
     [Parameter] public string Nutomb { get; set; } = string.Empty;
-    private InventoryItem? item;
+    private InventoryItem? bem;
     private pwa_camera_poc_blazor.Models.PatrimonioItem? patrimonio;
     private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadItem();
+        await LoadBem();
     }
 
-    private async Task LoadItem()
+    private async Task LoadBem()
     {
         isLoading = true;
         try
@@ -389,21 +416,21 @@ else
             if (string.IsNullOrWhiteSpace(Nutomb)) return;
 
             patrimonio = await DbService.GetPatrimonioByNutombAsync(Nutomb);
-            item = await DbService.GetFromIndexAsync<InventoryItem>("items", "code", Nutomb);
+            bem = await DbService.GetFromIndexAsync<InventoryItem>("items", "code", Nutomb);
 
-            if (item == null && patrimonio != null)
+            if (bem == null && patrimonio != null)
             {
                 var user = await AuthService.GetCurrentUserAsync();
 
-                item = new InventoryItem
+                bem = new InventoryItem
                 {
                     Code = patrimonio.Nutomb,
                     Nutomb = patrimonio.Nutomb,
                     Name = patrimonio.Deprod,
                     Esfera = patrimonio.Esfera,
                     Location = patrimonio.Localizacao ?? string.Empty,
-                    EstimatedValue = patrimonio.ValorEstimado ?? 0m,
-                    State = patrimonio.Estado ?? ConservationState.Good,
+                    ValorLiquidoContabil = patrimonio.ValorEstimado ?? 0m,
+                    State = patrimonio.Estado ?? ConservationState.Bom,
                     IdOrgao = appState.CurrentOrgao?.IdOrgao,
                     IdUO = appState.CurrentUO?.IdUO,
                     IdArea = appState.CurrentArea?.IdArea,
@@ -415,7 +442,7 @@ else
         }
         catch (Exception)
         {
-            item = null;
+            bem = null;
         }
         finally
         {
@@ -424,37 +451,33 @@ else
     }
 
     private string LocationDisplay =>
-        !string.IsNullOrWhiteSpace(item?.Location) ? item!.Location
+        !string.IsNullOrWhiteSpace(bem?.Location) ? bem!.Location
         : !string.IsNullOrWhiteSpace(patrimonio?.Localizacao) ? patrimonio!.Localizacao!
         : "Não informada";
 
-    private string GetStateText(ConservationState state) => state switch
-    {
-        ConservationState.New => "Novo",
-        ConservationState.Good => "Bom",
-        ConservationState.Regular => "Regular",
-        ConservationState.Recoverable => "Recuperável",
-        ConservationState.Unrecoverable => "Inservível",
-        _ => "Desconhecido"
-    };
+    private string FormatCurrency(decimal value) =>
+        value > 0 ? value.ToString("C2") : "Não informado";
+
+    private string FormatDate(DateTime? date) =>
+        date.HasValue ? date.Value.ToString("dd/MM/yyyy") : "Não informada";
 
     private void GoBack() => Navigation.NavigateTo("/");
 
-    private async Task SaveItem()
+    private async Task SaveBem()
     {
-        if (item == null) return;
+        if (bem == null) return;
         
         try
         {
-            item.UpdatedAt = DateTime.Now;
-            item.Synced = false;
-            await DbService.UpdateAsync("items", item);
-            ToastService.ShowSuccess("Patrimônio salvo com sucesso!");
+            bem.UpdatedAt = DateTime.Now;
+            bem.Synced = false;
+            await DbService.UpdateAsync("items", bem);
+            ToastService.ShowSuccess("Bem salvo com sucesso!");
             Navigation.NavigateTo("/");
         }
         catch (Exception)
         {
-            ToastService.ShowError("Erro ao salvar patrimônio.");
+            ToastService.ShowError("Erro ao salvar bem.");
         }
     }
 }

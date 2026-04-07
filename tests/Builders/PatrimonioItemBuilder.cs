@@ -20,7 +20,7 @@ public class PatrimonioItemBuilder
             Descricao = "Item de patrimônio para testes",
             Localizacao = "Local de teste",
             ValorEstimado = 1000.00m,
-            Estado = ConservationState.Good,
+            Estado = ConservationState.Bom,
             LastRecognized = null,
             RecognitionSource = null,
             RecognitionConfidence = null
@@ -129,19 +129,19 @@ public class PatrimonioItemBuilder
 
     // Predefined scenarios by conservation state
     public static PatrimonioItemBuilder InGoodCondition() => Create()
-        .WithEstado(ConservationState.Good)
+        .WithEstado(ConservationState.Bom)
         .WithDescricao("Item em bom estado de conservação");
 
     public static PatrimonioItemBuilder InRegularCondition() => Create()
         .WithEstado(ConservationState.Regular)
         .WithDescricao("Item em estado regular de conservação");
 
-    public static PatrimonioItemBuilder InRecoverableCondition() => Create()
-        .WithEstado(ConservationState.Recoverable)
-        .WithDescricao("Item em estado recuperável");
+    public static PatrimonioItemBuilder InPessimoCondition() => Create()
+        .WithEstado(ConservationState.Pessimo)
+        .WithDescricao("Item em péssimo estado");
 
     public static PatrimonioItemBuilder InNewCondition() => Create()
-        .WithEstado(ConservationState.New)
+        .WithEstado(ConservationState.Novo)
         .WithDescricao("Item novo");
 
     // Predefined scenarios by value range
@@ -163,7 +163,7 @@ public class PatrimonioItemBuilder
         .WithDescricao("Item válido para testes")
         .WithLocalizacao("Ambiente de teste")
         .WithValorEstimado(1000.00m)
-        .WithEstado(ConservationState.Good);
+        .WithEstado(ConservationState.Bom);
 
     public static PatrimonioItemBuilder WithSpecificCode(string code) => Create()
         .WithNutomb(code)

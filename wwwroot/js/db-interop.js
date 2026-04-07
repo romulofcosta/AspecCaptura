@@ -1,7 +1,7 @@
 window.dbInterop = {
     db: null,
     dbName: 'aspec-captura-db',
-    dbVersion: 10,
+    dbVersion: 11,  // Incrementado para adicionar índices cdArea e cdSArea
 
     init: async function () {
         return new Promise((resolve, reject) => {
@@ -97,6 +97,8 @@ window.dbInterop = {
                     patrimonioStore.createIndex('cdUnid', 'cdUnid', { unique: false });
                     patrimonioStore.createIndex('cdUnidNorm', 'cdUnidNorm', { unique: false });
                     patrimonioStore.createIndex('esfera', 'esfera', { unique: false });
+                    patrimonioStore.createIndex('cdArea', 'cdArea', { unique: false });
+                    patrimonioStore.createIndex('cdSArea', 'cdSArea', { unique: false });
                 } else {
                     const patrimonioStore = transaction.objectStore('patrimonio');
                     if (!patrimonioStore.indexNames.contains('cdUnid')) {
@@ -108,6 +110,12 @@ window.dbInterop = {
                     if (!patrimonioStore.indexNames.contains('esfera')) {
                         patrimonioStore.createIndex('esfera', 'esfera', { unique: false });
                     }
+                    if (!patrimonioStore.indexNames.contains('cdArea')) {
+                        patrimonioStore.createIndex('cdArea', 'cdArea', { unique: false });
+                    }
+                    if (!patrimonioStore.indexNames.contains('cdSArea')) {
+                        patrimonioStore.createIndex('cdSArea', 'cdSArea', { unique: false });
+                    }
                     backfillCdUnidNorm(patrimonioStore);
                 }
 
@@ -117,6 +125,8 @@ window.dbInterop = {
                     staging.createIndex('cdUnid', 'cdUnid', { unique: false });
                     staging.createIndex('cdUnidNorm', 'cdUnidNorm', { unique: false });
                     staging.createIndex('esfera', 'esfera', { unique: false });
+                    staging.createIndex('cdArea', 'cdArea', { unique: false });
+                    staging.createIndex('cdSArea', 'cdSArea', { unique: false });
                 } else {
                     const staging = transaction.objectStore('patrimonio_staging');
                     if (!staging.indexNames.contains('cdUnid')) {
@@ -127,6 +137,12 @@ window.dbInterop = {
                     }
                     if (!staging.indexNames.contains('esfera')) {
                         staging.createIndex('esfera', 'esfera', { unique: false });
+                    }
+                    if (!staging.indexNames.contains('cdArea')) {
+                        staging.createIndex('cdArea', 'cdArea', { unique: false });
+                    }
+                    if (!staging.indexNames.contains('cdSArea')) {
+                        staging.createIndex('cdSArea', 'cdSArea', { unique: false });
                     }
                     backfillCdUnidNorm(staging);
                 }
@@ -139,7 +155,20 @@ window.dbInterop = {
 
             request.onsuccess = (event) => {
                 this.db = event.target.result;
-                console.log('IndexedDB initialized successfully');
+                
+                // Validação de índices pós-migração
+                const patrimonioStore = this.db.transaction(['patrimonio'], 'readonly')
+                    .objectStore('patrimonio');
+                
+                const expectedIndexes = ['nutomb', 'cdUnid', 'cdUnidNorm', 'esfera', 'cdArea', 'cdSArea'];
+                const missingIndexes = expectedIndexes.filter(idx => !patrimonioStore.indexNames.contains(idx));
+                
+                if (missingIndexes.length > 0) {
+                    console.warn('⚠️ Índices ausentes após migração:', missingIndexes);
+                } else {
+                    console.log('✅ IndexedDB v11 initialized successfully - all indexes present');
+                }
+                
                 resolve();
             };
         });
@@ -414,6 +443,70 @@ window.dbInterop = {
             const request = index.getAll(cdUnidNorm);
 
             request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    },
+
+    getPatrimonioBySubarea: async function (cdUnid, cdArea, cdSArea) {
+        return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized. Call init first.'));
+                return;
+            }
+            
+            const transaction = this.db.transaction(['patrimonio'], 'readonly');
+            const store = transaction.objectStore('patrimonio');
+            const index = store.index('cdUnid');
+            const request = index.getAll(cdUnid);
+            
+            request.onsuccess = () => {
+                const allFromUO = request.result || [];
+                
+                // Filtro manual por área e subárea
+                const filtered = allFromUO.filter(item => {
+                    // Comparação case-insensitive e normalizada
+                    const matchArea = !cdArea || 
+                        String(item.cdArea || '').trim().toUpperCase() === String(cdArea).trim().toUpperCase();
+                    const matchSArea = !cdSArea || 
+                        String(item.cdSArea || '').trim().toUpperCase() === String(cdSArea).trim().toUpperCase();
+                    
+                    return matchArea && matchSArea;
+                });
+                
+                resolve(filtered);
+            };
+            
+            request.onerror = () => reject(request.error);
+        });
+    },
+
+    getPatrimonioBySubareaNormalized: async function (cdUnidNorm, cdArea, cdSArea) {
+        return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('Database not initialized. Call init first.'));
+                return;
+            }
+            
+            const transaction = this.db.transaction(['patrimonio'], 'readonly');
+            const store = transaction.objectStore('patrimonio');
+            const index = store.index('cdUnidNorm');
+            const request = index.getAll(cdUnidNorm);
+            
+            request.onsuccess = () => {
+                const allFromUO = request.result || [];
+                
+                const filtered = allFromUO.filter(item => {
+                    const matchArea = !cdArea || 
+                        String(item.cdArea || '').trim().toUpperCase() === String(cdArea).trim().toUpperCase();
+                    const matchSArea = !cdSArea || 
+                        String(item.cdSArea || '').trim().toUpperCase() === String(cdSArea).trim().toUpperCase();
+                    
+                    return matchArea && matchSArea;
+                });
+                
+                resolve(filtered);
+            };
+            
             request.onerror = () => reject(request.error);
         });
     },

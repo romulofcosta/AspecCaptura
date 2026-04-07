@@ -19,9 +19,9 @@ public class InventoryItemBuilder
             Category = "Equipamentos",
             Location = "Sala 101",
             Observations = "Item para testes automatizados",
-            State = ConservationState.Good,
-            EstimatedValue = 1000.00m,
-            Status = "ativo",
+            State = ConservationState.Bom,
+            ValorLiquidoContabil = 1000.00m,
+            Status = null,
             Timestamp = DateTime.Now,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
@@ -77,13 +77,13 @@ public class InventoryItemBuilder
         return this;
     }
 
-    public InventoryItemBuilder WithEstimatedValue(decimal value)
+    public InventoryItemBuilder WithValorLiquidoContabil(decimal value)
     {
-        _item.EstimatedValue = value;
+        _item.ValorLiquidoContabil = value;
         return this;
     }
 
-    public InventoryItemBuilder WithStatus(string status)
+    public InventoryItemBuilder WithStatus(BemStatus? status)
     {
         _item.Status = status;
         return this;
@@ -157,21 +157,21 @@ public class InventoryItemBuilder
         .WithCode("CPU001")
         .WithCategory("Informática")
         .WithLocation("Sala de TI")
-        .WithEstimatedValue(2500.00m);
+        .WithValorLiquidoContabil(2500.00m);
 
     public static InventoryItemBuilder Furniture() => Create()
         .WithName("Mesa de Escritório")
         .WithCode("MOB001")
         .WithCategory("Mobiliário")
         .WithLocation("Sala 205")
-        .WithEstimatedValue(800.00m);
+        .WithValorLiquidoContabil(800.00m);
 
     public static InventoryItemBuilder Vehicle() => Create()
         .WithName("Veículo Oficial")
         .WithCode("VEI001")
         .WithCategory("Transporte")
         .WithLocation("Garagem")
-        .WithEstimatedValue(45000.00m);
+        .WithValorLiquidoContabil(45000.00m);
 
     public static InventoryItemBuilder WithQRCode(string qrCode) => Create()
         .WithCode(qrCode)

@@ -20,16 +20,25 @@ public class InventoryItem
     public string Observations { get; set; } = string.Empty;
     
     /// <summary>
-    /// Estado de conservação do patrimônio
+    /// Estado de conservação do bem
     /// </summary>
-    public ConservationState State { get; set; } = ConservationState.Good;
+    public ConservationState State { get; set; } = ConservationState.Bom;
     
     /// <summary>
-    /// Valor estimado do patrimônio
+    /// Situação atual do bem
     /// </summary>
-    public decimal EstimatedValue { get; set; }
+    public BemStatus? Status { get; set; }
     
-    public string Status { get; set; } = "ativo";
+    /// <summary>
+    /// Valor líquido contábil do bem
+    /// </summary>
+    public decimal ValorLiquidoContabil { get; set; }
+    
+    /// <summary>
+    /// Data de tombamento do bem
+    /// </summary>
+    public DateTime? DataTombamento { get; set; }
+    
     public DateTime Timestamp { get; set; } = DateTime.Now;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
@@ -41,7 +50,7 @@ public class InventoryItem
     public string Esfera { get; set; } = string.Empty;
     public string? Nutomb { get; set; }
 
-    // Username do usuário que criou o item localmente
+    // Username do usuário que criou o bem localmente
     public string CreatedBy { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
     public string SessionId { get; set; } = string.Empty;
@@ -58,7 +67,7 @@ public class InventoryItem
     public string? PhotoPath { get; set; }
     
     /// <summary>
-    /// Indica se o item está sincronizado
+    /// Indica se o bem está sincronizado
     /// </summary>
     public bool IsSynchronized { get; set; }
 

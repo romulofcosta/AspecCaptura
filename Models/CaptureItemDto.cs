@@ -35,7 +35,7 @@ public class CaptureItemDto
             IdPatomb = idPatomb,
             Nutomb = item.Nutomb ?? item.Code,
             Estado = item.State.ToString().ToUpper(),
-            Situacao = item.Status,
+            Situacao = item.Status?.ToString(),
             IdLocalizacao = null, // Será preenchido quando houver mapeamento de localização
             FotoKey = fotoKey ?? item.PhotoPath,
             CapturedBy = item.CreatedBy,

@@ -1,33 +1,33 @@
 namespace pwa_camera_poc_blazor.Models;
 
 /// <summary>
-/// Estado de conservação de um patrimônio
+/// Estado de conservação de um bem patrimonial
 /// </summary>
 public enum ConservationState
 {
     /// <summary>
-    /// Novo - Item em perfeito estado
+    /// Novo - Bem em perfeito estado
     /// </summary>
-    New,
+    Novo,
     
     /// <summary>
-    /// Bom - Item em bom estado de conservação
+    /// Bom - Bem em bom estado de conservação
     /// </summary>
-    Good,
+    Bom,
     
     /// <summary>
-    /// Regular - Item com desgaste moderado
+    /// Regular - Bem com desgaste moderado
     /// </summary>
     Regular,
     
     /// <summary>
-    /// Recuperável - Item que necessita reparos
+    /// Péssimo - Bem em péssimo estado
     /// </summary>
-    Recoverable,
+    Pessimo,
 
     /// <summary>
-    /// Inservível - Item que não pode mais ser utilizado
+    /// Inservível - Bem que não pode mais ser utilizado
     /// </summary>
-    Unrecoverable
+    Inservivel
 }
 

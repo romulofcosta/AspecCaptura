@@ -75,7 +75,7 @@ namespace pwa_camera_poc_blazor.Models
                 Categoria = item.Category,
                 Localizacao = item.Location,
                 Observacoes = item.Observations,
-                Status = item.Status,
+                Status = item.Status?.ToString() ?? "ativo",
                 Timestamp = item.Timestamp,
                 IdOrgao = item.IdOrgao,
                 IdUO = item.IdUO,

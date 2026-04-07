@@ -1,10 +1,8 @@
-using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
-using System.Threading;
 using pwa_camera_poc_blazor.Services.Storage;
+using pwa_camera_poc_blazor.Services.Utils;
 
 namespace pwa_camera_poc_blazor.Services.Sync
 {
@@ -161,28 +159,19 @@ namespace pwa_camera_poc_blazor.Services.Sync
             return string.Equals(hex, expectedHex, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static pwa_camera_poc_blazor.Models.PatrimonioItem MapToStore(TombamentoWire w) =>
-            new pwa_camera_poc_blazor.Models.PatrimonioItem
-            {
-                IdPatomb = w.idpatomb,
-                Nutomb = w.nutomb ?? string.Empty,
-                Deprod = w.deprod ?? string.Empty,
-                Esfera = w.esfera ?? string.Empty,
-                CdOrgao = w.cdorgao,
-                CdUnid = w.cdunid,
-                CdUnidNorm = NormalizeCode(w.cdunid),
-                CdArea = w.cdarea,
-                CdSArea = w.cdsarea
-            };
-
-        private static pwa_camera_poc_blazor.Models.PatrimonioItem MapToStore(TombamentoWire w, Dictionary<long, LocalizacaoDto> locById)
+        /// <summary>
+        /// Mapeia TombamentoWire para PatrimonioItem, aplicando localização se disponível.
+        /// Consolidado para eliminar duplicação (DRY).
+        /// </summary>
+        private static Models.PatrimonioItem MapToStore(TombamentoWire w, Dictionary<long, LocalizacaoDto>? locById = null)
         {
             string cdOrgao = w.cdorgao;
             string cdUnid = w.cdunid;
             string cdArea = w.cdarea;
             string cdSArea = w.cdsarea;
 
-            if (w.idlocalizacao.HasValue && locById.TryGetValue(w.idlocalizacao.Value, out var loc))
+            // Aplica localização se disponível
+            if (locById != null && w.idlocalizacao.HasValue && locById.TryGetValue(w.idlocalizacao.Value, out var loc))
             {
                 if (!string.IsNullOrWhiteSpace(loc.cdorgao)) cdOrgao = loc.cdorgao;
                 if (!string.IsNullOrWhiteSpace(loc.cdunid)) cdUnid = loc.cdunid;
@@ -190,7 +179,7 @@ namespace pwa_camera_poc_blazor.Services.Sync
                 if (!string.IsNullOrWhiteSpace(loc.cdsarea)) cdSArea = loc.cdsarea;
             }
 
-            return new pwa_camera_poc_blazor.Models.PatrimonioItem
+            return new Models.PatrimonioItem
             {
                 IdPatomb = w.idpatomb,
                 Nutomb = w.nutomb ?? string.Empty,
@@ -198,17 +187,15 @@ namespace pwa_camera_poc_blazor.Services.Sync
                 Esfera = w.esfera ?? string.Empty,
                 CdOrgao = cdOrgao ?? string.Empty,
                 CdUnid = cdUnid ?? string.Empty,
-                CdUnidNorm = NormalizeCode(cdUnid ?? string.Empty),
+                CdUnidNorm = CodeNormalizer.Normalize(cdUnid),
                 CdArea = cdArea ?? string.Empty,
-                CdSArea = cdSArea ?? string.Empty
+                CdSArea = cdSArea ?? string.Empty,
+                ExercicioFiscal = w.exerciciofiscal,
+                Descricao = w.descricao,
+                Localizacao = w.localizacao,
+                ValorEstimado = w.valorestimado,
+                Estado = w.estado.HasValue ? (Models.ConservationState?)w.estado.Value : null
             };
-        }
-
-        private static string NormalizeCode(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value)) return string.Empty;
-            var normalized = new string(value.Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant();
-            return normalized.TrimStart('0');
         }
 
         private async Task ApplyGCAsync()
@@ -236,6 +223,11 @@ namespace pwa_camera_poc_blazor.Services.Sync
         public string cdunid { get; set; } = "";
         public string cdarea { get; set; } = "";
         public string cdsarea { get; set; } = "";
+        public int exerciciofiscal { get; set; } = 0;
+        public string? descricao { get; set; }
+        public string? localizacao { get; set; }
+        public decimal? valorestimado { get; set; }
+        public int? estado { get; set; }
     }
 
 }

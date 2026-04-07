@@ -38,7 +38,7 @@ public static class QRPrettyPrinter
             Descricao = item.Name,
             Localizacao = item.Location,
             Esfera = item.Esfera,
-            ValorEstimado = item.EstimatedValue,
+            ValorEstimado = item.ValorLiquidoContabil,
             Estado = item.State
         };
 

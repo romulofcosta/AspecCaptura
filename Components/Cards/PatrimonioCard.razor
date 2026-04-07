@@ -1,5 +1,6 @@
 @namespace pwa_camera_poc_blazor.Components.Cards
 @using pwa_camera_poc_blazor.Models
+@using pwa_camera_poc_blazor.Services.Utils
 
 <article class="item-card" @onclick="HandleClick" role="button" tabindex="0">
     <div class="card-accent @AccentClass"></div>
@@ -161,12 +162,13 @@
         get
         {
             if (LocalItem == null) return "EM OPERAÇÃO";
-            if (LocalItem.Status == "baixado") return "BAIXADO";
+            if (LocalItem.Status.HasValue) return LocalItem.Status.Value.ToDisplayText().ToUpper();
             return LocalItem.State switch
             {
-                ConservationState.Good or ConservationState.New => "EM OPERAÇÃO",
-                ConservationState.Regular or ConservationState.Recoverable => "MANUTENÇÃO",
-                ConservationState.Unrecoverable => "INSERVÍVEL",
+                ConservationState.Bom or ConservationState.Novo => "EM OPERAÇÃO",
+                ConservationState.Regular => "REGULAR",
+                ConservationState.Pessimo => "PÉSSIMO",
+                ConservationState.Inservivel => "INSERVÍVEL",
                 _ => "EM OPERAÇÃO"
             };
         }

@@ -31,6 +31,7 @@ namespace pwa_camera_poc_blazor.Services.Storage
         Task<List<InventoryItem>> GetItemsByUOAsync(string idUO);
         Task<PatrimonioItem?> GetPatrimonioByNutombAsync(string nutomb);
         Task<List<PatrimonioItem>> GetPatrimonioByUOAsync(string idUO);
+        Task<List<PatrimonioItem>> GetPatrimonioBySubareaAsync(string idUO, string? idArea = null, string? idSubarea = null);
         Task SwapPatrimonioFromStagingAsync();
     }
 }

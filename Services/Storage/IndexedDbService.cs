@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.JSInterop;
 using pwa_camera_poc_blazor.Models;
+using pwa_camera_poc_blazor.Services.Utils;
 
 namespace pwa_camera_poc_blazor.Services.Storage
 {
@@ -204,30 +202,56 @@ namespace pwa_camera_poc_blazor.Services.Storage
             }
         }
 
-        public async Task<List<PatrimonioItem>> GetPatrimonioByUOAsync(string idUO)
+        /// <summary>
+        /// Busca patrimônios por UO (wrapper para GetPatrimonioBySubareaAsync).
+        /// Mantido para compatibilidade com interface.
+        /// </summary>
+        public Task<List<PatrimonioItem>> GetPatrimonioByUOAsync(string idUO)
+        {
+            return GetPatrimonioBySubareaAsync(idUO, null, null);
+        }
+
+        /// <summary>
+        /// Busca patrimônios por UO, com filtros opcionais de área e subárea.
+        /// Tenta primeiro com código original, depois com código normalizado.
+        /// </summary>
+        public async Task<List<PatrimonioItem>> GetPatrimonioBySubareaAsync(
+            string idUO, 
+            string? idArea = null, 
+            string? idSubarea = null)
         {
             try
             {
-                var items = await _jsRuntime.InvokeAsync<List<PatrimonioItem>>("dbInterop.getPatrimonioByUO", idUO);
-                if (items != null && items.Count > 0) return items;
-
-                var normalized = NormalizeCode(idUO);
-                if (string.IsNullOrEmpty(normalized)) return items ?? new List<PatrimonioItem>();
-
-                return await _jsRuntime.InvokeAsync<List<PatrimonioItem>>("dbInterop.getPatrimonioByUONormalized", normalized);
+                // Tenta buscar com código original
+                var items = await _jsRuntime.InvokeAsync<List<PatrimonioItem>>(
+                    "dbInterop.getPatrimonioBySubarea", 
+                    idUO, 
+                    idArea, 
+                    idSubarea
+                );
+                
+                if (items != null && items.Count > 0) 
+                    return items;
+                
+                // Fallback: tenta com código normalizado
+                var normalized = CodeNormalizer.Normalize(idUO);
+                if (string.IsNullOrEmpty(normalized)) 
+                    return items ?? new List<PatrimonioItem>();
+                
+                return await _jsRuntime.InvokeAsync<List<PatrimonioItem>>(
+                    "dbInterop.getPatrimonioBySubareaNormalized", 
+                    normalized, 
+                    idArea, 
+                    idSubarea
+                );
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error getting patrimonio by UO {idUO}: {ex.Message}");
+                Console.Error.WriteLine(
+                    $"Error getting patrimonio by subarea (UO: {idUO}, Area: {idArea}, Subarea: {idSubarea}): {ex.Message}"
+                );
                 return new List<PatrimonioItem>();
             }
-        }
-
-        private static string NormalizeCode(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value)) return string.Empty;
-            var normalized = new string(value.Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant();
-            return normalized.TrimStart('0');
         }
 
         public async Task SwapPatrimonioFromStagingAsync()

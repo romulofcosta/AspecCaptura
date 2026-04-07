@@ -1,5 +1,6 @@
 @namespace pwa_camera_poc_blazor.Components.Cards
 @using pwa_camera_poc_blazor.Models
+@using pwa_camera_poc_blazor.Services.Utils
 
 <article class="item-card" @onclick="HandleClick" role="button" tabindex="0">
 
@@ -181,12 +182,24 @@
         get
         {
             if (Item == null) return "EM OPERAÇÃO";
-            if (Item.Status == "baixado") return "BAIXADO";
+            
+            // Verifica se tem status específico
+            if (Item.Status.HasValue)
+            {
+                return Item.Status.Value switch
+                {
+                    BemStatus.Avariado or BemStatus.Quebrado => "AVARIADO",
+                    BemStatus.PlaquetaInexistente => "BAIXADO",
+                    _ => "MANUTENÇÃO"
+                };
+            }
+            
+            // Caso contrário, usa o estado de conservação
             return Item.State switch
             {
-                ConservationState.Good or ConservationState.New => "EM OPERAÇÃO",
-                ConservationState.Regular or ConservationState.Recoverable => "MANUTENÇÃO",
-                ConservationState.Unrecoverable => "INSERVÍVEL",
+                ConservationState.Bom or ConservationState.Novo => "EM OPERAÇÃO",
+                ConservationState.Regular => "MANUTENÇÃO",
+                ConservationState.Pessimo or ConservationState.Inservivel => "INSERVÍVEL",
                 _ => "EM OPERAÇÃO"
             };
         }

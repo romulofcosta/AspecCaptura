@@ -9,7 +9,7 @@ public class Item
     public string Id { get; set; } = Guid.NewGuid().ToString();
     public string Code { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public decimal EstimatedValue { get; set; }
+    public decimal ValorLiquidoContabil { get; set; }
     public string Location { get; set; } = string.Empty;
     public ConservationState State { get; set; }
     public string Observations { get; set; } = string.Empty;
@@ -33,7 +33,7 @@ public class Item
             Id = inventoryItem.Id,
             Code = inventoryItem.Code,
             Description = inventoryItem.Name,
-            EstimatedValue = inventoryItem.EstimatedValue,
+            ValorLiquidoContabil = inventoryItem.ValorLiquidoContabil,
             Location = inventoryItem.Location,
             State = inventoryItem.State,
             Observations = inventoryItem.Observations,
@@ -57,7 +57,7 @@ public class Item
             Id = Id,
             Code = Code,
             Name = Description,
-            EstimatedValue = EstimatedValue,
+            ValorLiquidoContabil = ValorLiquidoContabil,
             Location = Location,
             State = State,
             Observations = Observations,
