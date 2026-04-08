@@ -1,5 +1,7 @@
 namespace pwa_camera_poc_blazor.Services;
 
+using System.Reflection;
+
 /// <summary>
 /// Serviço para gerenciar informações da aplicação, incluindo versionamento
 /// </summary>
@@ -12,12 +14,18 @@ public interface IAppInfo
 
 public class AppInfo : IAppInfo
 {
-    public string Version { get; private set; } = "0.7.1";
+    public string Version { get; private set; }
     public string AppName { get; } = "Aspec Captura";
-    public DateTime BuildDate { get; } = new DateTime(2026, 4, 7);
+    public DateTime BuildDate { get; } = DateTime.UtcNow;
 
     public AppInfo()
     {
-        // Versão fixa definida acima - não obtém do assembly
+        // Obtém a versão do assembly automaticamente
+        var assembly = Assembly.GetExecutingAssembly();
+        var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+                   ?? assembly.GetName().Version?.ToString()
+                   ?? "0.8.0";
+        
+        Version = version;
     }
 }
