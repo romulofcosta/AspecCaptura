@@ -62,6 +62,19 @@ namespace pwa_camera_poc_blazor.Models
         public decimal? ValorEstimado { get; set; }
         public ConservationState? Estado { get; set; }
         
+        // Campos adicionais da API
+        public string? Situacao { get; set; }
+        public int? CdProd { get; set; }
+        public DateTime? DataTombamento { get; set; }
+        public DateTime? DataEstado { get; set; }
+        public DateTime? DataSituacao { get; set; }
+        
+        // Metadados de captura
+        public string? FotoKey { get; set; }
+        public string? CapturedBy { get; set; }
+        public DateTime? CapturedAt { get; set; }
+        public string? Source { get; set; }
+        
         // Metadados de reconhecimento
         public DateTime? LastRecognized { get; set; }
         public RecognitionSource? RecognitionSource { get; set; }

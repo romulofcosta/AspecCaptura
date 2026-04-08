@@ -5,6 +5,40 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.8.4] - 2026-04-08
+
+### Adicionado
+- **Análise completa de inconsistências API/Frontend**: Documento detalhado identificando 7 inconsistências críticas
+- **Campos completos de sincronização**: Adicionados todos os campos faltantes para compatibilidade total com API
+  - `situacao` (string?) - Situação do bem (Ativo, Baixado, etc.)
+  - `cdprod` (int?) - Código do produto
+  - `databomb` (int?) - Data de tombamento (formato YYYYMMDD)
+  - `dataestado` (int?) - Data de mudança de estado
+  - `datasituacao` (int?) - Data de mudança de situação
+  - `fotoKey` (string?) - Chave da foto no S3
+  - `capturedBy` (string?) - Usuário que capturou
+  - `capturedAt` (string?) - Data/hora da captura
+  - `source` (string?) - Origem da captura
+- **Conversores de data**: Funções `ParseDateInt` e `ParseDateTime` para conversão segura de formatos
+- **Campo `dtestr` em LocalizacaoDto**: Exercício fiscal da localização
+
+### Corrigido
+- **Mapeamento completo de dados**: Todos os campos da API agora são capturados e armazenados no frontend
+- **Perda de metadados de captura**: Informações de quem, quando e como capturou agora são preservadas
+- **Perda de informações temporais**: Datas de tombamento, estado e situação agora são armazenadas
+- **Rastreabilidade**: Melhor auditoria com campos de captura completos
+
+### Documentação
+- **ANALISE_INCONSISTENCIAS_API_FRONTEND.md**: Análise técnica completa com priorização de correções
+  - 7 inconsistências identificadas
+  - 5 melhorias recomendadas
+  - Estratégia de migração documentada
+
+### Versão
+- **Frontend**: 0.8.4
+- **API**: 0.3.3
+- **Data de release**: 8 de abril de 2026
+
 ## [0.8.3] - 2026-04-08
 
 ### Corrigido

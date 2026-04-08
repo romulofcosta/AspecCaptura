@@ -21,7 +21,7 @@ namespace pwa_camera_poc_blazor.Services.Sync
     }
 
     public record SyncInfoDto(int totalRegistros, int totalChunks, string versao, string hashGlobal);
-    public record LocalizacaoDto(long idlocalizacao, string cdorgao, string cdunid, string cdarea, string cdsarea);
+    public record LocalizacaoDto(long idlocalizacao, string cdorgao, string cdunid, string cdarea, string cdsarea, int dtestr = 0);
 
     public class SyncService
     {
@@ -194,7 +194,18 @@ namespace pwa_camera_poc_blazor.Services.Sync
                 Descricao = w.descricao,
                 Localizacao = w.localizacao,
                 ValorEstimado = w.valorestimado,
-                Estado = ParseEstado(w.estado)
+                Estado = ParseEstado(w.estado),
+                // Campos adicionais
+                Situacao = w.situacao,
+                CdProd = w.cdprod,
+                DataTombamento = ParseDateInt(w.databomb),
+                DataEstado = ParseDateInt(w.dataestado),
+                DataSituacao = ParseDateInt(w.datasituacao),
+                // Metadados de captura
+                FotoKey = w.fotoKey,
+                CapturedBy = w.capturedBy,
+                CapturedAt = ParseDateTime(w.capturedAt),
+                Source = w.source
             };
         }
 
@@ -215,6 +226,45 @@ namespace pwa_camera_poc_blazor.Services.Sync
                 "INSERVIVEL" or "INSERVÍVEL" => Models.ConservationState.Inservivel,
                 _ => null
             };
+        }
+
+        /// <summary>
+        /// Converte int no formato YYYYMMDD para DateTime
+        /// </summary>
+        private static DateTime? ParseDateInt(int? dateInt)
+        {
+            if (!dateInt.HasValue || dateInt.Value == 0)
+                return null;
+            
+            var str = dateInt.Value.ToString();
+            if (str.Length != 8)
+                return null;
+            
+            try
+            {
+                var year = int.Parse(str.Substring(0, 4));
+                var month = int.Parse(str.Substring(4, 2));
+                var day = int.Parse(str.Substring(6, 2));
+                return new DateTime(year, month, day);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Converte string ISO 8601 para DateTime
+        /// </summary>
+        private static DateTime? ParseDateTime(string? dateStr)
+        {
+            if (string.IsNullOrWhiteSpace(dateStr))
+                return null;
+            
+            if (DateTime.TryParse(dateStr, out var date))
+                return date;
+            
+            return null;
         }
 
         private async Task ApplyGCAsync()
@@ -247,6 +297,17 @@ namespace pwa_camera_poc_blazor.Services.Sync
         public string? localizacao { get; set; }
         public decimal? valorestimado { get; set; }
         public string? estado { get; set; }
+        // Campos adicionais para compatibilidade completa com API
+        public string? situacao { get; set; }
+        public int? databomb { get; set; }
+        public int? dataestado { get; set; }
+        public int? datasituacao { get; set; }
+        public int? cdprod { get; set; }
+        // Metadados de captura
+        public string? fotoKey { get; set; }
+        public string? capturedBy { get; set; }
+        public string? capturedAt { get; set; }
+        public string? source { get; set; }
     }
 
 }

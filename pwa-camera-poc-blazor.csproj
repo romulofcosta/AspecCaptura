@@ -6,10 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
     <RootNamespace>pwa_camera_poc_blazor</RootNamespace>
-    <Version>0.8.3</Version>
-    <AssemblyVersion>0.8.3.0</AssemblyVersion>
-    <FileVersion>0.8.3.0</FileVersion>
-    <InformationalVersion>0.8.3</InformationalVersion>
+    <Version>0.8.4</Version>
+    <AssemblyVersion>0.8.4.0</AssemblyVersion>
+    <FileVersion>0.8.4.0</FileVersion>
+    <InformationalVersion>0.8.4</InformationalVersion>
   </PropertyGroup>
 
   <!-- Production Build Optimizations -->

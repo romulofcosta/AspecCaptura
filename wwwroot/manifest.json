@@ -2,7 +2,7 @@
   "name": "Aspec Captura - Inventário Patrimonial",
   "short_name": "Aspec Captura",
   "description": "Sistema de inventário patrimonial com captura de fotos, funcionamento offline e sincronização em background",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#1B3A5F",
