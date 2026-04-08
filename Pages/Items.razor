@@ -5,6 +5,11 @@
 @using pwa_camera_poc_blazor.Components.Cards
 @using pwa_camera_poc_blazor.Services.Utils
 
+@inject NavigationManager Navigation
+@inject pwa_camera_poc_blazor.Services.Auth.IAuthService AuthService
+@inject pwa_camera_poc_blazor.Services.Storage.IIndexedDbService DbService
+@inject pwa_camera_poc_blazor.Services.AppState appState
+
 @implements IDisposable
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 

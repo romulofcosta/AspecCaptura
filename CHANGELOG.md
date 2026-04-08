@@ -5,6 +5,21 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.8.5] - 2026-04-08
+
+### Corrigido
+- **Erro ao navegar para página de bens**: Corrigido erro de injeção de dependências faltantes
+  - Adicionado `@inject NavigationManager Navigation`
+  - Adicionado `@inject IAuthService AuthService`
+  - Adicionado `@inject IIndexedDbService DbService`
+  - Adicionado `@inject AppState appState`
+  - Página Items.razor agora carrega corretamente sem erros no console
+
+### Versão
+- **Frontend**: 0.8.5
+- **API**: 0.3.3
+- **Data de release**: 8 de abril de 2026
+
 ## [0.8.4] - 2026-04-08
 
 ### Adicionado
