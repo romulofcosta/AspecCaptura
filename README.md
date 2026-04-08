@@ -79,6 +79,19 @@ pwa-camera-poc-blazor/
 
 - .NET 8 SDK
 - Navegador moderno com suporte a PWA (Chrome, Edge, etc.)
+- API Backend (`pwa-camera-poc-api`) em execução
+
+### Configuração da API
+
+O projeto requer a API backend em execução. Configure a URL da API em `wwwroot/appsettings.json`:
+
+```json
+{
+  "ApiBaseUrl": "http://localhost:5069"
+}
+```
+
+Para produção, a URL é substituída automaticamente durante o build via variável de ambiente `API_BASE_URL`.
 
 ### Dependências
 
@@ -111,11 +124,42 @@ O projeto utiliza as seguintes bibliotecas principais:
 
 ### Build para Produção
 
+O projeto utiliza o script `build.sh` para build de produção, que:
+- Detecta automaticamente a plataforma (Cloudflare Pages, Netlify, ou local)
+- Substitui variáveis de ambiente antes do build
+- Cria arquivos de configuração necessários (_headers, _redirects)
+- Valida o output final
+
 ```bash
-dotnet publish -c Release
+# Build local
+export API_BASE_URL=https://pwa-camera-poc-api.onrender.com
+./build.sh
+
+# Build no Cloudflare Pages (automático)
+# Configurar variável de ambiente API_BASE_URL no dashboard
 ```
 
 Os arquivos publicados estarão em `bin/Release/net8.0/publish/wwwroot`.
+
+### Deploy em Produção
+
+**URLs de Produção:**
+- Frontend: https://pwa-camera-poc-blazor.pages.dev
+- Backend: https://pwa-camera-poc-api.onrender.com
+
+**Documentação de Deploy:**
+- [DEPLOY_FINAL.md](DEPLOY_FINAL.md) - Guia completo de deploy
+- [CHECKLIST_DEPLOY.md](CHECKLIST_DEPLOY.md) - Checklist passo a passo
+- [RESUMO_CORRECOES.md](RESUMO_CORRECOES.md) - Correções aplicadas (CORS)
+
+**Configuração do Cloudflare Pages:**
+```
+Build command: ./build.sh
+Build output directory: bin/Release/net8.0/publish/wwwroot
+Environment variables:
+  - API_BASE_URL=https://pwa-camera-poc-api.onrender.com
+  - CF_PAGES=1
+```
 
 ## Testes
 
@@ -299,6 +343,13 @@ Este projeto é para fins educacionais e de demonstração. Não possui licença
 - Em produção, considere usar um backend para sincronização de dados.
 
 ## Melhorias Recentes
+
+### Correção de CORS e Deploy (Fevereiro 2025)
+- **CORS Corrigido**: Backend agora aceita domínio principal do Cloudflare Pages (`https://pwa-camera-poc-blazor.pages.dev`)
+- **Build Otimizado**: Script `build.sh` validado com verificações automáticas
+- **Validações**: Build agora valida substituição de variáveis antes de concluir
+- **Documentação**: Guias completos de deploy, troubleshooting e checklist
+- **Remoção de Código Obsoleto**: Script `build-production.sh` removido (em desuso)
 
 ### Correção de Carregamento de Bens por Subárea (2024)
 - **Filtro Hierárquico**: Implementação de filtro por hierarquia completa (Órgão → UO → Área → Subárea) com carregamento otimizado.

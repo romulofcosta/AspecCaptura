@@ -1,0 +1,77 @@
+v0.8.0 - Correção de CORS, otimização de build e documentação completa
+
+## 🔧 Correções Críticas
+
+### Backend (API)
+- **CORS**: Configuração corrigida para aceitar domínio principal do Cloudflare Pages
+  - Adicionado suporte explícito a `https://pwa-camera-poc-blazor.pages.dev`
+  - Mantido suporte a subdomínios para preview deployments
+  - Corrige erro "Access-Control-Allow-Origin header is not present"
+
+### Frontend (PWA)
+- **Build Script**: Validações automáticas e logs detalhados em `build.sh`
+  - Validação de substituição de `__API_BASE_URL__` ANTES do build
+  - Verificação do output final DEPOIS do build
+  - Detecção de erros antes do deploy
+  - Mensagens de erro claras e acionáveis
+
+## 🗑️ Remoções
+
+- **Script Obsoleto**: Removido `build-production.sh` (em desuso)
+  - Apenas `build.sh` está em uso
+  - Simplifica manutenção e evita confusão
+
+## 📚 Documentação
+
+### Novos Documentos
+- `DEPLOY_FINAL.md` - Guia completo de deploy em produção
+- `CHECKLIST_DEPLOY.md` - Checklist interativo de validação
+- `SOLUCAO_CORS.md` - Documentação detalhada da solução de CORS
+- `RESUMO_CORRECOES.md` - Resumo executivo das correções
+- `DOCS_INDEX.md` - Índice de toda documentação
+- `BUILD_COMPARISON.md` - Comparação histórica dos scripts
+- `QUAL_BUILD_USAR.md` - Confirmação do script em uso
+- `DEPLOYMENT.md` - Instruções gerais de deploy
+- `VERSION_UPDATE.md` - Detalhes da atualização de versão
+- `check-build-config.sh` - Script de verificação automática
+
+### Atualizações
+- `README.md` - Seções de deploy e configuração da API
+- `CHANGELOG.md` - Entrada completa para v0.8.0
+
+## 🔢 Versão
+
+### Frontend
+- `pwa-camera-poc-blazor.csproj`: 0.7.1 → 0.8.0
+- `manifest.json`: 0.5.8 → 0.8.0
+- `index.html`: 0.5.8 → 0.8.0
+- `package.json`: 0.7.1 → 0.8.0
+- `build.sh`: v0.2.2 → v0.8.0
+
+### Backend
+- `pwa-camera-poc-api.csproj`: Adicionada versão 0.8.0
+- `Program.cs` (Swagger): v1 → 0.8.0
+
+## 🎯 Impacto
+
+- ✅ PWA agora se comunica corretamente com a API (CORS resolvido)
+- ✅ Build mais confiável com validações automáticas
+- ✅ Documentação completa facilita deploy e manutenção
+- ✅ Código mais limpo sem scripts obsoletos
+
+## 📋 Configuração Necessária
+
+### Cloudflare Pages
+```
+Build command: ./build.sh
+Output directory: bin/Release/net8.0/publish/wwwroot
+Environment variables:
+  - API_BASE_URL=https://pwa-camera-poc-api.onrender.com
+  - CF_PAGES=1
+```
+
+## 🔗 Links
+
+- Frontend: https://pwa-camera-poc-blazor.pages.dev
+- Backend: https://pwa-camera-poc-api.onrender.com
+- Documentação: Ver DOCS_INDEX.md

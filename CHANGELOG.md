@@ -5,6 +5,47 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.8.0] - 2025-02-08
+
+### Corrigido
+- **CORS no Backend**: Configuração de CORS agora aceita explicitamente o domínio principal `https://pwa-camera-poc-blazor.pages.dev`
+  - Anteriormente só aceitava subdomínios (`.pwa-camera-poc-blazor.pages.dev`)
+  - Mantido suporte a subdomínios para preview deployments
+  - Requisições do frontend agora funcionam corretamente
+
+### Melhorado
+- **Script de Build (`build.sh`)**: Validações automáticas e logs detalhados
+  - Validação da substituição de `__API_BASE_URL__` ANTES do build
+  - Verificação do output final DEPOIS do build
+  - Logs informativos para facilitar debug
+  - Detecção de erros antes do deploy
+  - Mensagens de erro claras e acionáveis
+
+### Removido
+- **Script Obsoleto**: Removido `build-production.sh` (estava em desuso)
+  - Apenas `build.sh` está em uso
+  - Simplifica manutenção e evita confusão
+
+### Adicionado
+- **Documentação Completa de Deploy**:
+  - `DEPLOY_FINAL.md` - Guia completo de deploy
+  - `CHECKLIST_DEPLOY.md` - Checklist interativo de validação
+  - `SOLUCAO_CORS.md` - Documentação detalhada da solução de CORS
+  - `RESUMO_CORRECOES.md` - Resumo executivo das correções
+  - `DOCS_INDEX.md` - Índice de toda documentação
+  - `check-build-config.sh` - Script de verificação automática
+- **Versão na API**: Adicionadas propriedades de versão no `pwa-camera-poc-api.csproj`
+
+### Versão
+- **Frontend**: 0.8.0
+- **Backend**: 0.8.0
+- **Data de release**: 8 de fevereiro de 2025
+
+### Notas de Upgrade
+- Nenhuma ação necessária para usuários finais
+- Deploy automático via Cloudflare Pages e Render
+- Configurar variável de ambiente `API_BASE_URL` no Cloudflare Pages se ainda não configurada
+
 ## [0.7.1] - 2026-04-07
 
 ### Corrigido

@@ -5,7 +5,7 @@ set -e
 # Detectar versão do último commit com tag
 VERSION=$(git log --oneline | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1)
 if [ -z "$VERSION" ]; then
-    VERSION="v0.2.2"
+    VERSION="v0.8.0"
 fi
 
 echo "=== Versão detectada: $VERSION ==="
@@ -38,13 +38,23 @@ fi
 
 echo "=== Substituindo variáveis ANTES do build ==="
 if [ -z "$API_BASE_URL" ]; then
-    echo "Aviso: API_BASE_URL não definida. Usando padrão local: http://localhost:5069"
+    echo "⚠️  Aviso: API_BASE_URL não definida. Usando padrão local: http://localhost:5069"
     API_BASE_URL="http://localhost:5069"
+else
+    echo "✅ API_BASE_URL configurada: $API_BASE_URL"
 fi
 
 # Substituir nos arquivos FONTE (antes do publish)
+echo "📝 Substituindo __API_BASE_URL__ por $API_BASE_URL em wwwroot/appsettings.json"
 sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" wwwroot/appsettings.json
-sed -i "s|__APP_VERSION__|$VERSION|g" wwwroot/index.html
+
+# Verificar se a substituição funcionou
+if grep -q "__API_BASE_URL__" wwwroot/appsettings.json; then
+    echo "❌ ERRO: Falha ao substituir __API_BASE_URL__"
+    exit 1
+else
+    echo "✅ Substituição bem-sucedida"
+fi
 
 echo "=== Restaurando pacotes e workloads ==="
 "$DOTNET_EXEC" restore
@@ -95,3 +105,41 @@ fi
 
 echo "=== Build concluído! Saída: $OUTPUT_DIR ==="
 ls -lh "$OUTPUT_DIR" | head -15
+
+echo ""
+echo "=== Validações finais ==="
+
+# Verificar se appsettings.json foi copiado corretamente
+if [ -f "$OUTPUT_DIR/appsettings.json" ]; then
+    echo "✅ appsettings.json encontrado no output"
+    if grep -q "__API_BASE_URL__" "$OUTPUT_DIR/appsettings.json"; then
+        echo "❌ ERRO: __API_BASE_URL__ ainda presente no output!"
+        cat "$OUTPUT_DIR/appsettings.json"
+        exit 1
+    else
+        echo "✅ API_BASE_URL configurada corretamente no output"
+        echo "   Conteúdo: $(cat "$OUTPUT_DIR/appsettings.json")"
+    fi
+else
+    echo "❌ ERRO: appsettings.json não encontrado no output!"
+    exit 1
+fi
+
+# Verificar arquivos de configuração do Cloudflare
+if [ "$PLATFORM" = "cloudflare" ] || [ "$PLATFORM" = "local" ]; then
+    if [ -f "$OUTPUT_DIR/_headers" ]; then
+        echo "✅ _headers criado"
+    else
+        echo "⚠️  _headers não encontrado"
+    fi
+    
+    if [ -f "$OUTPUT_DIR/_redirects" ]; then
+        echo "✅ _redirects criado"
+    else
+        echo "⚠️  _redirects não encontrado"
+    fi
+fi
+
+echo ""
+echo "🎉 Build validado com sucesso!"
+echo "📦 Pronto para deploy no Cloudflare Pages"

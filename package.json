@@ -1,6 +1,6 @@
 {
   "name": "pwa-camera-poc-blazor",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "Aspec Captura - Sistema de inventário patrimonial com captura de fotos",
   "scripts": {
     "build:css": "tailwindcss -i ./Styles/input.css -o ./wwwroot/css/output.css",
