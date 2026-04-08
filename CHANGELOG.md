@@ -5,6 +5,22 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.8.3] - 2026-04-08
+
+### Corrigido
+- **Tipo incorreto do campo `estado` na sincronização**: Corrigido erro de conversão JSON que persistia após correção inicial
+  - Campo `estado` em `TombamentoWire` estava como `int?` mas deveria ser `string?`
+  - Dados originais JSON contêm valores string: "NOVO", "BOM", "REGULAR", "PESSIMO", "INSERVIVEL"
+  - Adicionada função `ParseEstado` para converter string para enum `ConservationState`
+  - Suporte a acentuação (PÉSSIMO, INSERVÍVEL)
+  - Valores inválidos são tratados como null (não quebram sincronização)
+  - Sincronização de lotes agora funciona completamente
+
+### Versão
+- **Frontend**: 0.8.3
+- **API**: 0.3.3
+- **Data de release**: 8 de abril de 2026
+
 ## [0.8.2] - 2026-04-08
 
 ### Corrigido

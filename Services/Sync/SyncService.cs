@@ -194,7 +194,26 @@ namespace pwa_camera_poc_blazor.Services.Sync
                 Descricao = w.descricao,
                 Localizacao = w.localizacao,
                 ValorEstimado = w.valorestimado,
-                Estado = w.estado.HasValue ? (Models.ConservationState?)w.estado.Value : null
+                Estado = ParseEstado(w.estado)
+            };
+        }
+
+        /// <summary>
+        /// Converte string de estado para enum ConservationState
+        /// </summary>
+        private static Models.ConservationState? ParseEstado(string? estado)
+        {
+            if (string.IsNullOrWhiteSpace(estado))
+                return null;
+
+            return estado.ToUpperInvariant() switch
+            {
+                "NOVO" => Models.ConservationState.Novo,
+                "BOM" => Models.ConservationState.Bom,
+                "REGULAR" => Models.ConservationState.Regular,
+                "PESSIMO" or "PÉSSIMO" => Models.ConservationState.Pessimo,
+                "INSERVIVEL" or "INSERVÍVEL" => Models.ConservationState.Inservivel,
+                _ => null
             };
         }
 
@@ -227,7 +246,7 @@ namespace pwa_camera_poc_blazor.Services.Sync
         public string? descricao { get; set; }
         public string? localizacao { get; set; }
         public decimal? valorestimado { get; set; }
-        public int? estado { get; set; }
+        public string? estado { get; set; }
     }
 
 }
