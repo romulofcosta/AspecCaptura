@@ -5,6 +5,23 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.8.2] - 2026-04-08
+
+### Corrigido
+- **Erro de conversão JSON na sincronização**: Corrigido erro "The JSON value could not be converted to..." ao baixar lotes de tombamento
+  - Problema causado por incompatibilidade entre estruturas de dados da API e Frontend
+  - API (`TombamentoRecord`) não possuía 3 campos esperados pelo Frontend (`TombamentoWire`):
+    - `descricao` (string?)
+    - `localizacao` (string?)
+    - `valorestimado` (decimal?)
+  - Campos adicionados à API como nullable para manter compatibilidade
+  - Sincronização de lotes agora funciona corretamente após autenticação
+
+### Versão
+- **Frontend**: 0.8.2
+- **API**: 0.3.3
+- **Data de release**: 8 de abril de 2026
+
 ## [0.8.1] - 2026-04-08
 
 ### Corrigido
