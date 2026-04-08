@@ -89,14 +89,42 @@ orleans-http/
 .project
 .classpath
 .settings/
+.trae/
 
 # Local Netlify folder
 .netlify
 
-# Text files gerados por build/output
+# Build and error logs (arquivos temporários de debug)
 build*.txt
+build*.log
 error*.txt
+errors*.txt
 output*.txt
+blazor_output.txt
+msbuild.log
+run_logs.txt
+current_errors.txt
+full_build_error.txt
+last_diff.txt
+
+# Arquivos de commit temporários
+commit-message*.txt
+
+# Arquivos JSON de teste/sample (manter apenas os necessários para o projeto)
+*_sample.json
+*_end.json
+test-payload.json
+
+# Documentação temporária ou de debug (manter apenas docs oficiais)
+BUILD_COMPARISON.md
+QUAL_BUILD_USAR.md
+RELATORIO_ANALISE_JSON.md
+RESUMO_CORRECOES.md
+SOLUCAO_CORS.md
+VERSION_UPDATE.md
+
+# Scripts de instalação baixados
+dotnet-install.sh
 
 # Netlify publish directory (if you want to keep it out of git)
 # Since we are using bin/Release/net8.0/publish/wwwroot, it's already covered by [Bb]in/

@@ -5,6 +5,19 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.8.1] - 2026-04-08
+
+### Corrigido
+- **Botão de voltar na tela de sincronização**: Corrigido problema onde o botão "Voltar" na página de sincronização não funcionava
+  - Adicionado `@inject NavigationManager Navigation` que estava faltando
+  - Adicionado `@inject AppState appState` que estava sendo usado mas não injetado
+  - Adicionado `@inject IToastService ToastService` que estava sendo usado mas não injetado
+  - Botão agora navega corretamente para `/items` (lista de bens)
+
+### Versão
+- **Frontend**: 0.8.1
+- **Data de release**: 8 de abril de 2026
+
 ## [0.8.0] - 2025-02-08
 
 ### Corrigido
