@@ -64,7 +64,7 @@ echo "=== Instalando dependências Node/Tailwind CSS ==="
 npm install
 
 rm -rf bin/Release/net8.0/publish
-"$DOTNET_EXEC" publish pwa-camera-poc-blazor.csproj -c Release -o bin/Release/net8.0/publish
+"$DOTNET_EXEC" publish AspecCaptura.csproj -c Release -o bin/Release/net8.0/publish
 
 # Ajustes específicos por plataforma
 if [ "$PLATFORM" = "netlify" ]; then
