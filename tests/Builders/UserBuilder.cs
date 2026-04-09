@@ -1,4 +1,4 @@
-using pwa_camera_poc_blazor.Models;
+using AspecCaptura.Models;
 
 namespace Tests.Builders;
 

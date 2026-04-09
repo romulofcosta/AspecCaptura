@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace pwa_camera_poc_blazor.Models
+namespace AspecCaptura.Models
 {
     public class Usuario
     {
@@ -13,8 +13,6 @@ namespace pwa_camera_poc_blazor.Models
         public List<PatrimonioItem> Patrimonio { get; set; } = new();
         public string Token { get; set; } = string.Empty;
     }
-
-
 
     public class Orgao
     {

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace pwa_camera_poc_blazor.Models;
+namespace AspecCaptura.Models;
 
 public class InventoryItem
 {

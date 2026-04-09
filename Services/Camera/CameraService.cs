@@ -1,9 +1,9 @@
 using Microsoft.JSInterop;
-using pwa_camera_poc_blazor.Services.Image;
-using pwa_camera_poc_blazor.Services.Crypto;
-using pwa_camera_poc_blazor.Services.Storage;
+using AspecCaptura.Services.Image;
+using AspecCaptura.Services.Crypto;
+using AspecCaptura.Services.Storage;
 
-namespace pwa_camera_poc_blazor.Services.Camera;
+namespace AspecCaptura.Services.Camera;
 
 public class CameraService : ICameraService
 {

@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
-using pwa_camera_poc_blazor.Models;
+using AspecCaptura.Models;
 
-namespace pwa_camera_poc_blazor.Services.Recognition.Parsers;
+namespace AspecCaptura.Services.Recognition.Parsers;
 
 public static class BarcodeParser
 {

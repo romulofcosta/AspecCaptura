@@ -1,7 +1,7 @@
 using Microsoft.JSInterop;
-using pwa_camera_poc_blazor.Models;
+using AspecCaptura.Models;
 
-namespace pwa_camera_poc_blazor.Services.Recognition;
+namespace AspecCaptura.Services.Recognition;
 
 public class QRCodeRecognitionService : IQRCodeService
 {

@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using pwa_camera_poc_blazor.Models;
-using pwa_camera_poc_blazor.Services.Storage;
+using AspecCaptura.Models;
+using AspecCaptura.Services.Storage;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace pwa_camera_poc_blazor.Services.Auth
+namespace AspecCaptura.Services.Auth
 {
     public class AuthService(ILocalStorageService localStorage, AuthenticationStateProvider authStateProvider, IHttpClientFactory httpClientFactory, IIndexedDbService dbService, AppState appState) : IAuthService
     {

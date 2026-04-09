@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace pwa_camera_poc_blazor.Models
+namespace AspecCaptura.Models
 {
     /// <summary>
     /// Modelo de metadados compatível com o padrão do módulo Desktop.

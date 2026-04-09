@@ -1,10 +1,10 @@
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text.Json;
-using pwa_camera_poc_blazor.Services.Storage;
-using pwa_camera_poc_blazor.Services.Utils;
+using AspecCaptura.Services.Storage;
+using AspecCaptura.Services.Utils;
 
-namespace pwa_camera_poc_blazor.Services.Sync
+namespace AspecCaptura.Services.Sync
 {
     public enum GCStrategy
     {

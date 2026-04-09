@@ -1,14 +1,15 @@
 @page "/"
 @page "/bens"
-@layout pwa_camera_poc_blazor.Components.Layout.AppLayout
-@using pwa_camera_poc_blazor.Models
-@using pwa_camera_poc_blazor.Components.Cards
-@using pwa_camera_poc_blazor.Services.Utils
+@layout AspecCaptura.Components.Layout.AppLayout
+@using AspecCaptura.Models
+@using AspecCaptura.Components.Cards
+@using AspecCaptura.Components.Filters
+@using AspecCaptura.Services.Utils
 
 @inject NavigationManager Navigation
-@inject pwa_camera_poc_blazor.Services.Auth.IAuthService AuthService
-@inject pwa_camera_poc_blazor.Services.Storage.IIndexedDbService DbService
-@inject pwa_camera_poc_blazor.Services.AppState appState
+@inject AspecCaptura.Services.Auth.IAuthService AuthService
+@inject AspecCaptura.Services.Storage.IIndexedDbService DbService
+@inject AspecCaptura.Services.AppState appState
 
 @implements IDisposable
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
@@ -47,18 +48,13 @@
     </button>
 </div>
 
-@* ── Horizontal Filter Tabs ── *@
-<div class="filter-tabs-wrapper">
-    <div class="filter-tabs">
-        <button class="filter-tab @(selectedStatus == null ? "active" : "")" @onclick='() => SetStatus(null)'>TODOS</button>
-        @foreach (var status in Enum.GetValues<BemStatus>())
-        {
-            <button class="filter-tab @(selectedStatus == status ? "active" : "")" @onclick='() => SetStatus(status)'>
-                @status.ToDisplayText().ToUpper()
-            </button>
-        }
-    </div>
-</div>
+@* ── Filter Panel ── *@
+<BemFilterPanel 
+    SelectedConservationState="@selectedConservationState"
+    SelectedStatus="@selectedStatus"
+    OnConservationStateFilter="@HandleConservationStateFilter"
+    OnStatusFilter="@HandleStatusFilter"
+    OnClearFilters="@HandleClearFilters" />
 
 @* ── Summary Bar ── *@
 <div class="summary-bar">
@@ -243,47 +239,7 @@
         text-transform: uppercase;
     }
 
-    /* ── Filter Tabs ── */
-    .filter-tabs-wrapper {
-        background: var(--surface-color);
-        border-bottom: 2px solid var(--divider-color);
-        position: sticky;
-        top: 167px;
-        z-index: 18;
-    }
 
-    .filter-tabs {
-        display: flex;
-        overflow-x: auto;
-        scrollbar-width: none;
-        gap: 0;
-    }
-
-    .filter-tabs::-webkit-scrollbar {
-        display: none;
-    }
-
-    .filter-tab {
-        flex-shrink: 0;
-        padding: 10px 14px;
-        border: none;
-        background: transparent;
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--text-disabled);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        cursor: pointer;
-        border-bottom: 2px solid transparent;
-        margin-bottom: -2px;
-        transition: all 0.2s;
-        white-space: nowrap;
-    }
-
-    .filter-tab.active {
-        color: var(--primary-color);
-        border-bottom-color: var(--primary-color);
-    }
 
     /* ── Summary Bar ── */
     .summary-bar {
@@ -449,18 +405,14 @@
     private Dictionary<string, InventoryItem> _localByNutomb = new(StringComparer.OrdinalIgnoreCase);
     private string searchQuery = "";
     private BemStatus? selectedStatus = null;
+    private ConservationState? selectedConservationState = null;
     private int currentPage = 1;
     private const int PageSize = 20;
     private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        if (!appState.IsSessionConfigured())
-        {
-            Navigation.NavigateTo("/configuracao-sessao");
-            return;
-        }
-
+        // Verifica autenticação primeiro
         var user = await AuthService.GetCurrentUserAsync();
         if (user == null)
         {
@@ -468,14 +420,25 @@
             return;
         }
 
+        // Verifica se a base de dados foi sincronizada
         var versionKey = $"versao:{user.Prefixo?.Trim().ToUpperInvariant()}";
         var baseVersion = await DbService.GetMetadataAsync(versionKey);
         if (string.IsNullOrWhiteSpace(baseVersion))
         {
+            // Base não sincronizada, redireciona para sincronização
             Navigation.NavigateTo("/tombamentos-sync");
             return;
         }
 
+        // Verifica se a sessão está configurada
+        if (!appState.IsSessionConfigured())
+        {
+            // Sessão não configurada, redireciona para configuração
+            Navigation.NavigateTo("/configuracao-sessao");
+            return;
+        }
+
+        // Tudo OK, carrega os dados
         appState.OnChange += HandleStateChange;
         await LoadBens();
     }
@@ -560,14 +523,13 @@
     private void ApplyFilters()
     {
         Console.WriteLine($"[Bens.ApplyFilters] Starting with {bens.Count} bens");
-        Console.WriteLine($"[Bens.ApplyFilters] Selected status: {selectedStatus?.ToString() ?? "null (TODOS)"}");
+        Console.WriteLine($"[Bens.ApplyFilters] Selected status: {selectedStatus?.ToString() ?? "null"}");
+        Console.WriteLine($"[Bens.ApplyFilters] Selected conservation state: {selectedConservationState?.ToString() ?? "null"}");
         Console.WriteLine($"[Bens.ApplyFilters] Local items count: {_localByNutomb.Count}");
         
         var result = bens.AsEnumerable();
 
         // Filtro por situação (BemStatus)
-        // IMPORTANTE: Quando selectedStatus é null (aba "TODOS"), NENHUM filtro é aplicado
-        // Todos os bens da localização são exibidos, independente de terem captura local
         if (selectedStatus.HasValue)
         {
             var beforeFilter = result.Count();
@@ -575,9 +537,14 @@
             var afterFilter = result.Count();
             Console.WriteLine($"[Bens.ApplyFilters] After status filter ({selectedStatus.Value.ToDisplayText()}): {afterFilter} (removed {beforeFilter - afterFilter})");
         }
-        else
+
+        // Filtro por estado de conservação (ConservationState)
+        if (selectedConservationState.HasValue)
         {
-            Console.WriteLine($"[Bens.ApplyFilters] No status filter applied (showing all {result.Count()} bens)");
+            var beforeFilter = result.Count();
+            result = FilterByConservationState(result, selectedConservationState.Value);
+            var afterFilter = result.Count();
+            Console.WriteLine($"[Bens.ApplyFilters] After conservation state filter ({selectedConservationState.Value.ToDisplayText()}): {afterFilter} (removed {beforeFilter - afterFilter})");
         }
 
         // Filtro por busca (termo de pesquisa)
@@ -618,6 +585,19 @@
     }
 
     /// <summary>
+    /// Filtra bens por estado de conservação (ConservationState).
+    /// Retorna apenas bens que possuem captura local E o estado correspondente.
+    /// </summary>
+    private IEnumerable<PatrimonioItem> FilterByConservationState(IEnumerable<PatrimonioItem> bens, ConservationState state)
+    {
+        return bens.Where(b =>
+        {
+            var local = TryGetLocal(b);
+            return local != null && local.State == state;
+        });
+    }
+
+    /// <summary>
     /// Filtra bens por termo de busca.
     /// Busca em: código (nutomb), descrição (deprod) e localização.
     /// </summary>
@@ -637,6 +617,28 @@
         selectedStatus = status;
         ApplyFilters();
         StateHasChanged();
+    }
+
+    private async Task HandleConservationStateFilter(ConservationState? state)
+    {
+        selectedConservationState = state;
+        ApplyFilters();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleStatusFilter(BemStatus? status)
+    {
+        selectedStatus = status;
+        ApplyFilters();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleClearFilters()
+    {
+        selectedConservationState = null;
+        selectedStatus = null;
+        ApplyFilters();
+        await InvokeAsync(StateHasChanged);
     }
 
     private void OnSearchChanged(ChangeEventArgs e)

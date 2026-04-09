@@ -1,8 +1,8 @@
 using FluentAssertions;
 using Moq;
 using Moq.Protected;
-using pwa_camera_poc_blazor.Services.Storage;
-using pwa_camera_poc_blazor.Services.Sync;
+using AspecCaptura.Services.Storage;
+using AspecCaptura.Services.Sync;
 using System.Net;
 using System.Text;
 using System.Text.Json;

@@ -1,5 +1,5 @@
 using FluentAssertions;
-using pwa_camera_poc_blazor.Services.Recognition.Parsers;
+using AspecCaptura.Services.Recognition.Parsers;
 using Xunit;
 
 namespace Tests.Services.Recognition;

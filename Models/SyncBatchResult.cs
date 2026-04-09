@@ -1,4 +1,4 @@
-namespace pwa_camera_poc_blazor.Models;
+namespace AspecCaptura.Models;
 
 /// <summary>
 /// Resultado de sincronização de um lote de itens

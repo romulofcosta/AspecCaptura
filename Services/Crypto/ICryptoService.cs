@@ -1,4 +1,4 @@
-namespace pwa_camera_poc_blazor.Services.Crypto;
+namespace AspecCaptura.Services.Crypto;
 
 public interface ICryptoService
 {

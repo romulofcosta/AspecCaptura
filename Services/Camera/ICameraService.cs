@@ -1,4 +1,4 @@
-namespace pwa_camera_poc_blazor.Services.Camera;
+namespace AspecCaptura.Services.Camera;
 
 public class CaptureResult
 {

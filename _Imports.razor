@@ -7,33 +7,33 @@
 @using Microsoft.AspNetCore.Components.WebAssembly.Http
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.JSInterop
-@using pwa_camera_poc_blazor
-@using pwa_camera_poc_blazor.Components.Layout
-@using pwa_camera_poc_blazor.Components.Common
-@using pwa_camera_poc_blazor.Components.Forms
-@using pwa_camera_poc_blazor.Components.Shared
-@using pwa_camera_poc_blazor.Components.Navigation
-@using pwa_camera_poc_blazor.Models
+@using AspecCaptura
+@using AspecCaptura.Components.Layout
+@using AspecCaptura.Components.Common
+@using AspecCaptura.Components.Forms
+@using AspecCaptura.Components.Shared
+@using AspecCaptura.Components.Navigation
+@using AspecCaptura.Models
 @using Microsoft.Extensions.Logging
 
-@using pwa_camera_poc_blazor.Services
-@using pwa_camera_poc_blazor.Services.Auth
-@using pwa_camera_poc_blazor.Services.Camera
-@using pwa_camera_poc_blazor.Services.Storage
-@using pwa_camera_poc_blazor.Services.AWS
-@using pwa_camera_poc_blazor.Services.Crypto
-@using pwa_camera_poc_blazor.Services.Sync
-@using pwa_camera_poc_blazor.Services.Notification
-@using pwa_camera_poc_blazor.Services.Recognition
-@using pwa_camera_poc_blazor.Services.Configuration
-@using pwa_camera_poc_blazor.Services.Capture
-@using pwa_camera_poc_blazor.Services.Image
+@using AspecCaptura.Services
+@using AspecCaptura.Services.Auth
+@using AspecCaptura.Services.Camera
+@using AspecCaptura.Services.Storage
+@using AspecCaptura.Services.AWS
+@using AspecCaptura.Services.Crypto
+@using AspecCaptura.Services.Sync
+@using AspecCaptura.Services.Notification
+@using AspecCaptura.Services.Recognition
+@using AspecCaptura.Services.Configuration
+@using AspecCaptura.Services.Capture
+@using AspecCaptura.Services.Image
 
 @inject AppState appState
 @inject NavigationManager Navigation
-@inject pwa_camera_poc_blazor.Services.ToastService ToastService
+@inject AspecCaptura.Services.ToastService ToastService
 @inject IJSRuntime JSRuntime
 @inject HttpClient HttpClient
-@inject pwa_camera_poc_blazor.Services.Auth.IAuthService AuthService
-@inject pwa_camera_poc_blazor.Services.Storage.IIndexedDbService DbService
-@inject pwa_camera_poc_blazor.Services.IAppInfo AppInfo
+@inject AspecCaptura.Services.Auth.IAuthService AuthService
+@inject AspecCaptura.Services.Storage.IIndexedDbService DbService
+@inject AspecCaptura.Services.IAppInfo AppInfo

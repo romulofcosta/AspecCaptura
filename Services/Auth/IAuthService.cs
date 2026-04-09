@@ -1,6 +1,6 @@
-using pwa_camera_poc_blazor.Models;
+using AspecCaptura.Models;
 
-namespace pwa_camera_poc_blazor.Services.Auth;
+namespace AspecCaptura.Services.Auth;
 
 public class LoginResult
 {

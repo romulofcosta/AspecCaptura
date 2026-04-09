@@ -1,4 +1,4 @@
-namespace pwa_camera_poc_blazor.Services.Image;
+namespace AspecCaptura.Services.Image;
 
 public enum CompressionQuality
 {

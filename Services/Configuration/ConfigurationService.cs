@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
-using pwa_camera_poc_blazor.Models;
-using pwa_camera_poc_blazor.Services.Storage;
+using AspecCaptura.Models;
+using AspecCaptura.Services.Storage;
 using System.Text.Json;
 
-namespace pwa_camera_poc_blazor.Services.Configuration;
+namespace AspecCaptura.Services.Configuration;
 
 public class ConfigurationService : IConfigurationService
 {

@@ -1,22 +1,22 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.Authorization;
-using pwa_camera_poc_blazor;
-using pwa_camera_poc_blazor.Services;
-using pwa_camera_poc_blazor.Services.Auth;
-using pwa_camera_poc_blazor.Services.Camera;
-using pwa_camera_poc_blazor.Services.Recognition;
-using pwa_camera_poc_blazor.Services.Storage;
-using pwa_camera_poc_blazor.Services.AWS;
-using pwa_camera_poc_blazor.Services.Crypto;
-using pwa_camera_poc_blazor.Services.Image;
-using pwa_camera_poc_blazor.Services.Notification;
-using pwa_camera_poc_blazor.Services.Sync;
-using pwa_camera_poc_blazor.Services.Configuration;
-using pwa_camera_poc_blazor.Services.Capture;
-using pwa_camera_poc_blazor.Models;
-using LocalStorageService = pwa_camera_poc_blazor.Services.Storage.LocalStorageService;
-using ILocalStorageService = pwa_camera_poc_blazor.Services.Storage.ILocalStorageService;
+using AspecCaptura;
+using AspecCaptura.Services;
+using AspecCaptura.Services.Auth;
+using AspecCaptura.Services.Camera;
+using AspecCaptura.Services.Recognition;
+using AspecCaptura.Services.Storage;
+using AspecCaptura.Services.AWS;
+using AspecCaptura.Services.Crypto;
+using AspecCaptura.Services.Image;
+using AspecCaptura.Services.Notification;
+using AspecCaptura.Services.Sync;
+using AspecCaptura.Services.Configuration;
+using AspecCaptura.Services.Capture;
+using AspecCaptura.Models;
+using LocalStorageService = AspecCaptura.Services.Storage.LocalStorageService;
+using ILocalStorageService = AspecCaptura.Services.Storage.ILocalStorageService;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -36,6 +36,8 @@ builder.Services.AddHttpClient("BackendApi", client =>
         apiBaseUrl = "http://localhost:5069";
     }
     client.BaseAddress = new Uri(apiBaseUrl);
+    // Aumenta o timeout para 10 minutos para operações de sincronização pesadas
+    client.Timeout = TimeSpan.FromMinutes(10);
 });
 
 // Storage Services

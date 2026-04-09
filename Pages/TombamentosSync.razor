@@ -1,8 +1,9 @@
 @page "/tombamentos-sync"
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
-@inject pwa_camera_poc_blazor.Services.Sync.SyncService SyncService
-@inject pwa_camera_poc_blazor.Services.Auth.IAuthService AuthService
-@inject pwa_camera_poc_blazor.Services.ToastService ToastService
+@inject AspecCaptura.Services.Sync.SyncService SyncService
+@inject AspecCaptura.Services.Auth.IAuthService AuthService
+@inject AspecCaptura.Services.ToastService ToastService
+@inject AspecCaptura.Services.AppState appState
 @inject NavigationManager Navigation
 <div class="minimal-page" style="padding: 24px;">
     <div class="minimal-card" style="padding: 24px; max-width: 600px; margin: 32px auto;">
@@ -76,7 +77,7 @@
                 return;
             }
 
-            var progress = new Progress<pwa_camera_poc_blazor.Services.Sync.SyncProgress>(p =>
+            var progress = new Progress<AspecCaptura.Services.Sync.SyncProgress>(p =>
             {
                 // Incrementa localmente para UI
                 if (p.Current > current) current = p.Current;
@@ -87,7 +88,7 @@
             });
 
             var result = await SyncService.SyncAsync(user.Prefixo, progress);
-            if (result == pwa_camera_poc_blazor.Services.Sync.SyncResult.Success)
+            if (result == AspecCaptura.Services.Sync.SyncResult.Success)
             {
                 ToastService.Show("Sincronização concluída.", "success");
             }
@@ -129,5 +130,11 @@
         return RunSync();
     }
 
-    private void BackToConfig() => Navigation.NavigateTo("/configuracao-sessao");
+    private async Task BackToConfig()
+    {
+        // Limpa a configuração de sessão para forçar reconfiguração
+        appState.ClearSessionConfiguration();
+        await appState.SaveStateAsync();
+        Navigation.NavigateTo("/configuracao-sessao");
+    }
 }

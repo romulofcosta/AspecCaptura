@@ -1,9 +1,9 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using pwa_camera_poc_blazor.Models;
-using pwa_camera_poc_blazor.Services.Storage;
+using AspecCaptura.Models;
+using AspecCaptura.Services.Storage;
 
-namespace pwa_camera_poc_blazor.Services;
+namespace AspecCaptura.Services;
 
 public class AppState : INotifyPropertyChanged
 {

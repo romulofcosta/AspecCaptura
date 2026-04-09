@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Moq;
-using pwa_camera_poc_blazor.Services.Auth;
-using pwa_camera_poc_blazor.Services.Storage;
+using AspecCaptura.Services.Auth;
+using AspecCaptura.Services.Storage;
 using Xunit;
 
 namespace Tests.Services.Auth;

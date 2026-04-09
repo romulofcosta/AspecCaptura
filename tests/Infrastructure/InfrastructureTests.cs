@@ -74,7 +74,7 @@ public class InfrastructureTests
         item.Should().NotBeNull();
         item.Nutomb.Should().Be("E123456");
         item.Esfera.Should().Be("E");
-        item.RecognitionSource.Should().Be(pwa_camera_poc_blazor.Models.RecognitionSource.QR);
+        item.RecognitionSource.Should().Be(AspecCaptura.Models.RecognitionSource.QR);
         item.RecognitionConfidence.Should().Be(0.95f);
         item.LastRecognized.Should().NotBeNull();
     }

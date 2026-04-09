@@ -1,14 +1,14 @@
 using FluentAssertions;
 using Moq;
 using Moq.Protected;
-using pwa_camera_poc_blazor.Models;
-using pwa_camera_poc_blazor.Services.Capture;
+using AspecCaptura.Models;
+using AspecCaptura.Services.Capture;
 using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace pwa_camera_poc_blazor.Tests.Services.Capture;
+namespace AspecCaptura.Tests.Services.Capture;
 
 public class CaptureApiServiceTests
 {

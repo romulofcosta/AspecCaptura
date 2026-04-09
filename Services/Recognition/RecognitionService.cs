@@ -1,10 +1,10 @@
 using Microsoft.JSInterop;
 using Microsoft.Extensions.Logging;
-using pwa_camera_poc_blazor.Models;
-using pwa_camera_poc_blazor.Services.Configuration;
+using AspecCaptura.Models;
+using AspecCaptura.Services.Configuration;
 using System.Collections.Concurrent;
 
-namespace pwa_camera_poc_blazor.Services.Recognition;
+namespace AspecCaptura.Services.Recognition;
 
 public class RecognitionService : IRecognitionService
 {

@@ -1,6 +1,6 @@
-using pwa_camera_poc_blazor.Services.Storage;
+using AspecCaptura.Services.Storage;
 
-namespace pwa_camera_poc_blazor.Services.Auth;
+namespace AspecCaptura.Services.Auth;
 
 public class LoginAttempt
 {

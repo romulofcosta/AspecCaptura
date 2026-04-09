@@ -3,7 +3,7 @@
 @implements IDisposable
 @inject NavigationManager Navigation
 @inject AppState appState
-@inject pwa_camera_poc_blazor.Services.ToastService ToastService
+@inject AspecCaptura.Services.ToastService ToastService
 
 <div class="main-layout">
     <header class="app-header">
@@ -176,7 +176,7 @@
 </style>
 
 @code {
-    private List<pwa_camera_poc_blazor.Services.ToastMessage> _toasts = new();
+    private List<AspecCaptura.Services.ToastMessage> _toasts = new();
 
     protected override void OnInitialized()
     {
@@ -186,7 +186,7 @@
 
     private void HandleToastShow(string message, string type)
     {
-        var toast = new pwa_camera_poc_blazor.Services.ToastMessage 
+        var toast = new AspecCaptura.Services.ToastMessage 
         { 
             Message = message, 
             Type = type, 

@@ -1,6 +1,6 @@
 using Microsoft.JSInterop;
 
-namespace pwa_camera_poc_blazor.Services;
+namespace AspecCaptura.Services;
 
 /// <summary>
 /// Serviço para gerenciar atualizações do PWA e Service Worker

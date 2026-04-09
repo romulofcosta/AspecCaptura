@@ -1,22 +1,22 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
-using pwa_camera_poc_blazor.Models;
+using AspecCaptura.Models;
 
-namespace pwa_camera_poc_blazor.Services.AWS
+namespace AspecCaptura.Services.AWS
 {
     public class AwsStorageService : IAwsStorageService
     {
         private readonly HttpClient _httpClient;
         private readonly AwsConfig _config;
-        private readonly pwa_camera_poc_blazor.Services.Auth.IAuthService _authService;
-        private readonly pwa_camera_poc_blazor.Services.Storage.IIndexedDbService _dbService;
+        private readonly AspecCaptura.Services.Auth.IAuthService _authService;
+        private readonly AspecCaptura.Services.Storage.IIndexedDbService _dbService;
 
-        public AwsStorageService(IHttpClientFactory httpClientFactory, AwsConfig config, pwa_camera_poc_blazor.Services.Auth.IAuthService authService, pwa_camera_poc_blazor.Services.Storage.IIndexedDbService dbService)
+        public AwsStorageService(IHttpClientFactory httpClientFactory, AwsConfig config, AspecCaptura.Services.Auth.IAuthService authService, AspecCaptura.Services.Storage.IIndexedDbService dbService)
         {
             _httpClient = httpClientFactory.CreateClient("BackendApi");
             _config = config;
@@ -26,7 +26,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
 
         public void InitializeWithToken(string idToken)
         {
-            // Não necessário com BFF
+            // N�o necess�rio com BFF
         }
 
         private string SanitizeKey(string? input)
@@ -107,7 +107,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
                     var uri = new Uri(presignedData.Url);
                     var cleanUrl = $"{uri.Scheme}://{uri.Host}{uri.AbsolutePath}";
 
-                    Console.WriteLine($" Upload concluído: {presignedData.Key}");
+                    Console.WriteLine($" Upload conclu�do: {presignedData.Key}");
                     return (true, cleanUrl);
                 }
                 else
@@ -118,7 +118,7 @@ namespace pwa_camera_poc_blazor.Services.AWS
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exceção no upload: {ex.Message}");
+                Console.WriteLine($"Exce��o no upload: {ex.Message}");
                 return (false, null);
             }
         }

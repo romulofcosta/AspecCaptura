@@ -2,10 +2,10 @@ using System; // Required for Exception and Console
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
-using pwa_camera_poc_blazor.Models; // For implicit usage if needed, but session is UserSession
-using pwa_camera_poc_blazor.Services.Storage;
+using AspecCaptura.Models; // For implicit usage if needed, but session is UserSession
+using AspecCaptura.Services.Storage;
 
-namespace pwa_camera_poc_blazor.Services.Auth
+namespace AspecCaptura.Services.Auth
 {
     public class CustomAuthStateProvider : AuthenticationStateProvider
     {

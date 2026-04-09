@@ -1,6 +1,6 @@
-namespace pwa_camera_poc_blazor.Services.Utils;
+namespace AspecCaptura.Services.Utils;
 
-using pwa_camera_poc_blazor.Models;
+using AspecCaptura.Models;
 
 /// <summary>
 /// Utilitário para mapeamento de enums de bem patrimonial.

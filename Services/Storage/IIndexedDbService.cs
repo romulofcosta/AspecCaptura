@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using pwa_camera_poc_blazor.Models;
+using AspecCaptura.Models;
 
-namespace pwa_camera_poc_blazor.Services.Storage
+namespace AspecCaptura.Services.Storage
 {
     public interface IIndexedDbService
     {

@@ -1,7 +1,7 @@
-using pwa_camera_poc_blazor.Models;
+using AspecCaptura.Models;
 using System.Text.RegularExpressions;
 
-namespace pwa_camera_poc_blazor.Services.Recognition;
+namespace AspecCaptura.Services.Recognition;
 
 public class ValidationService : IValidationService
 {

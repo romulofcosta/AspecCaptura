@@ -1,6 +1,6 @@
-using pwa_camera_poc_blazor.Models;
+using AspecCaptura.Models;
 
-namespace pwa_camera_poc_blazor.Services.Capture;
+namespace AspecCaptura.Services.Capture;
 
 public interface ICaptureApiService
 {

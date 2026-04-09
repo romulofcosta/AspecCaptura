@@ -1,10 +1,10 @@
 using System.Net.Http.Json;
-using pwa_camera_poc_blazor.Models;
-using pwa_camera_poc_blazor.Services.Storage;
-using pwa_camera_poc_blazor.Services.Crypto;
-using pwa_camera_poc_blazor.Services.Capture;
+using AspecCaptura.Models;
+using AspecCaptura.Services.Storage;
+using AspecCaptura.Services.Crypto;
+using AspecCaptura.Services.Capture;
 
-namespace pwa_camera_poc_blazor.Services.Sync;
+namespace AspecCaptura.Services.Sync;
 
 public class ItemSyncService : ISyncService
 {

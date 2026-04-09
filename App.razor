@@ -1,11 +1,11 @@
-@using pwa_camera_poc_blazor.Components.Shared
-@using pwa_camera_poc_blazor.Components
+@using AspecCaptura.Components.Shared
+@using AspecCaptura.Components
 
 <CascadingAuthenticationState>
-    <pwa_camera_poc_blazor.Components.Shared.UpdateNotification />
+    <AspecCaptura.Components.Shared.UpdateNotification />
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(pwa_camera_poc_blazor.Components.Layout.AppLayout)">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(AspecCaptura.Components.Layout.AppLayout)">
                 <Authorizing>
                     <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #FFFFFF;">
                         <div class="loading-spinner">
@@ -29,7 +29,7 @@
         </Found>
         <NotFound>
             <PageTitle>Not found</PageTitle>
-            <LayoutView Layout="@typeof(pwa_camera_poc_blazor.Components.Layout.AppLayout)">
+            <LayoutView Layout="@typeof(AspecCaptura.Components.Layout.AppLayout)">
                 <div style="text-align: center; padding: 40px 24px; color: #94A3B8;">
                     <span class="material-symbols-outlined" style="opacity: 0.3; font-size: 64px;">search_off</span>
                     <p style="margin-top: 16px; font-size: 14px;">Desculpe, não há nada neste endereço.</p>

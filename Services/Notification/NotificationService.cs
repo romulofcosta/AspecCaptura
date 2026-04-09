@@ -1,8 +1,8 @@
 using System.Net.Http.Json;
 using Microsoft.JSInterop;
-using pwa_camera_poc_blazor.Services.Storage;
+using AspecCaptura.Services.Storage;
 
-namespace pwa_camera_poc_blazor.Services.Notification;
+namespace AspecCaptura.Services.Notification;
 
 public class NotificationService : INotificationService
 {

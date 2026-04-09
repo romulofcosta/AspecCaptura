@@ -1,0 +1,214 @@
+@namespace AspecCaptura.Components.Filters
+@using AspecCaptura.Models
+@using AspecCaptura.Services.Utils
+
+<div class="filter-panel-wrapper">
+    <div class="filter-panel">
+        <div class="filter-section">
+            <label class="filter-label">
+                <span class="material-symbols-outlined">inventory_2</span>
+                Estado de Conservação
+            </label>
+            <select class="filter-select" @onchange="OnConservationStateChanged">
+                <option value="">Todos os estados</option>
+                @foreach (var state in Enum.GetValues<ConservationState>())
+                {
+                    <option value="@((int)state)" selected="@(SelectedConservationState == state)">
+                        @state.ToDisplayText()
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-section">
+            <label class="filter-label">
+                <span class="material-symbols-outlined">info</span>
+                Situação do Bem
+            </label>
+            <select class="filter-select" @onchange="OnStatusChanged">
+                <option value="">Todas as situações</option>
+                @foreach (var status in Enum.GetValues<BemStatus>())
+                {
+                    <option value="@((int)status)" selected="@(SelectedStatus == status)">
+                        @status.ToDisplayText()
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-actions">
+            <button class="btn-clear" @onclick="ClearFilters">
+                <span class="material-symbols-outlined">filter_alt_off</span>
+                Limpar Filtros
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .filter-panel-wrapper {
+        background: var(--surface-color);
+        border-bottom: 2px solid var(--divider-color);
+        position: sticky;
+        top: 167px;
+        z-index: 18;
+        padding: 16px;
+    }
+
+    .filter-panel {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: flex-end;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .filter-section {
+        flex: 1;
+        min-width: 200px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .filter-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .filter-label .material-symbols-outlined {
+        font-size: 16px;
+        color: #94A3B8;
+    }
+
+    .filter-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        background: #fff;
+        font-size: 14px;
+        font-weight: 500;
+        color: #1E293B;
+        cursor: pointer;
+        transition: all 0.2s;
+        outline: none;
+    }
+
+    .filter-select:hover {
+        border-color: #CBD5E1;
+    }
+
+    .filter-select:focus {
+        border-color: #3B82F6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .filter-actions {
+        display: flex;
+        align-items: flex-end;
+    }
+
+    .btn-clear {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 16px;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        background: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748B;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .btn-clear:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+        color: #475569;
+    }
+
+    .btn-clear:active {
+        transform: scale(0.98);
+    }
+
+    .btn-clear .material-symbols-outlined {
+        font-size: 18px;
+    }
+
+    @@media (max-width: 768px) {
+        .filter-panel {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .filter-section {
+            min-width: 100%;
+        }
+
+        .filter-actions {
+            width: 100%;
+        }
+
+        .btn-clear {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+@code {
+    [Parameter]
+    public ConservationState? SelectedConservationState { get; set; }
+
+    [Parameter]
+    public BemStatus? SelectedStatus { get; set; }
+
+    [Parameter]
+    public EventCallback<ConservationState?> OnConservationStateFilter { get; set; }
+
+    [Parameter]
+    public EventCallback<BemStatus?> OnStatusFilter { get; set; }
+
+    [Parameter]
+    public EventCallback OnClearFilters { get; set; }
+
+    private async Task OnConservationStateChanged(ChangeEventArgs e)
+    {
+        if (string.IsNullOrEmpty(e.Value?.ToString()))
+        {
+            await OnConservationStateFilter.InvokeAsync(null);
+        }
+        else if (int.TryParse(e.Value.ToString(), out int stateValue))
+        {
+            await OnConservationStateFilter.InvokeAsync((ConservationState)stateValue);
+        }
+    }
+
+    private async Task OnStatusChanged(ChangeEventArgs e)
+    {
+        if (string.IsNullOrEmpty(e.Value?.ToString()))
+        {
+            await OnStatusFilter.InvokeAsync(null);
+        }
+        else if (int.TryParse(e.Value.ToString(), out int statusValue))
+        {
+            await OnStatusFilter.InvokeAsync((BemStatus)statusValue);
+        }
+    }
+
+    private async Task ClearFilters()
+    {
+        await OnClearFilters.InvokeAsync();
+    }
+}

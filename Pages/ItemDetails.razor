@@ -1,12 +1,12 @@
 @page "/bem-detalhes/{Nutomb}"
 @page "/bem/{Nutomb}"
-@using pwa_camera_poc_blazor.Components.Common
-@using pwa_camera_poc_blazor.Components.Layout
-@using pwa_camera_poc_blazor.Services.Utils
-@inject pwa_camera_poc_blazor.Services.Storage.IIndexedDbService DbService
+@using AspecCaptura.Components.Common
+@using AspecCaptura.Components.Layout
+@using AspecCaptura.Services.Utils
+@inject AspecCaptura.Services.Storage.IIndexedDbService DbService
 @inject AppState appState
-@inject pwa_camera_poc_blazor.Services.Auth.IAuthService AuthService
-@layout pwa_camera_poc_blazor.Components.Layout.AppLayout
+@inject AspecCaptura.Services.Auth.IAuthService AuthService
+@layout AspecCaptura.Components.Layout.AppLayout
 
 <PageTitle>Detalhes do Bem - Aspec Captura</PageTitle>
 
@@ -400,7 +400,7 @@ else
 @code {
     [Parameter] public string Nutomb { get; set; } = string.Empty;
     private InventoryItem? bem;
-    private pwa_camera_poc_blazor.Models.PatrimonioItem? patrimonio;
+    private AspecCaptura.Models.PatrimonioItem? patrimonio;
     private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()

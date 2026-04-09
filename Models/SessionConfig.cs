@@ -1,4 +1,4 @@
-namespace pwa_camera_poc_blazor.Models;
+namespace AspecCaptura.Models;
 
 /// <summary>
 /// Configuração de sessão hierárquica (Órgão/Unidade/Área/Subárea)

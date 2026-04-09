@@ -1,8 +1,8 @@
 using Microsoft.JSInterop;
-using pwa_camera_poc_blazor.Models;
-using pwa_camera_poc_blazor.Services.Recognition.Parsers;
+using AspecCaptura.Models;
+using AspecCaptura.Services.Recognition.Parsers;
 
-namespace pwa_camera_poc_blazor.Services.Recognition;
+namespace AspecCaptura.Services.Recognition;
 
 public class OCRRecognitionService : IOCRService
 {

@@ -1,8 +1,8 @@
 using FluentAssertions;
 using Moq;
-using pwa_camera_poc_blazor.Models;
-using pwa_camera_poc_blazor.Services.Recognition;
-using pwa_camera_poc_blazor.Services.Storage;
+using AspecCaptura.Models;
+using AspecCaptura.Services.Recognition;
+using AspecCaptura.Services.Storage;
 using Tests.Builders;
 using Xunit;
 

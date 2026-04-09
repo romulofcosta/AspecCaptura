@@ -1,4 +1,4 @@
-namespace pwa_camera_poc_blazor.Models;
+namespace AspecCaptura.Models;
 
 /// <summary>
 /// Item model for the refactored UI (as per spec)

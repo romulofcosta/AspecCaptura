@@ -1,21 +1,21 @@
 @page "/sync"
-@layout pwa_camera_poc_blazor.Components.Layout.AppLayout
-@using pwa_camera_poc_blazor.Models
+@layout AspecCaptura.Components.Layout.AppLayout
+@using AspecCaptura.Models
 @using System.Text.RegularExpressions
 @using System.Text
-@inject pwa_camera_poc_blazor.Services.Storage.IIndexedDbService DbService
+@inject AspecCaptura.Services.Storage.IIndexedDbService DbService
 @inject IAuthService AuthService
 @inject IAwsStorageService AwsService
 @inject NavigationManager Navigation
 @inject AppState appState
-@inject pwa_camera_poc_blazor.Services.ToastService ToastService
+@inject AspecCaptura.Services.ToastService ToastService
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <PageTitle>Sincronização - Aspec Captura</PageTitle>
 
 <div id="sync-container" class="minimal-page sync-page">
     <div class="sync-header">
-        <button class="back-btn" @onclick='() => Navigation.NavigateTo("/items")'>
+        <button class="back-btn" @onclick="NavigateBack">
             <span class="material-symbols-outlined">arrow_back</span>
         </button>
         <h1 class="page-title">Sincronização Cloud</h1>
@@ -574,5 +574,14 @@
             processingItems.Clear();
             await InvokeAsync(StateHasChanged);
         }
+    }
+
+    /// <summary>
+    /// Navega de volta para a tela de bens.
+    /// Usa a rota "/" que é mapeada para Bens.razor.
+    /// </summary>
+    private void NavigateBack()
+    {
+        Navigation.NavigateTo("/");
     }
 }

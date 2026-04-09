@@ -1,7 +1,7 @@
 @inherits LayoutComponentBase
 @layout ShellLayout
 @inject NavigationManager Navigation
-@inject pwa_camera_poc_blazor.Services.ToastService ToastService
+@inject AspecCaptura.Services.ToastService ToastService
 @implements IDisposable
 
 <div class="app-layout">
@@ -94,7 +94,7 @@
 </style>
 
 @code {
-    private readonly List<pwa_camera_poc_blazor.Services.ToastMessage> _toasts = new();
+    private readonly List<AspecCaptura.Services.ToastMessage> _toasts = new();
     private bool _isNavigating;
     private CancellationTokenSource? _navCts;
 
@@ -124,7 +124,7 @@
 
     private void HandleToastShow(string message, string type)
     {
-        var toast = new pwa_camera_poc_blazor.Services.ToastMessage
+        var toast = new AspecCaptura.Services.ToastMessage
         {
             Message = message,
             Type = type,

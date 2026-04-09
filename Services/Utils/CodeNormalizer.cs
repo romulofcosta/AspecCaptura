@@ -1,4 +1,4 @@
-namespace pwa_camera_poc_blazor.Services.Utils;
+namespace AspecCaptura.Services.Utils;
 
 /// <summary>
 /// Utilitário para normalização de códigos de unidades orçamentárias.

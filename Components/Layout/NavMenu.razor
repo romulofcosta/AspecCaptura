@@ -1,5 +1,5 @@
 @inject IAuthService AuthService
-@inject pwa_camera_poc_blazor.Services.Storage.IIndexedDbService DbService
+@inject AspecCaptura.Services.Storage.IIndexedDbService DbService
 
 <div style="display: flex; flex-direction: column; padding: 24px; background-color: #f1f5f9; align-items: center; border-bottom: 1px solid #e2e8f0;">
     <div style="cursor: pointer; display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 200px; overflow: hidden;" @onclick="NavigateToProfile">
@@ -43,7 +43,7 @@
     private string UserInitials = "U";
     private string DisplayName = "Usuário";
     private string EmailDisplay = "";
-    private pwa_camera_poc_blazor.Models.Usuario? currentUser;
+    private AspecCaptura.Models.Usuario? currentUser;
 
     protected override async Task OnParametersSetAsync()
     {

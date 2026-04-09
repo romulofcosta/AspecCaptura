@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
-using pwa_camera_poc_blazor.Models;
-using pwa_camera_poc_blazor.Services.Recognition;
+using AspecCaptura.Models;
+using AspecCaptura.Services.Recognition;
 
-namespace pwa_camera_poc_blazor.Services.Configuration;
+namespace AspecCaptura.Services.Configuration;
 
 public interface IConfigurationIntegrationService
 {

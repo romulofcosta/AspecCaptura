@@ -1,8 +1,8 @@
 using Microsoft.JSInterop;
-using pwa_camera_poc_blazor.Models;
-using pwa_camera_poc_blazor.Services.Utils;
+using AspecCaptura.Models;
+using AspecCaptura.Services.Utils;
 
-namespace pwa_camera_poc_blazor.Services.Storage
+namespace AspecCaptura.Services.Storage
 {
     public class IndexedDbService : IIndexedDbService
     {

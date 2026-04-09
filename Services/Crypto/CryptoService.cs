@@ -1,7 +1,7 @@
 using Microsoft.JSInterop;
-using pwa_camera_poc_blazor.Services.Storage;
+using AspecCaptura.Services.Storage;
 
-namespace pwa_camera_poc_blazor.Services.Crypto;
+namespace AspecCaptura.Services.Crypto;
 
 public class CryptoException : Exception
 {

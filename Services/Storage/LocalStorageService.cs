@@ -1,7 +1,7 @@
 using Microsoft.JSInterop;
 using System.Text.Json;
 
-namespace pwa_camera_poc_blazor.Services.Storage;
+namespace AspecCaptura.Services.Storage;
 
 public interface ILocalStorageService
 {

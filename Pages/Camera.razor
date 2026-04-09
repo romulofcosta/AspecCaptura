@@ -1,10 +1,10 @@
 @page "/camera"
-@layout pwa_camera_poc_blazor.Components.Layout.AppLayout
-@using pwa_camera_poc_blazor.Components.Common
-@using pwa_camera_poc_blazor.Components.Layout
+@layout AspecCaptura.Components.Layout.AppLayout
+@using AspecCaptura.Components.Common
+@using AspecCaptura.Components.Layout
 @inject ICameraService CameraService
 @inject IRecognitionService RecognitionService
-@inject pwa_camera_poc_blazor.Services.Storage.IIndexedDbService DbService
+@inject AspecCaptura.Services.Storage.IIndexedDbService DbService
 @inject IAuthService AuthService
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @implements IAsyncDisposable
@@ -679,7 +679,7 @@
             await appState.UpdateStatisticsAsync();
             
             ToastService.ShowSuccess("Item salvo com sucesso!");
-            Navigation.NavigateTo("/items");
+            Navigation.NavigateTo("/");
         }
         catch (Exception ex)
         {
@@ -696,12 +696,12 @@
         isFormVisible = false;
         capturedPhotos.Clear();
         itemModel = new InventoryItem();
-        Navigation.NavigateTo("/items");
+        Navigation.NavigateTo("/");
     }
 
     private void CloseCamera()
     {
-        Navigation.NavigateTo("/items");
+        Navigation.NavigateTo("/");
     }
 
     public async ValueTask DisposeAsync()

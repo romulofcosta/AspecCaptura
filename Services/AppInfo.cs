@@ -1,4 +1,4 @@
-namespace pwa_camera_poc_blazor.Services;
+namespace AspecCaptura.Services;
 
 using System.Reflection;
 

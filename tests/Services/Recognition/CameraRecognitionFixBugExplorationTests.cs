@@ -3,9 +3,9 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 using FluentAssertions;
-using pwa_camera_poc_blazor.Services.Recognition;
-using pwa_camera_poc_blazor.Services.Configuration;
-using pwa_camera_poc_blazor.Models;
+using AspecCaptura.Services.Recognition;
+using AspecCaptura.Services.Configuration;
+using AspecCaptura.Models;
 using Tests.Mocks;
 using Tests.Builders;
 using System.Reflection;
@@ -168,7 +168,7 @@ public class CameraRecognitionFixBugExplorationTests
     public void BugExploration_Camera_DeveTerCampo_selectedMode()
     {
         // Arrange
-        var cameraType = typeof(pwa_camera_poc_blazor.Pages.Camera);
+        var cameraType = typeof(AspecCaptura.Pages.Camera);
 
         // Act — verifica se o campo selectedMode existe
         var field = cameraType.GetField("selectedMode",
@@ -190,7 +190,7 @@ public class CameraRecognitionFixBugExplorationTests
     public void BugExploration_Camera_DeveConterEnum_RecognitionMode()
     {
         // Arrange
-        var cameraType = typeof(pwa_camera_poc_blazor.Pages.Camera);
+        var cameraType = typeof(AspecCaptura.Pages.Camera);
 
         // Act — procura o enum RecognitionMode como tipo aninhado
         var nestedTypes = cameraType.GetNestedTypes(
@@ -215,7 +215,7 @@ public class CameraRecognitionFixBugExplorationTests
     public void BugExploration_Camera_RecognitionMode_DeveTerValoresCorretos()
     {
         // Arrange
-        var cameraType = typeof(pwa_camera_poc_blazor.Pages.Camera);
+        var cameraType = typeof(AspecCaptura.Pages.Camera);
         var nestedTypes = cameraType.GetNestedTypes(
             BindingFlags.NonPublic | BindingFlags.Public);
 
@@ -244,7 +244,7 @@ public class CameraRecognitionFixBugExplorationTests
     public void BugExploration_Camera_DeveTerMetodo_SelectMode()
     {
         // Arrange
-        var cameraType = typeof(pwa_camera_poc_blazor.Pages.Camera);
+        var cameraType = typeof(AspecCaptura.Pages.Camera);
 
         // Act
         var method = cameraType.GetMethod("SelectMode",
@@ -266,7 +266,7 @@ public class CameraRecognitionFixBugExplorationTests
     public void BugExploration_SelectMode_QR_DeveHabilitarApenasQR()
     {
         // Arrange
-        var cameraType = typeof(pwa_camera_poc_blazor.Pages.Camera);
+        var cameraType = typeof(AspecCaptura.Pages.Camera);
         var selectModeMethod = cameraType.GetMethod("SelectMode",
             BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -293,7 +293,7 @@ public class CameraRecognitionFixBugExplorationTests
     public void BugExploration_Camera_DeveTerMetodo_GetBadgeClass()
     {
         // Arrange
-        var cameraType = typeof(pwa_camera_poc_blazor.Pages.Camera);
+        var cameraType = typeof(AspecCaptura.Pages.Camera);
 
         // Act
         var method = cameraType.GetMethod("GetBadgeClass",

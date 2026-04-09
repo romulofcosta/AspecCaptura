@@ -1,5 +1,5 @@
 using FluentAssertions;
-using pwa_camera_poc_blazor.Services.Recognition;
+using AspecCaptura.Services.Recognition;
 using Tests.Builders;
 using Xunit;
 

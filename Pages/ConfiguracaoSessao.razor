@@ -1,6 +1,9 @@
 @page "/configuracao-sessao"
-@using pwa_camera_poc_blazor.Components.Forms
+@using AspecCaptura.Components.Forms
 @inject IAuthService AuthService
+@inject AspecCaptura.Services.Storage.IIndexedDbService DbService
+@inject AspecCaptura.Services.AppState appState
+@inject NavigationManager Navigation
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @layout AuthMinimalLayout
 
