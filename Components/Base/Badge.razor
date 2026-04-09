@@ -1,57 +1,91 @@
+@*
+    Badge Component
+    
+    A small status indicator or label component with semantic colors.
+    Uses pill shape with full border radius.
+    
+    Features:
+    - Variants: primary, success, warning, error, neutral
+    - Sizes: sm, md, lg
+    - Dot variant for notification indicators
+    - Position support for absolute positioning
+    
+    Usage:
+    <Badge Variant="BadgeVariant.Success" Size="BadgeSize.Medium">
+        Active
+    </Badge>
+    
+    <Badge Variant="BadgeVariant.Error" Dot="true" />
+    
+    Requirements: 2.1, 21.1, 21.2, 21.3, 21.4, 21.7, 21.8
+*@
+
 @namespace AspecCaptura.Components.Base
 
-<span class="@GetBadgeClasses()">
-    @if (Dot)
-    {
-        <span class="w-2 h-2 rounded-full bg-current"></span>
-    }
-    @if (!string.IsNullOrEmpty(Text))
-    {
-        <span>@Text</span>
-    }
-</span>
+@if (Dot)
+{
+    <span class="badge badge--dot badge--@Variant.ToString().ToLower() @(Position != BadgePosition.None ? $"badge--{Position.ToString().ToLower()}" : "")"></span>
+}
+else
+{
+    <span class="badge badge--@Variant.ToString().ToLower() badge--@Size.ToString().ToLower() @(Position != BadgePosition.None ? $"badge--{Position.ToString().ToLower()}" : "")">
+        @ChildContent
+    </span>
+}
 
 @code {
-    [Parameter] public string? Text { get; set; }
-    [Parameter] public BadgeColor Color { get; set; } = BadgeColor.Default;
-    [Parameter] public BadgeSize Size { get; set; } = BadgeSize.Medium;
-    [Parameter] public bool Dot { get; set; }
+    /// <summary>
+    /// Badge variant (color scheme)
+    /// </summary>
+    [Parameter]
+    public BadgeVariant Variant { get; set; } = BadgeVariant.Neutral;
 
-    private string GetBadgeClasses()
+    /// <summary>
+    /// Badge size
+    /// </summary>
+    [Parameter]
+    public BadgeSize Size { get; set; } = BadgeSize.Medium;
+
+    /// <summary>
+    /// Whether to display as a dot (notification indicator)
+    /// </summary>
+    [Parameter]
+    public bool Dot { get; set; }
+
+    /// <summary>
+    /// Position for absolute positioning (e.g., on top of an icon)
+    /// </summary>
+    [Parameter]
+    public BadgePosition Position { get; set; } = BadgePosition.None;
+
+    /// <summary>
+    /// Badge content
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    public enum BadgeVariant
     {
-        var classes = new List<string>
-        {
-            "inline-flex",
-            "items-center",
-            "gap-1",
-            "font-medium",
-            "rounded-full"
-        };
-
-        // Color
-        classes.AddRange(Color switch
-        {
-            BadgeColor.Default => new[] { "bg-surface-container", "text-on-surface" },
-            BadgeColor.Primary => new[] { "bg-primary", "text-white" },
-            BadgeColor.Success => new[] { "bg-success", "text-white" },
-            BadgeColor.Warning => new[] { "bg-warning", "text-white" },
-            BadgeColor.Error => new[] { "bg-error", "text-white" },
-            BadgeColor.Info => new[] { "bg-info", "text-white" },
-            _ => new[] { "bg-surface-container", "text-on-surface" }
-        });
-
-        // Size
-        classes.AddRange(Size switch
-        {
-            BadgeSize.Small => new[] { "text-xs", "px-2", "py-0.5" },
-            BadgeSize.Medium => new[] { "text-sm", "px-3", "py-1" },
-            BadgeSize.Large => new[] { "text-base", "px-4", "py-1.5" },
-            _ => new[] { "text-sm", "px-3", "py-1" }
-        });
-
-        return string.Join(" ", classes);
+        Primary,
+        Success,
+        Warning,
+        Error,
+        Neutral
     }
 
-    public enum BadgeColor { Default, Primary, Success, Warning, Error, Info }
-    public enum BadgeSize { Small, Medium, Large }
+    public enum BadgeSize
+    {
+        Small,
+        Medium,
+        Large
+    }
+
+    public enum BadgePosition
+    {
+        None,
+        TopRight,
+        TopLeft,
+        BottomRight,
+        BottomLeft
+    }
 }

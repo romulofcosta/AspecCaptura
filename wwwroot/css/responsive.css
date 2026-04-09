@@ -1,110 +1,252 @@
-/* Responsive Breakpoints - Aspec Captura PWA */
+/**
+ * Responsive Utility Classes
+ * Mobile-first approach with min-width media queries
+ * Requirements: 3.1
+ */
 
-/* Mobile First - Base styles for 320px+ */
-/* Base styles are in app.css and components.css */
+/* ============================================
+   DISPLAY UTILITIES
+   ============================================ */
 
-/* Small Mobile: 320px - 479px */
-@media (min-width: 320px) {
-    .container {
-        padding: var(--spacing-md);
-    }
-    
-    .statistics-grid {
-        grid-template-columns: 1fr;
-        gap: var(--spacing-sm);
-    }
-}
+/* Hide/Show utilities */
+.hidden { display: none !important; }
+.block { display: block !important; }
+.inline-block { display: inline-block !important; }
+.inline { display: inline !important; }
+.flex { display: flex !important; }
+.inline-flex { display: inline-flex !important; }
+.grid { display: grid !important; }
 
-/* Large Mobile / Small Tablet: 480px - 767px */
-@media (min-width: 480px) {
-    .statistics-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* Tablet: 768px - 1023px */
+/* Responsive display utilities - Mobile first */
 @media (min-width: 768px) {
-    .container {
-        max-width: 720px;
-        margin: 0 auto;
-        padding: var(--spacing-lg);
-    }
-    
-    .dashboard-header {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .item-list {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    /* Hide bottom navigation on tablet+ */
-    .bottom-navigation {
-        display: none;
-    }
-    
-    /* Show sidebar navigation instead */
-    .sidebar-navigation {
-        display: flex;
-    }
+    .hidden-tablet { display: none !important; }
+    .block-tablet { display: block !important; }
+    .flex-tablet { display: flex !important; }
+    .grid-tablet { display: grid !important; }
 }
 
-/* Desktop: 1024px - 1439px */
 @media (min-width: 1024px) {
-    .container {
-        max-width: 960px;
-        padding: var(--spacing-xl);
-    }
-    
-    .item-list {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .item-details-form {
-        max-width: 800px;
-        margin: 0 auto;
+    .hidden-desktop { display: none !important; }
+    .block-desktop { display: block !important; }
+    .flex-desktop { display: flex !important; }
+    .grid-desktop { display: grid !important; }
+}
+
+/* Show only on specific breakpoints */
+.show-mobile-only { display: block !important; }
+@media (min-width: 768px) {
+    .show-mobile-only { display: none !important; }
+}
+
+.show-tablet-only { display: none !important; }
+@media (min-width: 768px) {
+    .show-tablet-only { display: block !important; }
+}
+@media (min-width: 1024px) {
+    .show-tablet-only { display: none !important; }
+}
+
+.show-desktop-only { display: none !important; }
+@media (min-width: 1024px) {
+    .show-desktop-only { display: block !important; }
+}
+
+/* ============================================
+   SPACING UTILITIES (Responsive)
+   ============================================ */
+
+/* Responsive padding */
+@media (min-width: 768px) {
+    .p-tablet-0 { padding: var(--space-0) !important; }
+    .p-tablet-2 { padding: var(--space-2) !important; }
+    .p-tablet-4 { padding: var(--space-4) !important; }
+    .p-tablet-6 { padding: var(--space-6) !important; }
+    .p-tablet-8 { padding: var(--space-8) !important; }
+}
+
+@media (min-width: 1024px) {
+    .p-desktop-0 { padding: var(--space-0) !important; }
+    .p-desktop-2 { padding: var(--space-2) !important; }
+    .p-desktop-4 { padding: var(--space-4) !important; }
+    .p-desktop-6 { padding: var(--space-6) !important; }
+    .p-desktop-8 { padding: var(--space-8) !important; }
+}
+
+/* Responsive margin */
+@media (min-width: 768px) {
+    .m-tablet-0 { margin: var(--space-0) !important; }
+    .m-tablet-2 { margin: var(--space-2) !important; }
+    .m-tablet-4 { margin: var(--space-4) !important; }
+    .m-tablet-6 { margin: var(--space-6) !important; }
+    .m-tablet-8 { margin: var(--space-8) !important; }
+}
+
+@media (min-width: 1024px) {
+    .m-desktop-0 { margin: var(--space-0) !important; }
+    .m-desktop-2 { margin: var(--space-2) !important; }
+    .m-desktop-4 { margin: var(--space-4) !important; }
+    .m-desktop-6 { margin: var(--space-6) !important; }
+    .m-desktop-8 { margin: var(--space-8) !important; }
+}
+
+/* ============================================
+   FLEXBOX UTILITIES (Responsive)
+   ============================================ */
+
+/* Flex direction */
+.flex-row { flex-direction: row !important; }
+.flex-col { flex-direction: column !important; }
+
+@media (min-width: 768px) {
+    .flex-row-tablet { flex-direction: row !important; }
+    .flex-col-tablet { flex-direction: column !important; }
+}
+
+@media (min-width: 1024px) {
+    .flex-row-desktop { flex-direction: row !important; }
+    .flex-col-desktop { flex-direction: column !important; }
+}
+
+/* Flex wrap */
+.flex-wrap { flex-wrap: wrap !important; }
+.flex-nowrap { flex-wrap: nowrap !important; }
+
+/* Justify content */
+.justify-start { justify-content: flex-start !important; }
+.justify-center { justify-content: center !important; }
+.justify-end { justify-content: flex-end !important; }
+.justify-between { justify-content: space-between !important; }
+.justify-around { justify-content: space-around !important; }
+
+/* Align items */
+.items-start { align-items: flex-start !important; }
+.items-center { align-items: center !important; }
+.items-end { align-items: flex-end !important; }
+.items-stretch { align-items: stretch !important; }
+
+/* Gap utilities */
+.gap-0 { gap: var(--space-0) !important; }
+.gap-1 { gap: var(--space-1) !important; }
+.gap-2 { gap: var(--space-2) !important; }
+.gap-3 { gap: var(--space-3) !important; }
+.gap-4 { gap: var(--space-4) !important; }
+.gap-6 { gap: var(--space-6) !important; }
+.gap-8 { gap: var(--space-8) !important; }
+
+/* ============================================
+   GRID UTILITIES (Responsive)
+   ============================================ */
+
+/* Grid columns - Mobile first */
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+.grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+.grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+
+@media (min-width: 768px) {
+    .grid-cols-tablet-1 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
+    .grid-cols-tablet-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .grid-cols-tablet-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+    .grid-cols-tablet-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+}
+
+@media (min-width: 1024px) {
+    .grid-cols-desktop-1 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
+    .grid-cols-desktop-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .grid-cols-desktop-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+    .grid-cols-desktop-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+}
+
+/* ============================================
+   WIDTH UTILITIES (Responsive)
+   ============================================ */
+
+.w-full { width: 100% !important; }
+.w-auto { width: auto !important; }
+.w-screen { width: 100vw !important; }
+
+@media (min-width: 768px) {
+    .w-tablet-auto { width: auto !important; }
+    .w-tablet-full { width: 100% !important; }
+}
+
+@media (min-width: 1024px) {
+    .w-desktop-auto { width: auto !important; }
+    .w-desktop-full { width: 100% !important; }
+}
+
+/* ============================================
+   TEXT ALIGNMENT (Responsive)
+   ============================================ */
+
+.text-left { text-align: left !important; }
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+
+@media (min-width: 768px) {
+    .text-tablet-left { text-align: left !important; }
+    .text-tablet-center { text-align: center !important; }
+    .text-tablet-right { text-align: right !important; }
+}
+
+@media (min-width: 1024px) {
+    .text-desktop-left { text-align: left !important; }
+    .text-desktop-center { text-align: center !important; }
+    .text-desktop-right { text-align: right !important; }
+}
+
+/* ============================================
+   CONTAINER UTILITIES
+   ============================================ */
+
+.container-fluid {
+    width: 100%;
+    padding-left: var(--space-4, 16px);
+    padding-right: var(--space-4, 16px);
+}
+
+@media (min-width: 768px) {
+    .container-fluid {
+        padding-left: var(--space-6, 24px);
+        padding-right: var(--space-6, 24px);
     }
 }
 
-/* Large Desktop: 1440px+ */
-@media (min-width: 1440px) {
-    .container {
-        max-width: var(--max-content-width);
-    }
-    
-    .statistics-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: var(--spacing-lg);
-    }
-    
-    .item-list {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--spacing-lg);
+@media (min-width: 1024px) {
+    .container-fluid {
+        padding-left: var(--space-8, 32px);
+        padding-right: var(--space-8, 32px);
     }
 }
 
-/* Reduced Motion Support */
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-}
+/* ============================================
+   POSITION UTILITIES
+   ============================================ */
 
-/* Print Styles */
-@media print {
-    .bottom-navigation,
-    .sidebar-navigation,
-    .floating-action-button {
-        display: none !important;
-    }
-    
-    .shell-content {
-        padding-bottom: 0;
-    }
-}
+.relative { position: relative !important; }
+.absolute { position: absolute !important; }
+.fixed { position: fixed !important; }
+.sticky { position: sticky !important; }
+
+/* ============================================
+   OVERFLOW UTILITIES
+   ============================================ */
+
+.overflow-auto { overflow: auto !important; }
+.overflow-hidden { overflow: hidden !important; }
+.overflow-visible { overflow: visible !important; }
+.overflow-scroll { overflow: scroll !important; }
+
+.overflow-x-auto { overflow-x: auto !important; }
+.overflow-y-auto { overflow-y: auto !important; }
+
+/* ============================================
+   Z-INDEX UTILITIES
+   ============================================ */
+
+.z-0 { z-index: 0 !important; }
+.z-10 { z-index: 10 !important; }
+.z-20 { z-index: 20 !important; }
+.z-30 { z-index: 30 !important; }
+.z-40 { z-index: 40 !important; }
+.z-50 { z-index: 50 !important; }

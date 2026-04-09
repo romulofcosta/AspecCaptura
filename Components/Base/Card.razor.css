@@ -1,0 +1,142 @@
+/**
+ * Card Component Styles
+ * Using CSS isolation and design tokens
+ * Requirements: 2.1, 16.1, 16.2, 16.3, 16.4, 16.6, 16.7, 16.8
+ */
+
+/* ── Base Card Styles ── */
+.card {
+    background: var(--color-surface, #FFFFFF);
+    border-radius: var(--radius-lg, 12px);
+    overflow: hidden;
+    transition: all var(--transition-base, 200ms) var(--easing-ease-in-out);
+}
+
+/* ── Card Elevation Levels ── */
+.card--flat {
+    box-shadow: var(--shadow-none);
+    border: var(--border-width-thin, 1px) solid var(--color-border, #E5E7EB);
+}
+
+.card--raised {
+    box-shadow: var(--shadow-sm);
+}
+
+.card--elevated {
+    box-shadow: var(--shadow-md);
+}
+
+/* ── Card Layout ── */
+.card--vertical {
+    display: flex;
+    flex-direction: column;
+}
+
+.card--horizontal {
+    display: flex;
+    flex-direction: row;
+}
+
+.card--horizontal .card__body {
+    flex: 1;
+}
+
+/* ── Card Sections ── */
+.card__header {
+    padding: var(--space-4, 16px);
+    border-bottom: var(--border-width-thin, 1px) solid var(--color-border, #E5E7EB);
+}
+
+.card__body {
+    padding: var(--space-4, 16px);
+}
+
+.card__footer {
+    padding: var(--space-4, 16px);
+    border-top: var(--border-width-thin, 1px) solid var(--color-border, #E5E7EB);
+    display: flex;
+    gap: var(--space-2, 8px);
+    justify-content: flex-end;
+}
+
+/* ── Interactive Card ── */
+.card--interactive {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+}
+
+.card--interactive:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.card--interactive:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-md);
+}
+
+/* Ripple effect for interactive cards */
+.card--interactive::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: var(--radius-full, 9999px);
+    background: rgba(0, 0, 0, 0.05);
+    transform: translate(-50%, -50%);
+    transition: width var(--transition-fast, 150ms) var(--easing-ease-out),
+                height var(--transition-fast, 150ms) var(--easing-ease-out);
+    pointer-events: none;
+}
+
+.card--interactive:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* ── Accessibility - Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+    .card {
+        transition: none;
+    }
+
+    .card--interactive:hover {
+        transform: none;
+    }
+
+    .card--interactive:active {
+        transform: none;
+    }
+
+    .card--interactive::after {
+        display: none;
+    }
+}
+
+/* ── Responsive Adjustments ── */
+@media (max-width: 768px) {
+    .card--horizontal {
+        flex-direction: column;
+    }
+}
+
+/* ── Dark Mode Support ── */
+[data-theme="dark"] .card {
+    background: var(--color-surface, #1F2937);
+}
+
+[data-theme="dark"] .card--flat {
+    border-color: var(--color-border, #374151);
+}
+
+[data-theme="dark"] .card__header,
+[data-theme="dark"] .card__footer {
+    border-color: var(--color-border, #374151);
+}
+
+[data-theme="dark"] .card--interactive::after {
+    background: rgba(255, 255, 255, 0.05);
+}

@@ -141,15 +141,13 @@
                 <!-- Action Buttons -->
                 <div class="config-actions">
                     <Button Text="@(_isSaving ? "Salvando..." : "Salvar")"
-                            Variant="Button.ButtonVariant.Filled" 
-                            Color="Button.ButtonColor.Primary" 
+                            Variant="Button.ButtonVariant.Primary" 
                             Icon="save"
                             Disabled="_isSaving"
                             OnClick="SaveConfiguration" />
 
                     <Button Text="Restaurar Padrões" 
-                            Variant="Button.ButtonVariant.Outlined" 
-                            Color="Button.ButtonColor.Secondary" 
+                            Variant="Button.ButtonVariant.Outline" 
                             Icon="restart_alt"
                             Disabled="_isSaving"
                             OnClick="ResetToDefaults" />

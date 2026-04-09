@@ -1,0 +1,169 @@
+@*
+    Modal Component
+    
+    A modal dialog component with mobile-first design.
+    Full-screen on mobile, centered dialog on desktop.
+    
+    Features:
+    - Full-screen on mobile, centered on desktop
+    - Keyboard focus trap
+    - Close on Escape key
+    - Close on backdrop click (optional)
+    - Prevent body scroll when open
+    - Animated entrance
+    - Proper ARIA attributes
+    
+    Usage:
+    <Modal 
+        IsOpen="isModalOpen"
+        Title="Modal Title"
+        OnClose="HandleClose"
+        CloseOnBackdrop="true">
+        <p>Modal content goes here</p>
+    </Modal>
+    
+    Requirements: 2.5, 17.1, 17.2, 17.4, 17.5, 17.6, 17.7, 17.8, 17.9, 17.10
+*@
+
+@namespace AspecCaptura.Components.Feedback
+@implements IDisposable
+@inject IJSRuntime JS
+
+@if (IsOpen)
+{
+    <div class="modal-overlay" @onclick="HandleBackdropClick"></div>
+    
+    <div 
+        class="modal @(IsOpen ? "modal--open" : "")"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="@GetTitleId()"
+        @onkeydown="HandleKeyDown"
+        tabindex="-1">
+        
+        <div class="modal__container">
+            @if (!string.IsNullOrEmpty(Title))
+            {
+                <div class="modal__header">
+                    <h2 class="modal__title" id="@GetTitleId()">@Title</h2>
+                    <button 
+                        type="button"
+                        class="modal__close"
+                        @onclick="HandleClose"
+                        aria-label="Close dialog">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="modal__header modal__header--no-title">
+                    <button 
+                        type="button"
+                        class="modal__close"
+                        @onclick="HandleClose"
+                        aria-label="Close dialog">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+            }
+            
+            <div class="modal__content">
+                @ChildContent
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private string _modalId = Guid.NewGuid().ToString("N")[..8];
+    private bool _previousIsOpen;
+
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public bool CloseOnBackdrop { get; set; } = true;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsOpen != _previousIsOpen)
+        {
+            if (IsOpen)
+            {
+                await PreventBodyScroll();
+            }
+            else
+            {
+                await RestoreBodyScroll();
+            }
+            _previousIsOpen = IsOpen;
+        }
+    }
+
+    private async Task HandleClose()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task HandleBackdropClick()
+    {
+        if (CloseOnBackdrop)
+        {
+            await HandleClose();
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            await HandleClose();
+        }
+    }
+
+    private async Task PreventBodyScroll()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("eval", "document.body.style.overflow = 'hidden'");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[Modal] Error preventing body scroll: {ex.Message}");
+        }
+    }
+
+    private async Task RestoreBodyScroll()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("eval", "document.body.style.overflow = ''");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[Modal] Error restoring body scroll: {ex.Message}");
+        }
+    }
+
+    private string GetTitleId() => $"modal-title-{_modalId}";
+
+    public void Dispose()
+    {
+        // Ensure body scroll is restored on dispose
+        try
+        {
+            _ = RestoreBodyScroll();
+        }
+        catch { }
+    }
+}

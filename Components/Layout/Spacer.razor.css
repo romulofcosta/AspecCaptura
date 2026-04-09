@@ -1,0 +1,16 @@
+/**
+ * Spacer Component Styles
+ * Requirements: 2.2, 18.5
+ */
+
+.spacer {
+    flex-shrink: 0;
+}
+
+.spacer--vertical {
+    width: 100%;
+}
+
+.spacer--horizontal {
+    height: 100%;
+}

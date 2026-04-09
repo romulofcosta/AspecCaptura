@@ -1,0 +1,97 @@
+/**
+ * BottomNav Component Styles
+ * Requirements: 2.3, 5.1, 5.2, 5.3, 5.6, 5.7, 5.8, 8.4
+ */
+
+/* ── Base BottomNav Styles ── */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--color-surface, #FFFFFF);
+    border-top: var(--border-width-thin, 1px) solid var(--color-border, #E5E7EB);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+    z-index: var(--z-index-fixed, 1030);
+}
+
+/* ── Nav Item ── */
+.bottom-nav__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1, 4px);
+    padding: var(--space-2, 8px) var(--space-3, 12px);
+    background: none;
+    border: none;
+    color: var(--color-text-secondary, #6B7280);
+    cursor: pointer;
+    transition: color var(--transition-fast, 150ms) var(--easing-ease-in-out);
+    -webkit-tap-highlight-color: transparent;
+    min-height: var(--touch-target-min, 44px);
+    min-width: var(--touch-target-min, 44px);
+    flex: 1;
+    max-width: 120px;
+}
+
+.bottom-nav__item:hover {
+    color: var(--color-primary, #2F6FED);
+}
+
+.bottom-nav__item:focus-visible {
+    outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-primary));
+    outline-offset: var(--focus-ring-offset, 2px);
+    border-radius: var(--radius-md, 8px);
+}
+
+/* ── Active Item ── */
+.bottom-nav__item--active {
+    color: var(--color-primary, #2F6FED);
+}
+
+.bottom-nav__item--active .bottom-nav__icon {
+    font-variation-settings: 'FILL' 1;
+}
+
+/* ── Icon ── */
+.bottom-nav__icon {
+    font-size: 24px;
+    transition: font-variation-settings var(--transition-fast, 150ms) var(--easing-ease-in-out);
+}
+
+/* ── Label ── */
+.bottom-nav__label {
+    font-size: var(--font-size-xs, 12px);
+    font-weight: var(--font-weight-medium, 500);
+    text-align: center;
+}
+
+/* ── Hide on Desktop ── */
+@media (min-width: 768px) {
+    .bottom-nav {
+        display: none;
+    }
+}
+
+/* ── Dark Mode Support ── */
+[data-theme="dark"] .bottom-nav {
+    background: var(--color-surface, #1F2937);
+    border-top-color: var(--color-border, #374151);
+}
+
+[data-theme="dark"] .bottom-nav__item {
+    color: var(--color-text-secondary, #D1D5DB);
+}
+
+[data-theme="dark"] .bottom-nav__item:hover {
+    color: var(--color-primary, #3B82F6);
+}
+
+[data-theme="dark"] .bottom-nav__item--active {
+    color: var(--color-primary, #3B82F6);
+}

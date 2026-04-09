@@ -1,0 +1,159 @@
+/**
+ * TextField Component Styles
+ * Using CSS isolation and design tokens
+ * Requirements: 2.4, 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.10
+ */
+
+/* ── Base TextField Styles ── */
+.text-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1, 4px);
+    width: 100%;
+}
+
+.text-field__container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* ── Input Styles ── */
+.text-field__input {
+    width: 100%;
+    padding: var(--space-4, 16px) var(--space-3, 12px) var(--space-2, 8px);
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base, 14px);
+    color: var(--color-text-primary, #111827);
+    background: var(--color-surface, #FFFFFF);
+    border: var(--border-width-thin, 1px) solid var(--color-border, #E5E7EB);
+    border-radius: var(--radius-md, 8px);
+    outline: none;
+    transition: all var(--transition-fast, 150ms) var(--easing-ease-in-out);
+    min-height: var(--touch-target-min, 44px);
+}
+
+.text-field__input:focus {
+    border-color: var(--color-primary, #2F6FED);
+    box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.1);
+}
+
+.text-field__input::placeholder {
+    color: var(--color-text-tertiary, #9CA3AF);
+}
+
+/* ── Floating Label ── */
+.text-field__label {
+    position: absolute;
+    left: var(--space-3, 12px);
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: var(--font-size-base, 14px);
+    color: var(--color-text-secondary, #6B7280);
+    pointer-events: none;
+    transition: all var(--transition-fast, 150ms) var(--easing-ease-out);
+    background: var(--color-surface, #FFFFFF);
+    padding: 0 var(--space-1, 4px);
+}
+
+/* Label moves up when input is focused or filled */
+.text-field--filled .text-field__label,
+.text-field__input:focus + .text-field__label {
+    top: 0;
+    font-size: var(--font-size-xs, 12px);
+    color: var(--color-primary, #2F6FED);
+}
+
+/* ── Clear Button ── */
+.text-field__clear {
+    position: absolute;
+    right: var(--space-2, 8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: var(--radius-full, 9999px);
+    color: var(--color-text-secondary, #6B7280);
+    cursor: pointer;
+    transition: all var(--transition-fast, 150ms) var(--easing-ease-in-out);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.text-field__clear:hover {
+    background: var(--color-neutral-100, #F3F4F6);
+}
+
+.text-field__clear:active {
+    transform: scale(0.95);
+}
+
+.text-field__clear .material-symbols-outlined {
+    font-size: 18px;
+}
+
+/* ── Helper Text ── */
+.text-field__helper {
+    font-size: var(--font-size-xs, 12px);
+    color: var(--color-text-secondary, #6B7280);
+    padding-left: var(--space-3, 12px);
+}
+
+/* ── Error State ── */
+.text-field--error .text-field__input {
+    border-color: var(--color-error, #EF4444);
+}
+
+.text-field--error .text-field__input:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.text-field--error .text-field__label {
+    color: var(--color-error, #EF4444);
+}
+
+.text-field__error {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1, 4px);
+    font-size: var(--font-size-xs, 12px);
+    color: var(--color-error, #EF4444);
+    padding-left: var(--space-3, 12px);
+}
+
+.text-field__error .material-symbols-outlined {
+    font-size: 16px;
+}
+
+/* ── Disabled State ── */
+.text-field--disabled .text-field__input {
+    background: var(--color-neutral-50, #F9FAFB);
+    color: var(--color-text-disabled, #D1D5DB);
+    cursor: not-allowed;
+}
+
+.text-field--disabled .text-field__label {
+    color: var(--color-text-disabled, #D1D5DB);
+}
+
+/* ── Dark Mode Support ── */
+[data-theme="dark"] .text-field__input {
+    background: var(--color-surface, #1F2937);
+    color: var(--color-text-primary, #F9FAFB);
+    border-color: var(--color-border, #374151);
+}
+
+[data-theme="dark"] .text-field__label {
+    background: var(--color-surface, #1F2937);
+}
+
+[data-theme="dark"] .text-field__clear:hover {
+    background: var(--color-neutral-800, #1F2937);
+}
+
+[data-theme="dark"] .text-field--disabled .text-field__input {
+    background: var(--color-neutral-900, #111827);
+}

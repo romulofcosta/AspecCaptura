@@ -1,0 +1,66 @@
+@*
+    Icon Component
+    
+    A flexible icon component using Material Symbols icon library.
+    Supports multiple sizes and color customization.
+    
+    Features:
+    - Multiple sizes (sm: 16px, md: 20px, lg: 24px, xl: 32px)
+    - Color inheritance from parent or custom color
+    - Filled and outlined variants
+    - Default size 24px
+    
+    Usage:
+    <Icon Name="home" Size="IconSize.Medium" />
+    <Icon Name="search" Size="IconSize.Large" Color="var(--color-primary)" />
+    
+    Requirements: 15.1, 15.2, 15.3, 15.4, 15.8
+*@
+
+@namespace AspecCaptura.Components.Base
+
+<span 
+    class="icon icon--@Size.ToString().ToLower() @(Filled ? "icon--filled" : "icon--outlined")"
+    style="@GetColorStyle()"
+    aria-hidden="true">
+    @Name
+</span>
+
+@code {
+    /// <summary>
+    /// Material Symbols icon name
+    /// </summary>
+    [Parameter, EditorRequired]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Icon size
+    /// </summary>
+    [Parameter]
+    public IconSize Size { get; set; } = IconSize.Medium;
+
+    /// <summary>
+    /// Custom color (CSS color value). If not set, inherits from parent.
+    /// </summary>
+    [Parameter]
+    public string? Color { get; set; }
+
+    /// <summary>
+    /// Whether to use filled variant (default is outlined)
+    /// </summary>
+    [Parameter]
+    public bool Filled { get; set; }
+
+    private string GetColorStyle()
+    {
+        return !string.IsNullOrEmpty(Color) ? $"color: {Color};" : string.Empty;
+    }
+
+    public enum IconSize
+    {
+        Small,    // 16px
+        Medium,   // 20px
+        Large,    // 24px
+        XLarge    // 32px
+    }
+}

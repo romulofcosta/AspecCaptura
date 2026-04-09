@@ -1,0 +1,167 @@
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<CascadingValue Value="this">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string? InitialTheme { get; set; }
+
+    private IJSObjectReference? _themeModule;
+    private string _currentTheme = "system";
+    private bool _isInitialized = false;
+
+    /// <summary>
+    /// Gets the current theme mode: "light", "dark", or "system"
+    /// </summary>
+    public string CurrentTheme => _currentTheme;
+
+    /// <summary>
+    /// Gets whether the theme provider has been initialized
+    /// </summary>
+    public bool IsInitialized => _isInitialized;
+
+    /// <summary>
+    /// Event raised when the theme changes
+    /// </summary>
+    public event EventHandler<string>? ThemeChanged;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Load the theme JavaScript module
+            _themeModule = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                "import", "./js/theme.js");
+
+            // Load stored theme preference or use initial theme
+            var storedTheme = await _themeModule.InvokeAsync<string?>("getStoredTheme");
+            _currentTheme = storedTheme ?? InitialTheme ?? "system";
+
+            // Apply the theme to the document
+            await ApplyThemeToDocument(_currentTheme);
+
+            _isInitialized = true;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[ThemeProvider] Initialization error: {ex.Message}");
+            // Fallback to system theme
+            _currentTheme = "system";
+            _isInitialized = true;
+        }
+    }
+
+    /// <summary>
+    /// Sets the theme mode and persists the preference
+    /// </summary>
+    /// <param name="theme">Theme mode: "light", "dark", or "system"</param>
+    public async Task SetTheme(string theme)
+    {
+        if (theme != "light" && theme != "dark" && theme != "system")
+        {
+            Console.Error.WriteLine($"[ThemeProvider] Invalid theme: {theme}. Must be 'light', 'dark', or 'system'.");
+            return;
+        }
+
+        if (_themeModule == null)
+        {
+            Console.Error.WriteLine("[ThemeProvider] Theme module not loaded");
+            return;
+        }
+
+        try
+        {
+            var previousTheme = _currentTheme;
+            _currentTheme = theme;
+
+            // Apply theme to document
+            await ApplyThemeToDocument(theme);
+
+            // Persist to localStorage
+            await _themeModule.InvokeVoidAsync("setStoredTheme", theme);
+
+            // Notify listeners
+            ThemeChanged?.Invoke(this, theme);
+
+            Console.WriteLine($"[ThemeProvider] Theme changed from '{previousTheme}' to '{theme}'");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[ThemeProvider] Error setting theme: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Gets the effective theme (resolves "system" to "light" or "dark")
+    /// </summary>
+    public async Task<string> GetEffectiveTheme()
+    {
+        if (_themeModule == null)
+        {
+            return "light";
+        }
+
+        try
+        {
+            if (_currentTheme == "system")
+            {
+                var systemTheme = await _themeModule.InvokeAsync<string>("detectSystemTheme");
+                return systemTheme;
+            }
+            return _currentTheme;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[ThemeProvider] Error getting effective theme: {ex.Message}");
+            return "light";
+        }
+    }
+
+    /// <summary>
+    /// Toggles between light and dark themes
+    /// </summary>
+    public async Task ToggleTheme()
+    {
+        var effectiveTheme = await GetEffectiveTheme();
+        var newTheme = effectiveTheme == "light" ? "dark" : "light";
+        await SetTheme(newTheme);
+    }
+
+    private async Task ApplyThemeToDocument(string theme)
+    {
+        if (_themeModule == null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _themeModule.InvokeVoidAsync("applyTheme", theme);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[ThemeProvider] Error applying theme to document: {ex.Message}");
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_themeModule != null)
+        {
+            try
+            {
+                await _themeModule.DisposeAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"[ThemeProvider] Error disposing module: {ex.Message}");
+            }
+        }
+    }
+}

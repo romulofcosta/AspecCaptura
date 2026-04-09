@@ -1,31 +1,104 @@
+@*
+    Button Component
+    
+    A versatile button component with multiple variants, sizes, and states.
+    Follows mobile-first design with proper touch targets and accessibility.
+    
+    Features:
+    - Variants: primary, secondary, outline, ghost
+    - Sizes: sm, md, lg
+    - Full-width option
+    - Icon support
+    - Ripple effect for touch interactions
+    - Minimum 44x44px touch target
+    - Proper ARIA labels
+    
+    Usage:
+    <Button 
+        Variant="ButtonVariant.Primary"
+        Size="ButtonSize.Medium"
+        Icon="add"
+        OnClick="HandleClick">
+        Add Item
+    </Button>
+    
+    Requirements: 2.1, 2.6, 2.7, 3.3, 4.5, 8.1, 8.4
+*@
+
 @namespace AspecCaptura.Components.Base
 
 <button 
-    type="button"
-    class="@GetButtonClasses()"
+    type="@Type"
+    class="btn btn--@Variant.ToString().ToLower() btn--@Size.ToString().ToLower() @(FullWidth ? "btn--full-width" : "") @(Disabled ? "btn--disabled" : "")"
     disabled="@Disabled"
+    aria-label="@AriaLabel"
     @onclick="HandleClick">
+    
     @if (!string.IsNullOrEmpty(Icon))
     {
-        <span class="material-symbols-outlined">@Icon</span>
+        <span class="btn__icon material-symbols-outlined">@Icon</span>
     }
-    @if (!string.IsNullOrEmpty(Text))
+    
+    @if (ChildContent != null)
     {
-        <span>@Text</span>
+        <span class="btn__text">@ChildContent</span>
     }
-    @ChildContent
 </button>
 
 @code {
-    [Parameter] public string? Text { get; set; }
-    [Parameter] public string? Icon { get; set; }
-    [Parameter] public ButtonVariant Variant { get; set; } = ButtonVariant.Filled;
-    [Parameter] public ButtonColor Color { get; set; } = ButtonColor.Primary;
-    [Parameter] public ButtonSize Size { get; set; } = ButtonSize.Medium;
-    [Parameter] public bool Disabled { get; set; }
-    [Parameter] public bool FullWidth { get; set; }
-    [Parameter] public EventCallback OnClick { get; set; }
-    [Parameter] public RenderFragment? ChildContent { get; set; }
+    /// <summary>
+    /// Button variant style
+    /// </summary>
+    [Parameter]
+    public ButtonVariant Variant { get; set; } = ButtonVariant.Primary;
+
+    /// <summary>
+    /// Button size
+    /// </summary>
+    [Parameter]
+    public ButtonSize Size { get; set; } = ButtonSize.Medium;
+
+    /// <summary>
+    /// Whether button should take full width of container
+    /// </summary>
+    [Parameter]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
+    /// Whether button is disabled
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Material Symbols icon name
+    /// </summary>
+    [Parameter]
+    public string? Icon { get; set; }
+
+    /// <summary>
+    /// ARIA label for accessibility
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Button type attribute (button, submit, reset)
+    /// </summary>
+    [Parameter]
+    public string Type { get; set; } = "button";
+
+    /// <summary>
+    /// Click event callback
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    /// <summary>
+    /// Button content
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
 
     private async Task HandleClick()
     {
@@ -35,91 +108,18 @@
         }
     }
 
-    private string GetButtonClasses()
+    public enum ButtonVariant
     {
-        var classes = new List<string>
-        {
-            "inline-flex",
-            "items-center",
-            "justify-center",
-            "gap-2",
-            "font-medium",
-            "transition-all",
-            "duration-200",
-            "focus:ring-2",
-            "focus:ring-offset-2",
-            "focus:outline-none",
-            "min-h-11",
-            "min-w-11"
-        };
-
-        // Variant and Color
-        classes.AddRange(GetVariantColorClasses());
-
-        // Size
-        classes.AddRange(GetSizeClasses());
-
-        // Full Width
-        if (FullWidth)
-        {
-            classes.Add("w-full");
-        }
-
-        // Disabled
-        if (Disabled)
-        {
-            classes.Add("opacity-50");
-            classes.Add("cursor-not-allowed");
-        }
-        else
-        {
-            classes.Add("cursor-pointer");
-        }
-
-        return string.Join(" ", classes);
+        Primary,
+        Secondary,
+        Outline,
+        Ghost
     }
 
-    private IEnumerable<string> GetVariantColorClasses()
+    public enum ButtonSize
     {
-        return (Variant, Color) switch
-        {
-            (ButtonVariant.Filled, ButtonColor.Primary) => new[] { "bg-primary", "text-white", "hover:bg-primary-dark", "focus:ring-primary" },
-            (ButtonVariant.Filled, ButtonColor.Secondary) => new[] { "bg-surface-container", "text-on-surface", "hover:bg-surface-container-high", "focus:ring-outline" },
-            (ButtonVariant.Filled, ButtonColor.Success) => new[] { "bg-success", "text-white", "hover:bg-green-600", "focus:ring-success" },
-            (ButtonVariant.Filled, ButtonColor.Warning) => new[] { "bg-warning", "text-white", "hover:bg-orange-600", "focus:ring-warning" },
-            (ButtonVariant.Filled, ButtonColor.Error) => new[] { "bg-error", "text-white", "hover:bg-red-600", "focus:ring-error" },
-            (ButtonVariant.Filled, ButtonColor.Surface) => new[] { "bg-surface", "text-on-surface", "hover:bg-surface-dim", "focus:ring-outline" },
-            
-            (ButtonVariant.Outlined, ButtonColor.Primary) => new[] { "border-2", "border-primary", "text-primary", "hover:bg-primary", "hover:text-white", "focus:ring-primary" },
-            (ButtonVariant.Outlined, ButtonColor.Secondary) => new[] { "border-2", "border-outline", "text-on-surface", "hover:bg-surface-container", "focus:ring-outline" },
-            (ButtonVariant.Outlined, ButtonColor.Success) => new[] { "border-2", "border-success", "text-success", "hover:bg-success", "hover:text-white", "focus:ring-success" },
-            (ButtonVariant.Outlined, ButtonColor.Warning) => new[] { "border-2", "border-warning", "text-warning", "hover:bg-warning", "hover:text-white", "focus:ring-warning" },
-            (ButtonVariant.Outlined, ButtonColor.Error) => new[] { "border-2", "border-error", "text-error", "hover:bg-error", "hover:text-white", "focus:ring-error" },
-            (ButtonVariant.Outlined, ButtonColor.Surface) => new[] { "border-2", "border-outline", "text-on-surface", "hover:bg-surface-container", "focus:ring-outline" },
-            
-            (ButtonVariant.Text, ButtonColor.Primary) => new[] { "text-primary", "hover:bg-primary/10", "focus:ring-primary" },
-            (ButtonVariant.Text, ButtonColor.Secondary) => new[] { "text-on-surface-variant", "hover:bg-surface-container", "focus:ring-outline" },
-            (ButtonVariant.Text, ButtonColor.Success) => new[] { "text-success", "hover:bg-success/10", "focus:ring-success" },
-            (ButtonVariant.Text, ButtonColor.Warning) => new[] { "text-warning", "hover:bg-warning/10", "focus:ring-warning" },
-            (ButtonVariant.Text, ButtonColor.Error) => new[] { "text-error", "hover:bg-error/10", "focus:ring-error" },
-            (ButtonVariant.Text, ButtonColor.Surface) => new[] { "text-on-surface", "hover:bg-surface-container", "focus:ring-outline" },
-            
-            _ => new[] { "bg-primary", "text-white", "hover:bg-primary-dark", "focus:ring-primary" }
-        };
+        Small,
+        Medium,
+        Large
     }
-
-    private IEnumerable<string> GetSizeClasses()
-    {
-        return Size switch
-        {
-            ButtonSize.Small => new[] { "text-sm", "px-3", "py-1.5", "rounded-md" },
-            ButtonSize.Medium => new[] { "text-base", "px-4", "py-2", "rounded-md" },
-            ButtonSize.Large => new[] { "text-lg", "px-6", "py-3", "rounded-lg" },
-            _ => new[] { "text-base", "px-4", "py-2", "rounded-md" }
-        };
-    }
-
-    public enum ButtonVariant { Filled, Outlined, Text }
-    public enum ButtonColor { Primary, Secondary, Success, Warning, Error, Surface }
-    public enum ButtonSize { Small, Medium, Large }
 }

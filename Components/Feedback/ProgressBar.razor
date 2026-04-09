@@ -1,0 +1,70 @@
+@*
+    ProgressBar Component
+    
+    A progress bar component for showing task completion or loading progress.
+    
+    Features:
+    - Determinate progress (0-100)
+    - Indeterminate state for unknown duration
+    - Multiple sizes
+    - Custom color support
+    - Smooth CSS transitions
+    
+    Usage:
+    <ProgressBar Value="75" Size="ProgressBarSize.Medium" />
+    <ProgressBar Indeterminate="true" />
+    
+    Requirements: 2.5, 13.3
+*@
+
+@namespace AspecCaptura.Components.Feedback
+
+<div 
+    class="progress-bar progress-bar--@Size.ToString().ToLower() @(Indeterminate ? "progress-bar--indeterminate" : "")"
+    role="progressbar"
+    aria-valuenow="@(Indeterminate ? null : Value)"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    style="@GetColorStyle()">
+    
+    <div class="progress-bar__track">
+        <div class="progress-bar__fill" style="@GetFillStyle()"></div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int Value { get; set; }
+
+    [Parameter]
+    public bool Indeterminate { get; set; }
+
+    [Parameter]
+    public ProgressBarSize Size { get; set; } = ProgressBarSize.Medium;
+
+    [Parameter]
+    public string? Color { get; set; }
+
+    private string GetColorStyle()
+    {
+        if (!string.IsNullOrEmpty(Color))
+            return $"--progress-color: {Color};";
+        return string.Empty;
+    }
+
+    private string GetFillStyle()
+    {
+        if (Indeterminate)
+            return string.Empty;
+        
+        var clampedValue = Math.Clamp(Value, 0, 100);
+        return $"width: {clampedValue}%;";
+    }
+
+    public enum ProgressBarSize
+    {
+        Small,
+        Medium,
+        Large
+    }
+}

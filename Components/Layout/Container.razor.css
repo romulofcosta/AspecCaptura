@@ -1,0 +1,61 @@
+/**
+ * Container Component Styles
+ * Using CSS isolation and design tokens
+ * Requirements: 2.2, 3.4
+ */
+
+/* ── Base Container Styles ── */
+.container {
+    width: 100%;
+    /* Respect safe area insets on devices with notches */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+/* ── Container with Padding ── */
+.container--padded {
+    padding-left: calc(var(--space-4, 16px) + env(safe-area-inset-left));
+    padding-right: calc(var(--space-4, 16px) + env(safe-area-inset-right));
+}
+
+/* ── Centered Container ── */
+.container--centered {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ── Max Width Constraints ── */
+.container--small {
+    max-width: 640px;
+}
+
+.container--medium {
+    max-width: 768px;
+}
+
+.container--large {
+    max-width: 1024px;
+}
+
+.container--xlarge {
+    max-width: 1280px;
+}
+
+.container--full {
+    max-width: 100%;
+}
+
+/* ── Responsive Padding ── */
+@media (min-width: 768px) {
+    .container--padded {
+        padding-left: calc(var(--space-6, 24px) + env(safe-area-inset-left));
+        padding-right: calc(var(--space-6, 24px) + env(safe-area-inset-right));
+    }
+}
+
+@media (min-width: 1024px) {
+    .container--padded {
+        padding-left: calc(var(--space-8, 32px) + env(safe-area-inset-left));
+        padding-right: calc(var(--space-8, 32px) + env(safe-area-inset-right));
+    }
+}

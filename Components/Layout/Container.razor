@@ -1,0 +1,61 @@
+@*
+    Container Component
+    
+    A responsive container component with max-width constraints and padding.
+    Respects safe area insets on devices with notches.
+    
+    Features:
+    - Responsive max-width options
+    - Configurable padding
+    - Centered layout option
+    - Safe area inset support
+    
+    Usage:
+    <Container MaxWidth="ContainerMaxWidth.Large" Padding="true" Centered="true">
+        <p>Content goes here</p>
+    </Container>
+    
+    Requirements: 2.2, 3.4
+*@
+
+@namespace AspecCaptura.Components.Layout
+
+<div class="container @(MaxWidth != ContainerMaxWidth.None ? $"container--{MaxWidth.ToString().ToLower()}" : "") @(Padding ? "container--padded" : "") @(Centered ? "container--centered" : "")">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// Maximum width constraint
+    /// </summary>
+    [Parameter]
+    public ContainerMaxWidth MaxWidth { get; set; } = ContainerMaxWidth.Large;
+
+    /// <summary>
+    /// Whether to apply horizontal padding
+    /// </summary>
+    [Parameter]
+    public bool Padding { get; set; } = true;
+
+    /// <summary>
+    /// Whether to center the container
+    /// </summary>
+    [Parameter]
+    public bool Centered { get; set; } = true;
+
+    /// <summary>
+    /// Container content
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    public enum ContainerMaxWidth
+    {
+        None,
+        Small,      // 640px
+        Medium,     // 768px
+        Large,      // 1024px
+        XLarge,     // 1280px
+        Full        // 100%
+    }
+}

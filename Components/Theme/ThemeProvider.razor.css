@@ -1,0 +1,18 @@
+/**
+ * ThemeProvider Component Styles
+ * 
+ * This component uses CSS isolation to scope styles.
+ * The ThemeProvider itself is a logical component and doesn't render visible UI,
+ * so this file is minimal and primarily serves as a placeholder for any
+ * future component-specific styling needs.
+ */
+
+/* 
+ * Smooth theme transitions are handled globally in design-tokens.css
+ * This ensures all elements transition smoothly when theme changes.
+ */
+
+/* 
+ * No additional styles needed for ThemeProvider component itself
+ * as it's a logical wrapper that provides theme context via CascadingValue
+ */

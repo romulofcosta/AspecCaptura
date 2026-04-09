@@ -1,0 +1,81 @@
+@*
+    Grid Component
+    
+    A responsive CSS Grid layout component with configurable columns and gaps.
+    Implements responsive column behavior with breakpoints.
+    
+    Features:
+    - Responsive columns (1 mobile, 2-4 desktop)
+    - Configurable gap using design tokens
+    - Alignment options
+    
+    Usage:
+    <Grid Columns="3" Gap="4" AlignItems="GridAlign.Start">
+        <div>Item 1</div>
+        <div>Item 2</div>
+        <div>Item 3</div>
+    </Grid>
+    
+    Requirements: 2.2, 3.2, 18.2, 18.6
+*@
+
+@namespace AspecCaptura.Components.Layout
+
+<div 
+    class="grid"
+    style="@GetGridStyle()">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// Number of columns (responsive: 1 on mobile, specified value on desktop)
+    /// </summary>
+    [Parameter]
+    public int Columns { get; set; } = 1;
+
+    /// <summary>
+    /// Gap size (uses design token spacing scale: 1-24)
+    /// </summary>
+    [Parameter]
+    public int Gap { get; set; } = 4;
+
+    /// <summary>
+    /// Vertical alignment of items
+    /// </summary>
+    [Parameter]
+    public GridAlign AlignItems { get; set; } = GridAlign.Stretch;
+
+    /// <summary>
+    /// Horizontal alignment of items
+    /// </summary>
+    [Parameter]
+    public GridAlign JustifyContent { get; set; } = GridAlign.Start;
+
+    /// <summary>
+    /// Grid content
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string GetGridStyle()
+    {
+        var styles = new List<string>
+        {
+            $"--grid-columns: {Columns}",
+            $"--grid-gap: var(--space-{Gap}, {Gap * 4}px)",
+            $"align-items: {AlignItems.ToString().ToLower()}",
+            $"justify-content: {JustifyContent.ToString().ToLower()}"
+        };
+
+        return string.Join("; ", styles);
+    }
+
+    public enum GridAlign
+    {
+        Start,
+        Center,
+        End,
+        Stretch
+    }
+}

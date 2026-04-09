@@ -1,0 +1,52 @@
+/**
+ * Optimized Image Component Styles
+ * Requirements: 6.5, 6.7, 12.2, 12.5, 12.6
+ */
+
+/* ── Container ── */
+.optimized-image-container {
+    display: block;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ── Base Image Styles ── */
+.optimized-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    transition: filter var(--transition-medium, 300ms) var(--easing-ease-out);
+}
+
+/* ── Lazy Loading States ── */
+.optimized-image[data-src] {
+    filter: blur(10px);
+    transform: scale(1.05);
+}
+
+.optimized-image.lazy-loaded {
+    filter: blur(0);
+    transform: scale(1);
+}
+
+.optimized-image.lazy-error {
+    filter: grayscale(100%);
+    opacity: 0.5;
+}
+
+/* ── Accessibility - Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+    .optimized-image {
+        transition: opacity var(--transition-fast, 150ms);
+        transform: none !important;
+    }
+    
+    .optimized-image[data-src] {
+        filter: none;
+        opacity: 0.5;
+    }
+    
+    .optimized-image.lazy-loaded {
+        opacity: 1;
+    }
+}

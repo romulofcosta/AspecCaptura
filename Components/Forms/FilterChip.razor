@@ -1,0 +1,89 @@
+@*
+    FilterChip Component
+    
+    A lightweight filter chip component in pill shape for filtering content.
+    Designed to replace heavy select dropdowns with a more mobile-friendly interface.
+    
+    Features:
+    - Pill shape (border-radius: 999px)
+    - Active/inactive states with distinct visual styling
+    - Optional remove button (X icon) when active and removable
+    - Accessible with aria-pressed attribute
+    - Touch-optimized with proper sizing
+    - Responsive design using design tokens
+    
+    Usage:
+    <FilterChip 
+        Label="Category"
+        Active="true"
+        Removable="true"
+        OnClick="HandleFilterClick"
+        OnRemove="HandleFilterRemove" />
+    
+    Requirements: 2.4, 20.5, 20.6, 26.5, 26.16
+*@
+
+@namespace AspecCaptura.Components.Forms
+
+<button 
+    type="button"
+    class="filter-chip @(Active ? "filter-chip--active" : "filter-chip--inactive")"
+    @onclick="HandleClick"
+    aria-pressed="@Active.ToString().ToLower()">
+    
+    <span class="filter-chip__label">@Label</span>
+    
+    @if (Removable && Active)
+    {
+        <button 
+            type="button"
+            class="filter-chip__remove"
+            @onclick="HandleRemove"
+            @onclick:stopPropagation="true"
+            aria-label="Remove @Label filter">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    }
+</button>
+
+@code {
+    /// <summary>
+    /// The text label displayed on the chip
+    /// </summary>
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether the filter chip is in active state
+    /// </summary>
+    [Parameter]
+    public bool Active { get; set; }
+
+    /// <summary>
+    /// Whether the chip can be removed (shows X icon when active)
+    /// </summary>
+    [Parameter]
+    public bool Removable { get; set; } = true;
+
+    /// <summary>
+    /// Event callback when the chip is clicked
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    /// <summary>
+    /// Event callback when the remove button is clicked
+    /// </summary>
+    [Parameter]
+    public EventCallback OnRemove { get; set; }
+
+    private async Task HandleClick()
+    {
+        await OnClick.InvokeAsync();
+    }
+
+    private async Task HandleRemove()
+    {
+        await OnRemove.InvokeAsync();
+    }
+}

@@ -1,0 +1,107 @@
+@*
+    Alert Component
+    
+    An alert component for displaying important messages with semantic colors.
+    
+    Features:
+    - Variants: success, error, warning, info
+    - Optional title and message
+    - Dismissible option
+    - Icon based on variant
+    - Proper contrast ratios
+    
+    Usage:
+    <Alert 
+        Variant="AlertVariant.Success"
+        Title="Success"
+        Message="Your changes have been saved."
+        Dismissible="true"
+        OnDismiss="HandleDismiss" />
+    
+    Requirements: 2.5, 8.2, 8.3
+*@
+
+@namespace AspecCaptura.Components.Feedback
+
+@if (!IsDismissed)
+{
+    <div class="alert alert--@Variant.ToString().ToLower()" role="alert">
+        <div class="alert__icon">
+            <span class="material-symbols-outlined">@GetIcon()</span>
+        </div>
+        
+        <div class="alert__content">
+            @if (!string.IsNullOrEmpty(Title))
+            {
+                <div class="alert__title">@Title</div>
+            }
+            @if (!string.IsNullOrEmpty(Message))
+            {
+                <div class="alert__message">@Message</div>
+            }
+            @if (ChildContent != null)
+            {
+                <div class="alert__message">@ChildContent</div>
+            }
+        </div>
+        
+        @if (Dismissible)
+        {
+            <button 
+                type="button"
+                class="alert__dismiss"
+                @onclick="HandleDismiss"
+                aria-label="Dismiss alert">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        }
+    </div>
+}
+
+@code {
+    private bool IsDismissed { get; set; }
+
+    [Parameter]
+    public AlertVariant Variant { get; set; } = AlertVariant.Info;
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public string? Message { get; set; }
+
+    [Parameter]
+    public bool Dismissible { get; set; }
+
+    [Parameter]
+    public EventCallback OnDismiss { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private async Task HandleDismiss()
+    {
+        IsDismissed = true;
+        await OnDismiss.InvokeAsync();
+    }
+
+    private string GetIcon()
+    {
+        return Variant switch
+        {
+            AlertVariant.Success => "check_circle",
+            AlertVariant.Error => "error",
+            AlertVariant.Warning => "warning",
+            AlertVariant.Info => "info",
+            _ => "info"
+        };
+    }
+
+    public enum AlertVariant
+    {
+        Success,
+        Error,
+        Warning,
+        Info
+    }
+}

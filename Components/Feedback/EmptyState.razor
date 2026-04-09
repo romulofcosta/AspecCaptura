@@ -1,0 +1,36 @@
+@namespace AspecCaptura.Components.Feedback
+
+<div class="empty-state">
+    @if (!string.IsNullOrEmpty(Icon))
+    {
+        <div class="empty-state__icon">@Icon</div>
+    }
+    @if (!string.IsNullOrEmpty(Title))
+    {
+        <h3 class="empty-state__title">@Title</h3>
+    }
+    @if (!string.IsNullOrEmpty(Subtitle))
+    {
+        <p class="empty-state__subtitle">@Subtitle</p>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Icon to display (emoji or icon name). Default: 📦
+    /// </summary>
+    [Parameter]
+    public string? Icon { get; set; } = "📦";
+
+    /// <summary>
+    /// Title text to display (18px, font-weight 600)
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>
+    /// Subtitle text to display (14px, secondary color)
+    /// </summary>
+    [Parameter]
+    public string? Subtitle { get; set; }
+}

@@ -1,0 +1,130 @@
+/**
+ * Alert Component Styles
+ * Requirements: 2.5, 8.2, 8.3
+ */
+
+/* ── Base Alert Styles ── */
+.alert {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3, 12px);
+    padding: var(--space-4, 16px);
+    border-radius: var(--radius-lg, 12px);
+    border-left: 4px solid;
+}
+
+.alert__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.alert__icon .material-symbols-outlined {
+    font-size: 24px;
+}
+
+.alert__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1, 4px);
+}
+
+.alert__title {
+    font-size: var(--font-size-base, 14px);
+    font-weight: var(--font-weight-semibold, 600);
+    line-height: var(--line-height-normal, 1.5);
+}
+
+.alert__message {
+    font-size: var(--font-size-sm, 13px);
+    line-height: var(--line-height-normal, 1.5);
+}
+
+.alert__dismiss {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: var(--radius-full, 9999px);
+    cursor: pointer;
+    transition: background var(--transition-fast, 150ms) var(--easing-ease-in-out);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.alert__dismiss .material-symbols-outlined {
+    font-size: 20px;
+}
+
+/* ── Alert Variants ── */
+
+/* Success */
+.alert--success {
+    background: var(--color-success-light, #D1FAE5);
+    border-left-color: var(--color-success, #10B981);
+    color: var(--color-success-dark, #059669);
+}
+
+.alert--success .alert__dismiss:hover {
+    background: rgba(5, 150, 105, 0.1);
+}
+
+/* Error */
+.alert--error {
+    background: var(--color-error-light, #FEE2E2);
+    border-left-color: var(--color-error, #EF4444);
+    color: var(--color-error-dark, #DC2626);
+}
+
+.alert--error .alert__dismiss:hover {
+    background: rgba(220, 38, 38, 0.1);
+}
+
+/* Warning */
+.alert--warning {
+    background: var(--color-warning-light, #FEF3C7);
+    border-left-color: var(--color-warning, #F59E0B);
+    color: var(--color-warning-dark, #D97706);
+}
+
+.alert--warning .alert__dismiss:hover {
+    background: rgba(217, 119, 6, 0.1);
+}
+
+/* Info */
+.alert--info {
+    background: var(--color-info-light, #DBEAFE);
+    border-left-color: var(--color-info, #3B82F6);
+    color: var(--color-info-dark, #2563EB);
+}
+
+.alert--info .alert__dismiss:hover {
+    background: rgba(37, 99, 235, 0.1);
+}
+
+/* ── Dark Mode Support ── */
+[data-theme="dark"] .alert--success {
+    background: var(--color-success-light, #064E3B);
+    color: var(--color-success, #34D399);
+}
+
+[data-theme="dark"] .alert--error {
+    background: var(--color-error-light, #7F1D1D);
+    color: var(--color-error, #F87171);
+}
+
+[data-theme="dark"] .alert--warning {
+    background: var(--color-warning-light, #78350F);
+    color: var(--color-warning, #FBBF24);
+}
+
+[data-theme="dark"] .alert--info {
+    background: var(--color-info-light, #1E3A8A);
+    color: var(--color-info, #60A5FA);
+}

@@ -1,0 +1,131 @@
+@*
+    Optimized Image Component
+    
+    An image component with lazy loading, responsive images, and blur-up placeholder.
+    
+    Features:
+    - Lazy loading with IntersectionObserver
+    - Responsive images with srcset
+    - Blur-up placeholder effect
+    - WebP format support with fallback
+    - Loading states
+    
+    Usage:
+    <OptimizedImage 
+        Src="images/photo.jpg"
+        Alt="Photo description"
+        Width="800"
+        Height="600"
+        Lazy="true" />
+    
+    Requirements: 6.5, 6.7, 12.2, 12.5, 12.6
+*@
+
+@namespace AspecCaptura.Components.Base
+
+@if (UseResponsive && !string.IsNullOrEmpty(Srcset))
+{
+    <picture class="optimized-image-container">
+        @if (UseWebP && !string.IsNullOrEmpty(WebPSrc))
+        {
+            <source srcset="@WebPSrc" type="image/webp" />
+        }
+        <img 
+            src="@(Lazy ? PlaceholderSrc : Src)"
+            data-src="@(Lazy ? Src : null)"
+            srcset="@(Lazy ? null : Srcset)"
+            data-srcset="@(Lazy ? Srcset : null)"
+            alt="@Alt"
+            width="@Width"
+            height="@Height"
+            loading="@(Lazy ? "lazy" : "eager")"
+            class="optimized-image @CssClass"
+            style="@Style" />
+    </picture>
+}
+else
+{
+    <img 
+        src="@(Lazy ? PlaceholderSrc : Src)"
+        data-src="@(Lazy ? Src : null)"
+        alt="@Alt"
+        width="@Width"
+        height="@Height"
+        loading="@(Lazy ? "lazy" : "eager")"
+        class="optimized-image @CssClass"
+        style="@Style" />
+}
+
+@code {
+    /// <summary>
+    /// Image source URL
+    /// </summary>
+    [Parameter, EditorRequired]
+    public string Src { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Alternative text for accessibility
+    /// </summary>
+    [Parameter, EditorRequired]
+    public string Alt { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Image width in pixels
+    /// </summary>
+    [Parameter]
+    public int? Width { get; set; }
+
+    /// <summary>
+    /// Image height in pixels
+    /// </summary>
+    [Parameter]
+    public int? Height { get; set; }
+
+    /// <summary>
+    /// Enable lazy loading
+    /// </summary>
+    [Parameter]
+    public bool Lazy { get; set; } = true;
+
+    /// <summary>
+    /// Responsive image srcset
+    /// </summary>
+    [Parameter]
+    public string? Srcset { get; set; }
+
+    /// <summary>
+    /// WebP source for modern browsers
+    /// </summary>
+    [Parameter]
+    public string? WebPSrc { get; set; }
+
+    /// <summary>
+    /// Use responsive images
+    /// </summary>
+    [Parameter]
+    public bool UseResponsive { get; set; }
+
+    /// <summary>
+    /// Use WebP format with fallback
+    /// </summary>
+    [Parameter]
+    public bool UseWebP { get; set; }
+
+    /// <summary>
+    /// Placeholder image for lazy loading (tiny base64 or low-res)
+    /// </summary>
+    [Parameter]
+    public string PlaceholderSrc { get; set; } = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E";
+
+    /// <summary>
+    /// Additional CSS classes
+    /// </summary>
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    /// <summary>
+    /// Inline styles
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+}

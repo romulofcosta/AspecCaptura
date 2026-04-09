@@ -1,0 +1,174 @@
+@*
+    Toast Component
+    
+    A toast notification component for temporary messages.
+    
+    Features:
+    - Variants: success, error, warning, info
+    - Auto-dismiss with configurable duration
+    - Manual dismiss with close button
+    - Optional action button
+    - Positioned at top-center (mobile) or top-right (desktop)
+    - Stacks multiple toasts
+    - Pause auto-dismiss on hover/focus
+    - Screen reader announcements
+    
+    Usage:
+    <Toast 
+        Variant="ToastVariant.Success"
+        Message="Changes saved successfully"
+        Duration="3000"
+        OnClose="HandleClose" />
+    
+    Requirements: 2.5, 13.4, 13.5, 13.6, 23.1-23.10
+*@
+
+@namespace AspecCaptura.Components.Feedback
+
+@if (IsVisible)
+{
+    <div 
+        class="toast toast--@Variant.ToString().ToLower() @(IsEntering ? "toast--entering" : "") @(IsExiting ? "toast--exiting" : "")"
+        role="alert"
+        aria-live="polite"
+        @onmouseenter="HandleMouseEnter"
+        @onmouseleave="HandleMouseLeave">
+        
+        <div class="toast__icon">
+            <span class="material-symbols-outlined">@GetIcon()</span>
+        </div>
+        
+        <div class="toast__content">
+            <div class="toast__message">@Message</div>
+        </div>
+        
+        @if (!string.IsNullOrEmpty(ActionLabel))
+        {
+            <button 
+                type="button"
+                class="toast__action"
+                @onclick="HandleAction">
+                @ActionLabel
+            </button>
+        }
+        
+        <button 
+            type="button"
+            class="toast__close"
+            @onclick="HandleClose"
+            aria-label="Close notification">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    </div>
+}
+
+@code {
+    private bool IsVisible { get; set; } = true;
+    private bool IsEntering { get; set; } = true;
+    private bool IsExiting { get; set; }
+    private bool IsPaused { get; set; }
+    private System.Threading.Timer? _dismissTimer;
+
+    [Parameter]
+    public ToastVariant Variant { get; set; } = ToastVariant.Info;
+
+    [Parameter]
+    public string Message { get; set; } = string.Empty;
+
+    [Parameter]
+    public int Duration { get; set; } = 3000; // 3s for success, 5s for error
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public string? ActionLabel { get; set; }
+
+    [Parameter]
+    public EventCallback OnAction { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // Set default duration based on variant
+        if (Duration == 3000 && Variant == ToastVariant.Error)
+            Duration = 5000;
+
+        // Remove entering animation after 300ms
+        Task.Delay(300).ContinueWith(_ => 
+        {
+            IsEntering = false;
+            InvokeAsync(StateHasChanged);
+        });
+
+        // Start auto-dismiss timer
+        StartDismissTimer();
+    }
+
+    private void StartDismissTimer()
+    {
+        _dismissTimer?.Dispose();
+        _dismissTimer = new System.Threading.Timer(async _ =>
+        {
+            if (!IsPaused)
+            {
+                await InvokeAsync(async () =>
+                {
+                    await HandleClose();
+                });
+            }
+        }, null, Duration, System.Threading.Timeout.Infinite);
+    }
+
+    private void HandleMouseEnter()
+    {
+        IsPaused = true;
+    }
+
+    private void HandleMouseLeave()
+    {
+        IsPaused = false;
+        StartDismissTimer();
+    }
+
+    private async Task HandleClose()
+    {
+        IsExiting = true;
+        await InvokeAsync(StateHasChanged);
+        
+        await Task.Delay(200); // Wait for exit animation
+        
+        IsVisible = false;
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task HandleAction()
+    {
+        await OnAction.InvokeAsync();
+        await HandleClose();
+    }
+
+    private string GetIcon()
+    {
+        return Variant switch
+        {
+            ToastVariant.Success => "check_circle",
+            ToastVariant.Error => "error",
+            ToastVariant.Warning => "warning",
+            ToastVariant.Info => "info",
+            _ => "info"
+        };
+    }
+
+    public void Dispose()
+    {
+        _dismissTimer?.Dispose();
+    }
+
+    public enum ToastVariant
+    {
+        Success,
+        Error,
+        Warning,
+        Info
+    }
+}

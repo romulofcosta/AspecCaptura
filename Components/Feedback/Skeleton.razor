@@ -1,0 +1,87 @@
+@*
+    Skeleton Component
+    
+    A loading skeleton component with shimmer animation for content placeholders.
+    
+    Features:
+    - Multiple shapes (text, circle, rectangle)
+    - Configurable width and height
+    - Count parameter for multiple skeletons
+    - Shimmer animation (left to right, 1.5s)
+    - Respects prefers-reduced-motion
+    - Fade out transition when content loads
+    
+    Usage:
+    <Skeleton Shape="SkeletonShape.Text" Width="200px" Count="3" />
+    <Skeleton Shape="SkeletonShape.Circle" Width="48px" Height="48px" />
+    <Skeleton Shape="SkeletonShape.Rectangle" Width="100%" Height="200px" />
+    
+    Requirements: 2.5, 10.8, 13.2, 22.1, 22.2, 22.3, 22.4, 22.6, 22.7, 22.8
+*@
+
+@namespace AspecCaptura.Components.Feedback
+
+@if (Count > 1)
+{
+    <div class="skeleton-group" style="@GetGroupStyle()">
+        @for (int i = 0; i < Count; i++)
+        {
+            <div class="skeleton skeleton--@Shape.ToString().ToLower()" style="@GetSkeletonStyle()"></div>
+        }
+    </div>
+}
+else
+{
+    <div class="skeleton skeleton--@Shape.ToString().ToLower()" style="@GetSkeletonStyle()"></div>
+}
+
+@code {
+    /// <summary>
+    /// Skeleton shape
+    /// </summary>
+    [Parameter]
+    public SkeletonShape Shape { get; set; } = SkeletonShape.Text;
+
+    /// <summary>
+    /// Width (CSS value, e.g., "200px", "100%")
+    /// </summary>
+    [Parameter]
+    public string? Width { get; set; }
+
+    /// <summary>
+    /// Height (CSS value, e.g., "20px", "100px")
+    /// </summary>
+    [Parameter]
+    public string? Height { get; set; }
+
+    /// <summary>
+    /// Number of skeleton items to render
+    /// </summary>
+    [Parameter]
+    public int Count { get; set; } = 1;
+
+    private string GetSkeletonStyle()
+    {
+        var styles = new List<string>();
+
+        if (!string.IsNullOrEmpty(Width))
+            styles.Add($"width: {Width}");
+
+        if (!string.IsNullOrEmpty(Height))
+            styles.Add($"height: {Height}");
+
+        return string.Join("; ", styles);
+    }
+
+    private string GetGroupStyle()
+    {
+        return $"gap: var(--space-2, 8px);";
+    }
+
+    public enum SkeletonShape
+    {
+        Text,
+        Circle,
+        Rectangle
+    }
+}

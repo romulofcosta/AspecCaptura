@@ -1,0 +1,65 @@
+/**
+ * Offline Indicator Component Styles
+ * Requirements: 7.4
+ */
+
+/* ── Base Offline Indicator Styles ── */
+.offline-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--z-index-toast, 1060);
+    background: var(--color-warning, #F59E0B);
+    color: var(--color-white, #FFFFFF);
+    padding: var(--space-3, 12px) var(--space-4, 16px);
+    padding-top: calc(var(--space-3, 12px) + env(safe-area-inset-top));
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-100%);
+    transition: transform var(--transition-medium, 300ms) var(--easing-ease-out);
+}
+
+/* ── Visible State ── */
+.offline-indicator--visible {
+    transform: translateY(0);
+}
+
+/* ── Content ── */
+.offline-indicator__content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2, 8px);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ── Icon ── */
+.offline-indicator__icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+/* ── Text ── */
+.offline-indicator__text {
+    font-size: var(--font-size-sm, 13px);
+    font-weight: var(--font-weight-medium, 500);
+}
+
+/* ── Accessibility - Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+    .offline-indicator {
+        transition: opacity var(--transition-fast, 150ms);
+        transform: translateY(0);
+        opacity: 0;
+    }
+    
+    .offline-indicator--visible {
+        opacity: 1;
+    }
+}
+
+/* ── Dark Mode Support ── */
+[data-theme="dark"] .offline-indicator {
+    background: var(--color-warning, #D97706);
+}

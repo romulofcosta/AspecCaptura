@@ -1,0 +1,11 @@
+# Feedback Components
+
+This directory contains feedback components for the AspecCaptura PWA design system.
+
+Components in this directory provide user feedback for various states and actions:
+- Alert
+- Toast
+- ProgressBar
+- Skeleton
+- EmptyState
+- Modal

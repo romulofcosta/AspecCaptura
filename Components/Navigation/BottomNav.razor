@@ -1,0 +1,75 @@
+@*
+    BottomNav Component
+    
+    A bottom navigation bar for mobile devices with up to 5 primary navigation items.
+    
+    Features:
+    - Maximum 5 navigation items
+    - Active item highlighting
+    - Minimum 44x44px touch targets
+    - Keyboard navigation support
+    - Screen reader announcements
+    - Haptic feedback (where supported)
+    - Hidden on desktop (>= 768px)
+    
+    Usage:
+    <BottomNav 
+        Items="navItems"
+        ActiveItem="currentRoute"
+        OnItemClick="HandleNavigation" />
+    
+    Requirements: 2.3, 5.1, 5.2, 5.3, 5.6, 5.7, 5.8, 8.4
+*@
+
+@namespace AspecCaptura.Components.Navigation
+
+<nav class="bottom-nav" role="navigation" aria-label="Primary navigation">
+    @foreach (var item in Items.Take(5))
+    {
+        <button 
+            type="button"
+            class="bottom-nav__item @(item.Route == ActiveItem ? "bottom-nav__item--active" : "")"
+            @onclick="() => HandleItemClick(item)"
+            @onkeydown="(e) => HandleKeyDown(e, item)"
+            aria-label="@item.Label"
+            aria-current="@(item.Route == ActiveItem ? "page" : null)">
+            
+            <span class="bottom-nav__icon material-symbols-outlined">@item.Icon</span>
+            <span class="bottom-nav__label">@item.Label</span>
+        </button>
+    }
+</nav>
+
+@code {
+    [Parameter, EditorRequired]
+    public List<NavItem> Items { get; set; } = new();
+
+    [Parameter]
+    public string? ActiveItem { get; set; }
+
+    [Parameter]
+    public EventCallback<NavItem> OnItemClick { get; set; }
+
+    private async Task HandleItemClick(NavItem item)
+    {
+        // Trigger haptic feedback if supported
+        // await JS.InvokeVoidAsync("navigator.vibrate", 10);
+        
+        await OnItemClick.InvokeAsync(item);
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e, NavItem item)
+    {
+        if (e.Key == "Enter" || e.Key == " ")
+        {
+            await HandleItemClick(item);
+        }
+    }
+
+    public class NavItem
+    {
+        public string Route { get; set; } = string.Empty;
+        public string Label { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+    }
+}

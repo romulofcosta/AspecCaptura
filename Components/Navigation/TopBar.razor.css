@@ -1,0 +1,84 @@
+/**
+ * TopBar Component Styles
+ * Requirements: 2.3
+ */
+
+/* ── Base TopBar Styles ── */
+.top-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4, 16px);
+    padding: var(--space-4, 16px);
+    padding-top: calc(var(--space-4, 16px) + env(safe-area-inset-top));
+    background: var(--color-surface, #FFFFFF);
+    border-bottom: var(--border-width-thin, 1px) solid var(--color-border, #E5E7EB);
+    min-height: 64px;
+}
+
+/* ── Back Button ── */
+.top-bar__back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: var(--radius-full, 9999px);
+    color: var(--color-text-primary, #111827);
+    cursor: pointer;
+    transition: background var(--transition-fast, 150ms) var(--easing-ease-in-out);
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+}
+
+.top-bar__back:hover {
+    background: var(--color-neutral-100, #F3F4F6);
+}
+
+.top-bar__back:active {
+    transform: scale(0.95);
+}
+
+.top-bar__back .material-symbols-outlined {
+    font-size: 24px;
+}
+
+/* ── Title ── */
+.top-bar__title {
+    flex: 1;
+    font-size: var(--font-size-xl, 18px);
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-text-primary, #111827);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── Actions ── */
+.top-bar__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2, 8px);
+    flex-shrink: 0;
+}
+
+/* ── Dark Mode Support ── */
+[data-theme="dark"] .top-bar {
+    background: var(--color-surface, #1F2937);
+    border-bottom-color: var(--color-border, #374151);
+}
+
+[data-theme="dark"] .top-bar__back {
+    color: var(--color-text-primary, #F9FAFB);
+}
+
+[data-theme="dark"] .top-bar__back:hover {
+    background: var(--color-neutral-800, #1F2937);
+}
+
+[data-theme="dark"] .top-bar__title {
+    color: var(--color-text-primary, #F9FAFB);
+}

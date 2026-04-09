@@ -1,0 +1,78 @@
+@*
+    TopBar Component
+    
+    A top navigation bar component with back button and action buttons support.
+    
+    Features:
+    - Optional back button
+    - Title display
+    - Action buttons on right side
+    - Design tokens for styling
+    - Safe area inset support
+    
+    Usage:
+    <TopBar 
+        Title="Page Title"
+        ShowBackButton="true"
+        OnBackClick="HandleBack">
+        <Actions>
+            <button>Action</button>
+        </Actions>
+    </TopBar>
+    
+    Requirements: 2.3
+*@
+
+@namespace AspecCaptura.Components.Navigation
+@inject NavigationManager NavigationManager
+
+<div class="top-bar">
+    @if (ShowBackButton)
+    {
+        <button 
+            type="button"
+            class="top-bar__back"
+            @onclick="HandleBackClick"
+            aria-label="Voltar">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+    }
+    
+    @if (!string.IsNullOrEmpty(Title))
+    {
+        <h1 class="top-bar__title">@Title</h1>
+    }
+    
+    @if (Actions != null)
+    {
+        <div class="top-bar__actions">
+            @Actions
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public bool ShowBackButton { get; set; }
+
+    [Parameter]
+    public EventCallback OnBackClick { get; set; }
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+
+    private async Task HandleBackClick()
+    {
+        if (OnBackClick.HasDelegate)
+        {
+            await OnBackClick.InvokeAsync();
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+}

@@ -1,0 +1,115 @@
+/* SearchBar Component Styles */
+
+.search-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: border-color var(--transition-base) var(--easing-ease-in-out),
+                box-shadow var(--transition-base) var(--easing-ease-in-out);
+}
+
+.search-bar:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+/* Search Icon */
+.search-bar__icon {
+    position: absolute;
+    left: var(--space-3);
+    color: var(--color-text-secondary);
+    font-size: 20px;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Input Field */
+.search-bar__input {
+    flex: 1;
+    width: 100%;
+    padding: var(--space-3);
+    padding-left: calc(var(--space-3) + 20px + var(--space-2)); /* icon width + spacing */
+    padding-right: calc(var(--space-3) + 20px + var(--space-2)); /* clear button space */
+    border: none;
+    background: transparent;
+    color: var(--color-text-primary);
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    outline: none;
+}
+
+.search-bar__input::placeholder {
+    color: var(--color-text-tertiary);
+}
+
+/* Remove default search input styling */
+.search-bar__input::-webkit-search-decoration,
+.search-bar__input::-webkit-search-cancel-button,
+.search-bar__input::-webkit-search-results-button,
+.search-bar__input::-webkit-search-results-decoration {
+    display: none;
+}
+
+/* Clear Button */
+.search-bar__clear {
+    position: absolute;
+    right: var(--space-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    padding: var(--space-2);
+    border: none;
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    border-radius: var(--radius-full);
+    transition: background-color var(--transition-fast) var(--easing-ease-in-out),
+                color var(--transition-fast) var(--easing-ease-in-out);
+}
+
+.search-bar__clear:hover {
+    background-color: var(--color-neutral-100);
+    color: var(--color-text-primary);
+}
+
+.search-bar__clear:active {
+    transform: scale(0.95);
+}
+
+.search-bar__clear .material-symbols-outlined {
+    font-size: 20px;
+}
+
+/* Disabled State */
+.search-bar--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.search-bar--disabled .search-bar__input {
+    cursor: not-allowed;
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .search-bar,
+    .search-bar__clear {
+        transition: none;
+    }
+    
+    .search-bar__clear:active {
+        transform: none;
+    }
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .search-bar__clear:hover {
+    background-color: var(--color-neutral-700);
+}

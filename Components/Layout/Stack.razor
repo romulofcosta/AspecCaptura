@@ -1,0 +1,109 @@
+@*
+    Stack Component
+    
+    A flexible Flexbox layout component for stacking items vertically or horizontally.
+    Supports responsive direction changes and wrapping.
+    
+    Features:
+    - Direction: row or column
+    - Configurable gap using design tokens
+    - Wrap support
+    - Alignment options
+    
+    Usage:
+    <Stack Direction="StackDirection.Column" Gap="3" AlignItems="StackAlign.Center">
+        <div>Item 1</div>
+        <div>Item 2</div>
+        <div>Item 3</div>
+    </Stack>
+    
+    Requirements: 2.2, 3.2
+*@
+
+@namespace AspecCaptura.Components.Layout
+
+<div 
+    class="stack stack--@Direction.ToString().ToLower() @(Wrap ? "stack--wrap" : "")"
+    style="@GetStackStyle()">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// Stack direction
+    /// </summary>
+    [Parameter]
+    public StackDirection Direction { get; set; } = StackDirection.Column;
+
+    /// <summary>
+    /// Gap size (uses design token spacing scale: 1-24)
+    /// </summary>
+    [Parameter]
+    public int Gap { get; set; } = 2;
+
+    /// <summary>
+    /// Whether items should wrap
+    /// </summary>
+    [Parameter]
+    public bool Wrap { get; set; }
+
+    /// <summary>
+    /// Cross-axis alignment
+    /// </summary>
+    [Parameter]
+    public StackAlign AlignItems { get; set; } = StackAlign.Stretch;
+
+    /// <summary>
+    /// Main-axis alignment
+    /// </summary>
+    [Parameter]
+    public StackAlign JustifyContent { get; set; } = StackAlign.Start;
+
+    /// <summary>
+    /// Stack content
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string GetStackStyle()
+    {
+        var styles = new List<string>
+        {
+            $"gap: var(--space-{Gap}, {Gap * 4}px)",
+            $"align-items: {GetAlignValue(AlignItems)}",
+            $"justify-content: {GetAlignValue(JustifyContent)}"
+        };
+
+        return string.Join("; ", styles);
+    }
+
+    private string GetAlignValue(StackAlign align)
+    {
+        return align switch
+        {
+            StackAlign.Start => "flex-start",
+            StackAlign.Center => "center",
+            StackAlign.End => "flex-end",
+            StackAlign.Stretch => "stretch",
+            StackAlign.SpaceBetween => "space-between",
+            StackAlign.SpaceAround => "space-around",
+            _ => "flex-start"
+        };
+    }
+
+    public enum StackDirection
+    {
+        Row,
+        Column
+    }
+
+    public enum StackAlign
+    {
+        Start,
+        Center,
+        End,
+        Stretch,
+        SpaceBetween,
+        SpaceAround
+    }
+}

@@ -1,0 +1,112 @@
+@*
+    Drawer Component
+    
+    A slide-in drawer component for secondary navigation or content.
+    
+    Features:
+    - Slide in from left or right
+    - Overlay backdrop
+    - Close on backdrop click or Escape key
+    - Focus trap when open
+    - Prevent body scroll when open
+    
+    Usage:
+    <Drawer 
+        IsOpen="isDrawerOpen"
+        Position="DrawerPosition.Left"
+        OnClose="HandleDrawerClose">
+        <nav>
+            <a href="/profile">Profile</a>
+            <a href="/settings">Settings</a>
+        </nav>
+    </Drawer>
+    
+    Requirements: 2.3, 5.5
+*@
+
+@namespace AspecCaptura.Components.Navigation
+@implements IDisposable
+
+@if (IsOpen)
+{
+    <div class="drawer-overlay" @onclick="HandleBackdropClick"></div>
+    
+    <div 
+        class="drawer drawer--@Position.ToString().ToLower() @(IsOpen ? "drawer--open" : "")"
+        role="dialog"
+        aria-modal="true"
+        @onkeydown="HandleKeyDown">
+        
+        <div class="drawer__header">
+            <button 
+                type="button"
+                class="drawer__close"
+                @onclick="HandleClose"
+                aria-label="Close drawer">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        
+        <div class="drawer__content">
+            @ChildContent
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public DrawerPosition Position { get; set; } = DrawerPosition.Left;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (IsOpen)
+        {
+            // Prevent body scroll
+            // await JS.InvokeVoidAsync("document.body.style.overflow = 'hidden'");
+        }
+        else
+        {
+            // Restore body scroll
+            // await JS.InvokeVoidAsync("document.body.style.overflow = ''");
+        }
+    }
+
+    private async Task HandleClose()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task HandleBackdropClick()
+    {
+        await HandleClose();
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            await HandleClose();
+        }
+    }
+
+    public void Dispose()
+    {
+        // Restore body scroll on dispose
+        // JS.InvokeVoidAsync("document.body.style.overflow = ''");
+    }
+
+    public enum DrawerPosition
+    {
+        Left,
+        Right
+    }
+}

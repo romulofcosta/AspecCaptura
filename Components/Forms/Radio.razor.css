@@ -1,0 +1,81 @@
+/**
+ * Radio Component Styles
+ * Requirements: 2.4, 3.3, 8.1, 8.4
+ */
+
+.radio {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2, 8px);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    min-height: var(--touch-target-min, 44px);
+    padding: var(--space-2, 8px) 0;
+}
+
+.radio__input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.radio__circle {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border: var(--border-width-medium, 2px) solid var(--color-border, #E5E7EB);
+    border-radius: var(--radius-full, 9999px);
+    background: var(--color-surface, #FFFFFF);
+    transition: all var(--transition-fast, 150ms) var(--easing-ease-in-out);
+}
+
+.radio__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-full, 9999px);
+    background: var(--color-primary, #2F6FED);
+}
+
+/* Checked state */
+.radio__input:checked + .radio__circle {
+    border-color: var(--color-primary, #2F6FED);
+}
+
+/* Focus state */
+.radio__input:focus-visible + .radio__circle {
+    outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-primary));
+    outline-offset: var(--focus-ring-offset, 2px);
+}
+
+/* Hover state */
+.radio:hover .radio__circle {
+    border-color: var(--color-primary, #2F6FED);
+}
+
+/* Label */
+.radio__label {
+    font-size: var(--font-size-base, 14px);
+    color: var(--color-text-primary, #111827);
+    user-select: none;
+}
+
+/* Disabled state */
+.radio--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Dark mode */
+[data-theme="dark"] .radio__circle {
+    background: var(--color-surface, #1F2937);
+    border-color: var(--color-border, #374151);
+}
+
+[data-theme="dark"] .radio__label {
+    color: var(--color-text-primary, #F9FAFB);
+}

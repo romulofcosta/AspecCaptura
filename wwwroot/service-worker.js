@@ -1,57 +1,95 @@
 // Service Worker for Aspec Captura PWA
-// Version: 0.3.0
+// Version: 0.4.0
+// Requirements: 7.1, 7.2, 7.3
 
-const APP_VERSION = '0.3.0';
+const APP_VERSION = '0.4.0';
 const CACHE_NAME = `aspec-captura-v${APP_VERSION.replace(/\./g, '-')}`;
 const API_CACHE_NAME = `aspec-captura-api-v${APP_VERSION.replace(/\./g, '-')}`;
+const STATIC_CACHE_NAME = `aspec-captura-static-v${APP_VERSION.replace(/\./g, '-')}`;
 
 // App Shell - Cache First Strategy
 const APP_SHELL_URLS = [
     '/',
     '/index.html',
-    '/css/theme.css',
-    '/css/components.css',
-    '/css/responsive.css',
-    '/css/app-global.css',
-    '/css/app.css',
-    '/js/app.js',
-    '/js/crypto.js',
-    '/js/camera-interop.js',
-    '/js/db-interop.js',
     '/manifest.json',
     '/icon-192.png',
     '/icon-512.png'
 ];
 
-// Install event - cache app shell
+// Static Assets - Cache First Strategy
+const STATIC_ASSETS = [
+    '/css/design-tokens.css',
+    '/css/theme.css',
+    '/css/components.css',
+    '/css/responsive.css',
+    '/css/fluid-typography.css',
+    '/css/ripple.css',
+    '/css/pull-to-refresh.css',
+    '/css/touch-action.css',
+    '/css/animations.css',
+    '/css/app-global.css',
+    '/css/app.css',
+    '/js/app.js',
+    '/js/theme.js',
+    '/js/crypto.js',
+    '/js/camera-interop.js',
+    '/js/db-interop.js',
+    '/js/gestures.js',
+    '/js/ripple.js',
+    '/js/pull-to-refresh.js'
+];
+
+// Install event - cache app shell and static assets
 self.addEventListener('install', event => {
-    console.log('[ServiceWorker] Installing...');
+    console.log('[ServiceWorker] Installing version', APP_VERSION);
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => {
-                console.log('[ServiceWorker] Caching app shell');
-                return cache.addAll(APP_SHELL_URLS);
-            })
-            .then(() => self.skipWaiting())
+        Promise.all([
+            // Cache app shell
+            caches.open(CACHE_NAME)
+                .then(cache => {
+                    console.log('[ServiceWorker] Caching app shell');
+                    return cache.addAll(APP_SHELL_URLS);
+                }),
+            // Cache static assets
+            caches.open(STATIC_CACHE_NAME)
+                .then(cache => {
+                    console.log('[ServiceWorker] Caching static assets');
+                    return cache.addAll(STATIC_ASSETS);
+                })
+        ])
+        .then(() => {
+            console.log('[ServiceWorker] Installation complete');
+            return self.skipWaiting();
+        })
+        .catch(error => {
+            console.error('[ServiceWorker] Installation failed:', error);
+        })
     );
 });
 
 // Activate event - clean up old caches
 self.addEventListener('activate', event => {
-    console.log('[ServiceWorker] Activating...');
+    console.log('[ServiceWorker] Activating version', APP_VERSION);
     event.waitUntil(
         caches.keys()
             .then(cacheNames => {
                 return Promise.all(
                     cacheNames
-                        .filter(cacheName => cacheName !== CACHE_NAME && cacheName !== API_CACHE_NAME)
+                        .filter(cacheName => 
+                            cacheName !== CACHE_NAME && 
+                            cacheName !== API_CACHE_NAME && 
+                            cacheName !== STATIC_CACHE_NAME
+                        )
                         .map(cacheName => {
                             console.log('[ServiceWorker] Deleting old cache:', cacheName);
                             return caches.delete(cacheName);
                         })
                 );
             })
-            .then(() => self.clients.claim())
+            .then(() => {
+                console.log('[ServiceWorker] Activation complete');
+                return self.clients.claim();
+            })
     );
 });
 
@@ -73,7 +111,7 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // API requests - Network First with timeout
+    // API requests - Network First with cache fallback
     if (url.pathname.startsWith('/api/')) {
         event.respondWith(
             networkFirstWithTimeout(request, 5000)
@@ -81,26 +119,43 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // App Shell - Cache First
-    if (APP_SHELL_URLS.some(shellUrl => url.pathname.endsWith(shellUrl))) {
+    // Static assets (CSS, JS, images, fonts) - Cache First
+    if (url.pathname.match(/\.(css|js|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/)) {
         event.respondWith(
-            cacheFirst(request)
+            cacheFirst(request, STATIC_CACHE_NAME)
         );
         return;
     }
 
-    // Other resources - Cache First with network fallback
+    // App Shell - Cache First
+    if (APP_SHELL_URLS.some(shellUrl => url.pathname.endsWith(shellUrl))) {
+        event.respondWith(
+            cacheFirst(request, CACHE_NAME)
+        );
+        return;
+    }
+
+    // Other resources - Network First with cache fallback
     event.respondWith(
-        cacheFirst(request)
+        networkFirst(request)
     );
 });
 
 // Cache First Strategy
-async function cacheFirst(request) {
-    const cache = await caches.open(CACHE_NAME);
+async function cacheFirst(request, cacheName = CACHE_NAME) {
+    const cache = await caches.open(cacheName);
     const cached = await cache.match(request);
     
     if (cached) {
+        // Return cached response and update cache in background
+        fetch(request)
+            .then(response => {
+                if (response.ok) {
+                    cache.put(request, response.clone());
+                }
+            })
+            .catch(() => {}); // Ignore network errors
+        
         return cached;
     }
     
@@ -113,6 +168,28 @@ async function cacheFirst(request) {
     } catch (error) {
         console.error('[ServiceWorker] Fetch failed:', error);
         // Return offline page if available
+        return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+    }
+}
+
+// Network First Strategy
+async function networkFirst(request) {
+    const cache = await caches.open(CACHE_NAME);
+    
+    try {
+        const response = await fetch(request);
+        if (response.ok) {
+            cache.put(request, response.clone());
+        }
+        return response;
+    } catch (error) {
+        console.log('[ServiceWorker] Network request failed, trying cache:', error);
+        const cached = await cache.match(request);
+        
+        if (cached) {
+            return cached;
+        }
+        
         return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
     }
 }

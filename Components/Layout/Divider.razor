@@ -1,0 +1,29 @@
+@*
+    Divider Component
+    
+    A visual divider line with theme-aware color.
+    Can be horizontal or vertical.
+    
+    Features:
+    - Horizontal or vertical orientation
+    - Theme-aware color
+    - 1px border width
+    
+    Usage:
+    <Divider />
+    <Divider Vertical="true" />
+    
+    Requirements: 2.2, 18.5
+*@
+
+@namespace AspecCaptura.Components.Layout
+
+<div class="divider @(Vertical ? "divider--vertical" : "divider--horizontal")"></div>
+
+@code {
+    /// <summary>
+    /// Whether divider is vertical (default is horizontal)
+    /// </summary>
+    [Parameter]
+    public bool Vertical { get; set; }
+}

@@ -1,0 +1,30 @@
+/**
+ * Divider Component Styles
+ * Using CSS isolation and design tokens
+ * Requirements: 2.2, 18.5
+ */
+
+/* ── Base Divider Styles ── */
+.divider {
+    border: none;
+    background: var(--color-divider, #E5E7EB);
+}
+
+/* ── Horizontal Divider ── */
+.divider--horizontal {
+    width: 100%;
+    height: var(--border-width-thin, 1px);
+    margin: var(--space-4, 16px) 0;
+}
+
+/* ── Vertical Divider ── */
+.divider--vertical {
+    width: var(--border-width-thin, 1px);
+    height: 100%;
+    margin: 0 var(--space-4, 16px);
+}
+
+/* ── Dark Mode Support ── */
+[data-theme="dark"] .divider {
+    background: var(--color-divider, #374151);
+}

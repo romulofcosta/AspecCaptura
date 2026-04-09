@@ -1,0 +1,79 @@
+@*
+    Radio Component
+    
+    An accessible radio button component with proper touch targets and ARIA labels.
+    
+    Features:
+    - Minimum 44x44px touch target
+    - Proper ARIA labels and roles
+    - Design token colors and spacing
+    - Disabled state support
+    
+    Usage:
+    <Radio 
+        Label="Option 1"
+        Value="option1"
+        @bind-SelectedValue="selectedOption"
+        GroupName="options" />
+    
+    Requirements: 2.4, 3.3, 8.1, 8.4
+*@
+
+@namespace AspecCaptura.Components.Forms
+
+<label class="radio @(Disabled ? "radio--disabled" : "")">
+    <input 
+        type="radio"
+        class="radio__input"
+        name="@GroupName"
+        value="@Value"
+        checked="@IsChecked"
+        disabled="@Disabled"
+        aria-label="@(string.IsNullOrEmpty(Label) ? AriaLabel : Label)"
+        @onchange="HandleChange" />
+    
+    <span class="radio__circle">
+        @if (IsChecked)
+        {
+            <span class="radio__dot"></span>
+        }
+    </span>
+    
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <span class="radio__label">@Label</span>
+    }
+</label>
+
+@code {
+    [Parameter]
+    public string? Value { get; set; }
+
+    [Parameter]
+    public string? SelectedValue { get; set; }
+
+    [Parameter]
+    public EventCallback<string> SelectedValueChanged { get; set; }
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    [Parameter]
+    public string? GroupName { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    private bool IsChecked => Value == SelectedValue;
+
+    private async Task HandleChange(ChangeEventArgs e)
+    {
+        if (!Disabled)
+        {
+            await SelectedValueChanged.InvokeAsync(Value);
+        }
+    }
+}

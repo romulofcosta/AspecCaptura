@@ -1,0 +1,55 @@
+@*
+    Spinner Component
+    
+    A loading spinner with smooth CSS animation optimized for 60fps.
+    Respects user's motion preferences.
+    
+    Features:
+    - Multiple sizes (sm, md, lg)
+    - Custom color support
+    - 60fps performance using transform/opacity
+    - Respects prefers-reduced-motion
+    
+    Usage:
+    <Spinner Size="SpinnerSize.Medium" />
+    <Spinner Size="SpinnerSize.Large" Color="var(--color-primary)" />
+    
+    Requirements: 2.1, 10.7, 13.1
+*@
+
+@namespace AspecCaptura.Components.Base
+
+<div 
+    class="spinner spinner--@Size.ToString().ToLower()"
+    style="@GetColorStyle()"
+    role="status"
+    aria-label="Loading">
+    <span class="spinner__ring"></span>
+</div>
+
+@code {
+    /// <summary>
+    /// Spinner size
+    /// </summary>
+    [Parameter]
+    public SpinnerSize Size { get; set; } = SpinnerSize.Medium;
+
+    /// <summary>
+    /// Custom color (CSS color value). If not set, uses primary color.
+    /// </summary>
+    [Parameter]
+    public string? Color { get; set; }
+
+    private string GetColorStyle()
+    {
+        var color = !string.IsNullOrEmpty(Color) ? Color : "var(--color-primary)";
+        return $"--spinner-color: {color};";
+    }
+
+    public enum SpinnerSize
+    {
+        Small,
+        Medium,
+        Large
+    }
+}

@@ -1,0 +1,159 @@
+@*
+    Install Prompt Component
+    
+    Displays a prompt to install the PWA when criteria are met.
+    
+    Features:
+    - Detects when PWA can be installed
+    - Shows install prompt with app info
+    - Handles beforeinstallprompt event
+    - Dismissible
+    
+    Usage:
+    <InstallPrompt />
+    
+    Requirements: 25.3
+*@
+
+@namespace AspecCaptura.Components.Feedback
+@implements IDisposable
+@inject IJSRuntime JS
+
+@if (ShowPrompt && !IsDismissed)
+{
+    <div class="install-prompt" role="dialog" aria-labelledby="install-prompt-title">
+        <div class="install-prompt__content">
+            <div class="install-prompt__header">
+                <img src="/icon-192.png" alt="Aspec Captura" class="install-prompt__icon" />
+                <div class="install-prompt__info">
+                    <h3 id="install-prompt-title" class="install-prompt__title">Instalar Aspec Captura</h3>
+                    <p class="install-prompt__description">Instale o app para acesso rápido e funcionamento offline</p>
+                </div>
+            </div>
+            
+            <div class="install-prompt__actions">
+                <button 
+                    type="button" 
+                    class="install-prompt__button install-prompt__button--secondary"
+                    @onclick="Dismiss">
+                    Agora não
+                </button>
+                <button 
+                    type="button" 
+                    class="install-prompt__button install-prompt__button--primary"
+                    @onclick="Install">
+                    Instalar
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool ShowPrompt { get; set; }
+    private bool IsDismissed { get; set; }
+    private DotNetObjectReference<InstallPrompt>? _objRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _objRef = DotNetObjectReference.Create(this);
+        
+        try
+        {
+            // Register beforeinstallprompt event listener
+            await JS.InvokeVoidAsync("eval", @"
+                window.installPromptRef = arguments[0];
+                window.deferredPrompt = null;
+                
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    // Prevent the mini-infobar from appearing on mobile
+                    e.preventDefault();
+                    
+                    // Stash the event so it can be triggered later
+                    window.deferredPrompt = e;
+                    
+                    // Show install prompt
+                    window.installPromptRef.invokeMethodAsync('ShowInstallPrompt');
+                });
+                
+                // Listen for app installed event
+                window.addEventListener('appinstalled', () => {
+                    console.log('[InstallPrompt] PWA was installed');
+                    window.deferredPrompt = null;
+                    window.installPromptRef.invokeMethodAsync('HideInstallPrompt');
+                });
+            ", _objRef);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[InstallPrompt] Error initializing: {ex.Message}");
+        }
+    }
+
+    [JSInvokable]
+    public async Task ShowInstallPrompt()
+    {
+        ShowPrompt = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public async Task HideInstallPrompt()
+    {
+        ShowPrompt = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Install()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("eval", @"
+                if (window.deferredPrompt) {
+                    // Show the install prompt
+                    window.deferredPrompt.prompt();
+                    
+                    // Wait for the user to respond to the prompt
+                    window.deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('[InstallPrompt] User accepted the install prompt');
+                        } else {
+                            console.log('[InstallPrompt] User dismissed the install prompt');
+                        }
+                        window.deferredPrompt = null;
+                    });
+                }
+            ");
+            
+            ShowPrompt = false;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[InstallPrompt] Error installing: {ex.Message}");
+        }
+    }
+
+    private void Dismiss()
+    {
+        IsDismissed = true;
+        ShowPrompt = false;
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            // Clean up event listeners
+            JS.InvokeVoidAsync("eval", @"
+                window.removeEventListener('beforeinstallprompt', window.installPromptRef);
+                window.removeEventListener('appinstalled', window.installPromptRef);
+                delete window.installPromptRef;
+                delete window.deferredPrompt;
+            ");
+        }
+        catch { }
+
+        _objRef?.Dispose();
+    }
+}

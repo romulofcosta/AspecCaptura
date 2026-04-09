@@ -1,0 +1,151 @@
+/* FilterChip Component Styles */
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-3);
+    border: none;
+    border-radius: var(--radius-full); /* 9999px - pill shape */
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: background-color var(--transition-fast) var(--easing-ease-in-out),
+                color var(--transition-fast) var(--easing-ease-in-out),
+                transform var(--transition-fast) var(--easing-ease-in-out),
+                box-shadow var(--transition-fast) var(--easing-ease-in-out);
+    user-select: none;
+    white-space: nowrap;
+    
+    /* Ensure minimum touch target size */
+    min-height: var(--touch-target-min);
+}
+
+/* Inactive State */
+.filter-chip--inactive {
+    background-color: #EEF2FF; /* Light blue background for inactive */
+    color: var(--color-text-primary);
+}
+
+.filter-chip--inactive:hover {
+    background-color: #E0E7FF; /* Slightly darker on hover */
+    box-shadow: var(--shadow-sm);
+}
+
+.filter-chip--inactive:active {
+    transform: scale(0.97);
+}
+
+/* Active State */
+.filter-chip--active {
+    background-color: #2F6FED; /* Primary blue for active */
+    color: #FFFFFF;
+    box-shadow: var(--shadow-sm);
+}
+
+.filter-chip--active:hover {
+    background-color: var(--color-primary-hover);
+    box-shadow: var(--shadow-md);
+}
+
+.filter-chip--active:active {
+    transform: scale(0.97);
+}
+
+/* Label */
+.filter-chip__label {
+    line-height: 1;
+}
+
+/* Remove Button */
+.filter-chip__remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    margin-left: var(--space-1);
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    border-radius: var(--radius-full);
+    transition: background-color var(--transition-fast) var(--easing-ease-in-out),
+                transform var(--transition-fast) var(--easing-ease-in-out);
+    width: 20px;
+    height: 20px;
+}
+
+.filter-chip__remove:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.filter-chip__remove:active {
+    transform: scale(0.9);
+}
+
+.filter-chip__remove .material-symbols-outlined {
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* Focus States for Accessibility */
+.filter-chip:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.filter-chip__remove:focus-visible {
+    outline: var(--focus-ring-width) solid rgba(255, 255, 255, 0.8);
+    outline-offset: 1px;
+}
+
+/* Disabled State (optional, for future use) */
+.filter-chip:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .filter-chip,
+    .filter-chip__remove {
+        transition: none;
+    }
+    
+    .filter-chip--inactive:active,
+    .filter-chip--active:active,
+    .filter-chip__remove:active {
+        transform: none;
+    }
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .filter-chip--inactive {
+    background-color: #1E3A8A; /* Darker blue for dark mode inactive */
+    color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .filter-chip--inactive:hover {
+    background-color: #1E40AF;
+}
+
+[data-theme="dark"] .filter-chip--active {
+    background-color: #3B82F6; /* Brighter blue for dark mode active */
+    color: #FFFFFF;
+}
+
+[data-theme="dark"] .filter-chip--active:hover {
+    background-color: #60A5FA;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .filter-chip {
+        /* Ensure comfortable touch targets on mobile */
+        padding: var(--space-2) var(--space-3);
+    }
+}

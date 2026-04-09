@@ -1,0 +1,166 @@
+/**
+ * Install Prompt Component Styles
+ * Requirements: 25.3
+ */
+
+/* ── Base Install Prompt Styles ── */
+.install-prompt {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--z-index-toast, 1060);
+    background: var(--color-surface, #FFFFFF);
+    border-top: var(--border-width-thin, 1px) solid var(--color-border, #E5E7EB);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+    padding: var(--space-4, 16px);
+    padding-bottom: calc(var(--space-4, 16px) + env(safe-area-inset-bottom));
+    animation: slide-up var(--transition-medium, 300ms) var(--easing-ease-out);
+}
+
+@keyframes slide-up {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* ── Content ── */
+.install-prompt__content {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4, 16px);
+}
+
+/* ── Header ── */
+.install-prompt__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3, 12px);
+}
+
+/* ── Icon ── */
+.install-prompt__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md, 8px);
+    flex-shrink: 0;
+}
+
+/* ── Info ── */
+.install-prompt__info {
+    flex: 1;
+}
+
+.install-prompt__title {
+    font-size: var(--font-size-lg, 16px);
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-text-primary, #111827);
+    margin: 0 0 var(--space-1, 4px) 0;
+}
+
+.install-prompt__description {
+    font-size: var(--font-size-sm, 13px);
+    color: var(--color-text-secondary, #6B7280);
+    margin: 0;
+}
+
+/* ── Actions ── */
+.install-prompt__actions {
+    display: flex;
+    gap: var(--space-2, 8px);
+    justify-content: flex-end;
+}
+
+/* ── Buttons ── */
+.install-prompt__button {
+    padding: var(--space-2, 8px) var(--space-4, 16px);
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--font-size-sm, 13px);
+    font-weight: var(--font-weight-medium, 500);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast, 150ms) var(--easing-ease-in-out);
+    min-height: var(--touch-target-min, 44px);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.install-prompt__button--primary {
+    background: var(--color-primary, #2F6FED);
+    color: var(--color-white, #FFFFFF);
+}
+
+.install-prompt__button--primary:hover {
+    background: var(--color-primary-dark, #1E5DD8);
+}
+
+.install-prompt__button--secondary {
+    background: transparent;
+    color: var(--color-text-secondary, #6B7280);
+}
+
+.install-prompt__button--secondary:hover {
+    background: var(--color-neutral-100, #F3F4F6);
+}
+
+/* ── Desktop Styles ── */
+@media (min-width: 768px) {
+    .install-prompt {
+        bottom: var(--space-6, 24px);
+        left: var(--space-6, 24px);
+        right: auto;
+        max-width: 400px;
+        border-radius: var(--radius-lg, 12px);
+        border: var(--border-width-thin, 1px) solid var(--color-border, #E5E7EB);
+    }
+}
+
+/* ── Accessibility - Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+    .install-prompt {
+        animation: fade-in var(--transition-fast, 150ms);
+    }
+    
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+}
+
+/* ── Dark Mode Support ── */
+[data-theme="dark"] .install-prompt {
+    background: var(--color-surface, #1F2937);
+    border-top-color: var(--color-border, #374151);
+}
+
+[data-theme="dark"] .install-prompt__title {
+    color: var(--color-text-primary, #F9FAFB);
+}
+
+[data-theme="dark"] .install-prompt__description {
+    color: var(--color-text-secondary, #D1D5DB);
+}
+
+[data-theme="dark"] .install-prompt__button--primary {
+    background: var(--color-primary, #3B82F6);
+}
+
+[data-theme="dark"] .install-prompt__button--primary:hover {
+    background: var(--color-primary-dark, #2563EB);
+}
+
+[data-theme="dark"] .install-prompt__button--secondary {
+    color: var(--color-text-secondary, #D1D5DB);
+}
+
+[data-theme="dark"] .install-prompt__button--secondary:hover {
+    background: var(--color-neutral-800, #1F2937);
+}

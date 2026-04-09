@@ -1,0 +1,73 @@
+/**
+ * ProgressBar Component Styles
+ * Requirements: 2.5, 13.3
+ */
+
+/* ── Base ProgressBar Styles ── */
+.progress-bar {
+    width: 100%;
+    --progress-color: var(--color-primary, #2F6FED);
+}
+
+.progress-bar__track {
+    width: 100%;
+    background: var(--color-neutral-200, #E5E7EB);
+    border-radius: var(--radius-full, 9999px);
+    overflow: hidden;
+}
+
+.progress-bar__fill {
+    height: 100%;
+    background: var(--progress-color);
+    border-radius: var(--radius-full, 9999px);
+    transition: width var(--transition-slow, 300ms) var(--easing-ease-out);
+}
+
+/* ── ProgressBar Sizes ── */
+.progress-bar--small .progress-bar__track {
+    height: 4px;
+}
+
+.progress-bar--medium .progress-bar__track {
+    height: 8px;
+}
+
+.progress-bar--large .progress-bar__track {
+    height: 12px;
+}
+
+/* ── Indeterminate State ── */
+.progress-bar--indeterminate .progress-bar__fill {
+    width: 40%;
+    animation: indeterminate 1.5s ease-in-out infinite;
+}
+
+@keyframes indeterminate {
+    0% {
+        transform: translateX(-100%);
+    }
+    50% {
+        transform: translateX(250%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+/* ── Accessibility - Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+    .progress-bar__fill {
+        transition: none;
+    }
+    
+    .progress-bar--indeterminate .progress-bar__fill {
+        animation: none;
+        width: 100%;
+        transform: none;
+    }
+}
+
+/* ── Dark Mode Support ── */
+[data-theme="dark"] .progress-bar__track {
+    background: var(--color-neutral-700, #374151);
+}

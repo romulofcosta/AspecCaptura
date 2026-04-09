@@ -1,0 +1,69 @@
+@*
+    Switch Component
+    
+    An accessible toggle switch component with proper touch targets and ARIA labels.
+    
+    Features:
+    - Minimum 44x44px touch target
+    - Proper ARIA labels and roles
+    - Design token colors and spacing
+    - Smooth animation
+    - Disabled state support
+    
+    Usage:
+    <Switch 
+        Label="Enable notifications"
+        @bind-Checked="notificationsEnabled"
+        Disabled="false" />
+    
+    Requirements: 2.4, 3.3, 8.1, 8.4
+*@
+
+@namespace AspecCaptura.Components.Forms
+
+<label class="switch @(Disabled ? "switch--disabled" : "")">
+    <input 
+        type="checkbox"
+        class="switch__input"
+        checked="@Checked"
+        disabled="@Disabled"
+        role="switch"
+        aria-checked="@Checked.ToString().ToLower()"
+        aria-label="@(string.IsNullOrEmpty(Label) ? AriaLabel : Label)"
+        @onchange="HandleChange" />
+    
+    <span class="switch__track">
+        <span class="switch__thumb"></span>
+    </span>
+    
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <span class="switch__label">@Label</span>
+    }
+</label>
+
+@code {
+    [Parameter]
+    public bool Checked { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> CheckedChanged { get; set; }
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    private async Task HandleChange(ChangeEventArgs e)
+    {
+        if (!Disabled)
+        {
+            Checked = (bool)(e.Value ?? false);
+            await CheckedChanged.InvokeAsync(Checked);
+        }
+    }
+}

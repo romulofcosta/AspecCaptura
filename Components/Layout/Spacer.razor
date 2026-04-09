@@ -1,0 +1,40 @@
+@*
+    Spacer Component
+    
+    A simple spacing component using design token spacing values.
+    Creates vertical or horizontal space between elements.
+    
+    Features:
+    - Uses design token spacing scale (1-24)
+    - Vertical or horizontal spacing
+    
+    Usage:
+    <Spacer Size="4" />
+    <Spacer Size="8" Horizontal="true" />
+    
+    Requirements: 2.2, 18.5
+*@
+
+@namespace AspecCaptura.Components.Layout
+
+<div class="spacer @(Horizontal ? "spacer--horizontal" : "spacer--vertical")" style="@GetSpacerStyle()"></div>
+
+@code {
+    /// <summary>
+    /// Spacing size (uses design token spacing scale: 1-24)
+    /// </summary>
+    [Parameter]
+    public int Size { get; set; } = 4;
+
+    /// <summary>
+    /// Whether spacing is horizontal (default is vertical)
+    /// </summary>
+    [Parameter]
+    public bool Horizontal { get; set; }
+
+    private string GetSpacerStyle()
+    {
+        var property = Horizontal ? "width" : "height";
+        return $"{property}: var(--space-{Size}, {Size * 4}px);";
+    }
+}

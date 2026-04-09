@@ -1,0 +1,100 @@
+@*
+    SearchBar Component
+    
+    A search input component with debounced search functionality and clear button.
+    
+    Features:
+    - Search icon on the left side
+    - Debounced search input (default 300ms)
+    - Clear button that appears when there's text
+    - Accessible with proper ARIA labels
+    - Responsive design using design tokens
+    
+    Usage:
+    <SearchBar 
+        Placeholder="Search items..."
+        @bind-Value="searchQuery"
+        OnSearch="HandleSearch"
+        DebounceMs="300" />
+    
+    Requirements: 2.4, 20.1, 20.2, 20.4
+*@
+
+@namespace AspecCaptura.Components.Forms
+@implements IDisposable
+
+<div class="search-bar">
+    <span class="search-bar__icon material-symbols-outlined">search</span>
+    
+    <input 
+        type="search"
+        class="search-bar__input"
+        placeholder="@Placeholder"
+        value="@Value"
+        @oninput="HandleInput"
+        aria-label="@(string.IsNullOrEmpty(Placeholder) ? "Search" : Placeholder)" />
+    
+    @if (!string.IsNullOrEmpty(Value))
+    {
+        <button 
+            type="button"
+            class="search-bar__clear"
+            @onclick="HandleClear"
+            aria-label="Clear search">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Placeholder { get; set; } = "Search...";
+
+    [Parameter]
+    public string Value { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnSearch { get; set; }
+
+    [Parameter]
+    public int DebounceMs { get; set; } = 300;
+
+    private System.Threading.Timer? _debounceTimer;
+
+    private async Task HandleInput(ChangeEventArgs e)
+    {
+        var newValue = e.Value?.ToString() ?? string.Empty;
+        Value = newValue;
+        await ValueChanged.InvokeAsync(Value);
+
+        // Cancel existing timer
+        _debounceTimer?.Dispose();
+
+        // Create new debounce timer
+        _debounceTimer = new System.Threading.Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await OnSearch.InvokeAsync(Value);
+            });
+        }, null, DebounceMs, System.Threading.Timeout.Infinite);
+    }
+
+    private async Task HandleClear()
+    {
+        Value = string.Empty;
+        await ValueChanged.InvokeAsync(Value);
+        await OnSearch.InvokeAsync(Value);
+        
+        // Cancel any pending debounce timer
+        _debounceTimer?.Dispose();
+    }
+
+    public void Dispose()
+    {
+        _debounceTimer?.Dispose();
+    }
+}

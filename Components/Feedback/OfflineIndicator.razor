@@ -1,0 +1,89 @@
+@*
+    Offline Indicator Component
+    
+    Displays a banner when the app is offline and updates when connection is restored.
+    
+    Features:
+    - Automatic detection of online/offline status
+    - Smooth slide-in animation
+    - Auto-hide when connection is restored
+    - Accessible announcements
+    
+    Usage:
+    <OfflineIndicator />
+    
+    Requirements: 7.4
+*@
+
+@namespace AspecCaptura.Components.Feedback
+@implements IDisposable
+@inject IJSRuntime JS
+
+@if (!IsOnline)
+{
+    <div class="offline-indicator @(IsOnline ? "" : "offline-indicator--visible")" role="alert" aria-live="polite">
+        <div class="offline-indicator__content">
+            <span class="material-symbols-outlined offline-indicator__icon">cloud_off</span>
+            <span class="offline-indicator__text">Você está offline</span>
+        </div>
+    </div>
+}
+
+@code {
+    private bool IsOnline { get; set; } = true;
+    private DotNetObjectReference<OfflineIndicator>? _objRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _objRef = DotNetObjectReference.Create(this);
+        
+        try
+        {
+            // Register online/offline event listeners
+            await JS.InvokeVoidAsync("eval", @"
+                window.offlineIndicatorRef = arguments[0];
+                
+                window.addEventListener('online', () => {
+                    window.offlineIndicatorRef.invokeMethodAsync('UpdateOnlineStatus', true);
+                });
+                
+                window.addEventListener('offline', () => {
+                    window.offlineIndicatorRef.invokeMethodAsync('UpdateOnlineStatus', false);
+                });
+                
+                // Check initial status
+                window.offlineIndicatorRef.invokeMethodAsync('UpdateOnlineStatus', navigator.onLine);
+            ", _objRef);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[OfflineIndicator] Error initializing: {ex.Message}");
+        }
+    }
+
+    [JSInvokable]
+    public async Task UpdateOnlineStatus(bool isOnline)
+    {
+        if (IsOnline != isOnline)
+        {
+            IsOnline = isOnline;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            // Clean up event listeners
+            JS.InvokeVoidAsync("eval", @"
+                window.removeEventListener('online', window.offlineIndicatorRef);
+                window.removeEventListener('offline', window.offlineIndicatorRef);
+                delete window.offlineIndicatorRef;
+            ");
+        }
+        catch { }
+
+        _objRef?.Dispose();
+    }
+}

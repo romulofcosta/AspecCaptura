@@ -1,0 +1,32 @@
+/**
+ * Stack Component Styles
+ * Using CSS isolation and design tokens
+ * Requirements: 2.2, 3.2
+ */
+
+/* ── Base Stack Styles ── */
+.stack {
+    display: flex;
+    width: 100%;
+}
+
+/* ── Stack Direction ── */
+.stack--row {
+    flex-direction: row;
+}
+
+.stack--column {
+    flex-direction: column;
+}
+
+/* ── Stack Wrap ── */
+.stack--wrap {
+    flex-wrap: wrap;
+}
+
+/* ── Responsive Direction Changes ── */
+@media (max-width: 767px) {
+    .stack--row.stack--responsive {
+        flex-direction: column;
+    }
+}
