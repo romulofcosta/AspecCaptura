@@ -855,6 +855,36 @@ logs/
 *.draft.md
 temp_docs/
 
+# ⚠️ DOCUMENTOS TÉCNICOS SENSÍVEIS (NÃO COMMITAR)
+# Apenas README.md e CHANGELOG.md devem ser versionados
+# Todos os outros .md devem ficar apenas localmente
+*_POLICY.md
+*_CONFIG.md
+*_SETUP.md
+*_GUIDE.md
+*_ASSESSMENT.md
+*_PLAN.md
+*_SUMMARY.md
+*_REPORT.md
+API_*.md
+AWS_*.md
+AZURE_*.md
+GCP_*.md
+SECURITY_*.md
+!SECURITY.md
+QUICK_*.md
+TROUBLESHOOTING_*.md
+COMANDOS_*.md
+DEPLOYMENT_*.md
+INFRASTRUCTURE_*.md
+BUILD_*.md
+QUAL_*.md
+RELATORIO_*.md
+RESUMO_*.md
+SOLUCAO_*.md
+VERSION_*.md
+CLEANUP_*.md
+
 # Build e error logs específicos do projeto
 build*.txt
 build*.log
