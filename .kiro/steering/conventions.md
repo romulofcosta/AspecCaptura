@@ -7,6 +7,33 @@
 - Trabalha em dois ambientes: notebook pessoal e máquina do trabalho
 - Usa o Kiro como parceiro de desenvolvimento — espera respostas diretas, sem enrolação, com foco em qualidade e boas práticas
 
+## Estado Atual do Projeto (v0.11.2)
+
+### O que está funcionando
+- Login com formato `municipio.nome.sobrenome` autenticando via API → S3
+- Sincronização de tombamentos em lotes (chunking) após login
+- Configuração de sessão: seleção de Órgão → UO → Área → Subárea
+- Scan com loop de reconhecimento em tempo real (BarcodeDetector nativo + fallback OCR)
+- Feedback visual do scan: estados scanning/detecting/found/error com timeout de 15s
+- Captura de foto + formulário de detalhes do bem
+- Deploy automático: Cloudflare Pages (frontend) + Render (backend)
+- 14 testes de integração passando na API
+
+### Pendente de validação (teste manual em stage)
+- Scan em tempo real — implementado em v0.11.2, ainda não testado no celular
+- OCR e Barcode — reportados como não funcionando na versão anterior; nova implementação aguarda teste
+- Feedback visual dos estados do scan no dispositivo real
+
+### Problemas conhecidos / limitações
+- `wasm-tools` não instalado no notebook do Rômulo (disco cheio ~1.5GB necessários) — build local do frontend falha com NETSDK1147; validação via CI
+- Render plano free hiberna — primeira requisição demora até 50s
+- `BarcodeDetector` nativo não disponível no Safari/iOS — fallback OCR acionado automaticamente
+
+### Roadmap próxima iteração
+- Flag de "deslocamento" quando bem escaneado está em área diferente da sessão configurada
+- Simplificação das variáveis de ambiente AWS (remover duplo formato)
+- Corrigir warnings ASP0019 no `SecurityHeadersMiddleware`
+
 ## O que é este projeto
 
 **Aspec Captura** é um PWA (Progressive Web App) de inventário patrimonial público desenvolvido em Blazor WebAssembly. O app é usado por servidores públicos municipais para realizar o inventário físico de bens patrimoniais (móveis, equipamentos, etc.) diretamente no campo, com câmera do celular.
