@@ -197,7 +197,7 @@ O sistema é um protótipo em evolução, sendo apresentado para times e áreas 
 O Render usa formato `AWS__BucketName` (duplo underscore, padrão ASP.NET Core).
 O `.env` local usa `AWS_BUCKET_NAME`. O `Program.cs` faz mapeamento bidirecional (débito técnico).
 
-> ⚠️ Nome de bucket S3 é exato — `aspec-captura` ≠ `aspec-capture`. O erro retornado é genérico (`Município não encontrado`) porque o S3 retorna 404 tanto para bucket errado quanto para arquivo inexistente. Sempre validar o nome exato no console AWS.
+> ⚠️ Nome de bucket S3 é exato — `aspec-captura` (com 'a' no final, igual ao nome do projeto). O erro retornado é genérico (`Município não encontrado`) porque o S3 retorna 404 tanto para bucket errado quanto para arquivo inexistente. Sempre validar o nome exato no console AWS.
 
 ### Render — plano free
 - O serviço hiberna após inatividade — primeira requisição pode demorar até 50s para "acordar"
