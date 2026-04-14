@@ -30,8 +30,8 @@
                 <DataAnnotationsValidator />
                 
                 <div class="form-group">
-                    <label class="input-label">LOGIN</label>
-                    <input type="text" class="input-field" placeholder="Usuário" @bind="loginModel.Usuario" disabled="@isLoading" />
+                    <label class="input-label">USUÁRIO</label>
+                    <input type="text" class="input-field" placeholder="municipio.nome.sobrenome" @bind="loginModel.Usuario" disabled="@isLoading" />
                     <ValidationMessage For="@(() => loginModel.Usuario)" class="validation-error" />
                 </div>
 
@@ -48,7 +48,7 @@
         </div>
 
         <div class="login-footer">
-            <span class="version-text">V@(AppInfo?.Version ?? "0.5.8") - BUILD 2026</span>
+            <span class="version-text">V@(AppInfo?.Version ?? "0.11.1") - BUILD 2026</span>
         </div>
     }
     else

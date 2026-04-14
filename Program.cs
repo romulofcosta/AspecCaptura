@@ -28,6 +28,7 @@ builder.Logging.SetMinimumLevel(LogLevel.Information);
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
 // Configuração do HttpClient para a API BFF
+builder.Services.AddScoped<AuthorizationMessageHandler>();
 builder.Services.AddHttpClient("BackendApi", client =>
 {
     var apiBaseUrl = builder.Configuration["ApiBaseUrl"];
@@ -38,7 +39,7 @@ builder.Services.AddHttpClient("BackendApi", client =>
     client.BaseAddress = new Uri(apiBaseUrl);
     // Aumenta o timeout para 10 minutos para operações de sincronização pesadas
     client.Timeout = TimeSpan.FromMinutes(10);
-});
+}).AddHttpMessageHandler<AuthorizationMessageHandler>();
 
 // Storage Services
 builder.Services.AddScoped<IIndexedDbService, IndexedDbService>();

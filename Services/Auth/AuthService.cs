@@ -96,7 +96,7 @@ namespace AspecCaptura.Services.Auth
                 appState.IsAuthenticated = true;
 
                 _currentUser = user;
-                _currentToken = new SessionToken { Token = user.Token ?? string.Empty, IssuedAt = DateTime.UtcNow, ExpiresAt = DateTime.UtcNow.AddHours(8), UserId = user.UsuarioNome };
+                _currentToken = new SessionToken { Token = user.Token ?? string.Empty, IssuedAt = DateTime.UtcNow, ExpiresAt = DateTime.UtcNow.AddMinutes(480), UserId = user.UsuarioNome };
 
                 // Persistir o token para o CustomAuthStateProvider reconhecer após refresh
                 await localStorage.SetItemAsync("auth_token", _currentToken);

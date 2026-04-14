@@ -2,7 +2,7 @@
 // Version: 0.4.0
 // Requirements: 7.1, 7.2, 7.3
 
-const APP_VERSION = '0.4.0';
+const APP_VERSION = '0.11.1';
 const CACHE_NAME = `aspec-captura-v${APP_VERSION.replace(/\./g, '-')}`;
 const API_CACHE_NAME = `aspec-captura-api-v${APP_VERSION.replace(/\./g, '-')}`;
 const STATIC_CACHE_NAME = `aspec-captura-static-v${APP_VERSION.replace(/\./g, '-')}`;
@@ -111,10 +111,11 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // API requests - Network First with cache fallback
+    // API requests — sem cache, sempre vai para a rede
+    // Timeout alto para suportar operações lentas (sync de tombamentos, login com arquivo grande)
     if (url.pathname.startsWith('/api/')) {
         event.respondWith(
-            networkFirstWithTimeout(request, 5000)
+            networkFirstWithTimeout(request, 120000) // 2 minutos
         );
         return;
     }
