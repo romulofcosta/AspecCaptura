@@ -153,3 +153,123 @@ window.cameraInterop = {
     }
 };
 
+// ─── Recognition Interop ──────────────────────────────────────────────────────
+// Loop de captura de frames para reconhecimento em tempo real.
+// Usa requestAnimationFrame para capturar frames do vídeo e enviar ao .NET
+// via JSInvokable callbacks (QR, Barcode, OCR).
+window.recognitionInterop = (() => {
+    let _animFrameId = null;
+    let _dotNetRef = null;
+    let _canvas = null;
+    let _ctx = null;
+    let _intervalMs = 500;
+    let _lastProcessedAt = 0;
+    let _active = false;
+
+    // Tenta detectar QR via BarcodeDetector nativo (Chrome/Android)
+    const _nativeBarcodeDetector = ('BarcodeDetector' in window)
+        ? new BarcodeDetector({ formats: ['qr_code', 'code_128', 'code_39', 'ean_13', 'ean_8', 'data_matrix'] })
+        : null;
+
+    function _getFrame(videoElementId) {
+        const video = document.getElementById(videoElementId);
+        if (!video || video.readyState < 2 || video.videoWidth === 0) return null;
+
+        if (!_canvas) {
+            _canvas = document.createElement('canvas');
+            _ctx = _canvas.getContext('2d');
+        }
+
+        // Reduz resolução para processamento mais rápido (max 640px)
+        const scale = Math.min(1, 640 / video.videoWidth);
+        _canvas.width = Math.floor(video.videoWidth * scale);
+        _canvas.height = Math.floor(video.videoHeight * scale);
+        _ctx.drawImage(video, 0, 0, _canvas.width, _canvas.height);
+        return _canvas;
+    }
+
+    async function _processFrame(videoElementId) {
+        if (!_active || !_dotNetRef) return;
+
+        const now = performance.now();
+        if (now - _lastProcessedAt < _intervalMs) {
+            _animFrameId = requestAnimationFrame(() => _processFrame(videoElementId));
+            return;
+        }
+        _lastProcessedAt = now;
+
+        const canvas = _getFrame(videoElementId);
+        if (!canvas) {
+            _animFrameId = requestAnimationFrame(() => _processFrame(videoElementId));
+            return;
+        }
+
+        // 1. Tenta BarcodeDetector nativo (QR + Barcode) — mais rápido e preciso
+        if (_nativeBarcodeDetector) {
+            try {
+                const results = await _nativeBarcodeDetector.detect(canvas);
+                for (const r of results) {
+                    if (!r.rawValue) continue;
+                    const isQR = r.format === 'qr_code';
+                    const payload = JSON.stringify({
+                        code: r.rawValue,
+                        format: r.format,
+                        confidence: 0.95,
+                        checksumValid: true
+                    });
+                    if (isQR) {
+                        await _dotNetRef.invokeMethodAsync('OnQRDetectedAsync', JSON.stringify({ code: r.rawValue, confidence: 0.95 }));
+                    } else {
+                        await _dotNetRef.invokeMethodAsync('OnBarcodeDetectedAsync', payload);
+                    }
+                    // Pausa o loop por 2s após detecção para evitar duplicatas
+                    _lastProcessedAt = performance.now() + 2000;
+                    _animFrameId = requestAnimationFrame(() => _processFrame(videoElementId));
+                    return;
+                }
+            } catch (e) {
+                // BarcodeDetector falhou — continua para OCR
+            }
+        }
+
+        // 2. Fallback OCR: extrai texto da imagem via canvas e regex numérica
+        try {
+            const imageData = canvas.toDataURL('image/jpeg', 0.7);
+            // Envia para o .NET processar via Tesseract/OCR service
+            await _dotNetRef.invokeMethodAsync('OnOCRDetectedAsync', JSON.stringify({
+                imageData: imageData,
+                extractedCodes: [],
+                confidence: 0
+            }));
+        } catch (e) {
+            // OCR falhou silenciosamente
+        }
+
+        if (_active) {
+            _animFrameId = requestAnimationFrame(() => _processFrame(videoElementId));
+        }
+    }
+
+    return {
+        startRecognition(videoElementId, intervalMs, dotNetRef) {
+            if (_active) return;
+            _dotNetRef = dotNetRef;
+            _intervalMs = intervalMs || 500;
+            _active = true;
+            _lastProcessedAt = 0;
+            _animFrameId = requestAnimationFrame(() => _processFrame(videoElementId));
+            console.log('[Recognition] Started — BarcodeDetector nativo:', !!_nativeBarcodeDetector);
+        },
+
+        stopRecognition() {
+            _active = false;
+            if (_animFrameId) {
+                cancelAnimationFrame(_animFrameId);
+                _animFrameId = null;
+            }
+            _dotNetRef = null;
+            console.log('[Recognition] Stopped');
+        }
+    };
+})();
+

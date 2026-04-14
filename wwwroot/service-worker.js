@@ -2,7 +2,7 @@
 // Version: 0.4.0
 // Requirements: 7.1, 7.2, 7.3
 
-const APP_VERSION = '0.11.1';
+const APP_VERSION = '0.11.2';
 const CACHE_NAME = `aspec-captura-v${APP_VERSION.replace(/\./g, '-')}`;
 const API_CACHE_NAME = `aspec-captura-api-v${APP_VERSION.replace(/\./g, '-')}`;
 const STATIC_CACHE_NAME = `aspec-captura-static-v${APP_VERSION.replace(/\./g, '-')}`;

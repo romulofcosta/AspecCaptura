@@ -37,14 +37,14 @@
 
             @* Scan Boundary Overlay *@
             <div class="scan-boundary-layer">
-                <div class="scan-frame">
+                <div class="scan-frame @scanFrameClass">
                     <div class="corner top-left"></div>
                     <div class="corner top-right"></div>
                     <div class="corner bottom-left"></div>
                     <div class="corner bottom-right"></div>
                 </div>
-                <p class="scan-hint">Aponte para a placa de patrimônio</p>
-                <div class="status-indicator-badge">STATUS: PROCESSANDO...</div>
+                <p class="scan-hint">@scanHint</p>
+                <div class="status-indicator-badge @scanBadgeClass">@scanBadgeText</div>
             </div>
 
             @* Side Controls *@
@@ -60,7 +60,7 @@
                     <span class="capture-value">@lastDetectedCode</span>
                 </div>
                 <div class="capture-status-line">
-                    <span class="status-dot"></span>
+                    <span class="status-dot @statusDotClass"></span>
                     <span class="status-msg">@lastDetectionStatus</span>
                 </div>
             </div>
@@ -254,7 +254,12 @@
         height: 250px;
         position: relative;
         border: 1px solid rgba(255,255,255,0.1);
+        transition: border-color 0.3s;
     }
+
+    .scan-frame.detecting .corner { border-color: #F59E0B; }
+    .scan-frame.found .corner     { border-color: #10B981; }
+    .scan-frame.error .corner     { border-color: #EF4444; }
 
     .corner {
         position: absolute;
@@ -285,7 +290,19 @@
         background: rgba(0,0,0,0.5);
         border-radius: 4px;
         color: #94a3b8;
+        transition: background 0.3s, color 0.3s;
     }
+
+    .status-indicator-badge.scanning  { color: #94a3b8; }
+    .status-indicator-badge.detecting { background: rgba(245,158,11,0.3); color: #F59E0B; }
+    .status-indicator-badge.found     { background: rgba(16,185,129,0.3); color: #10B981; }
+    .status-indicator-badge.error     { background: rgba(239,68,68,0.3);  color: #EF4444; }
+
+    .status-dot { transition: background-color 0.3s, box-shadow 0.3s; }
+    .status-dot.scanning  { background-color: #94a3b8; box-shadow: none; }
+    .status-dot.detecting { background-color: #F59E0B; box-shadow: 0 0 8px #F59E0B; }
+    .status-dot.found     { background-color: #10B981; box-shadow: 0 0 8px #10B981; }
+    .status-dot.error     { background-color: #EF4444; box-shadow: 0 0 8px #EF4444; }
 
     .side-controls {
         position: absolute;
@@ -555,10 +572,20 @@
     private InventoryItem itemModel = new();
     private bool isSaving = false;
     private Usuario? currentUser;
+
+    // Scan state
     private string lastDetectedCode = "---";
     private string lastDetectionStatus = "AGUARDANDO...";
+    private string scanFrameClass = "";
+    private string scanBadgeClass = "scanning";
+    private string scanBadgeText = "PROCURANDO...";
+    private string scanHint = "Aponte para a placa de patrimônio";
+    private string statusDotClass = "scanning";
 
-    // Recognition Logic (Required by Bug Exploration Tests)
+    // Timeout: avisa o usuário após 15s sem detecção
+    private CancellationTokenSource? _timeoutCts;
+    private const int ScanTimeoutSeconds = 15;
+
     private enum RecognitionMode { All, QR, Barcode, OCR }
     private RecognitionMode selectedMode = RecognitionMode.All;
 
@@ -567,16 +594,11 @@
         selectedMode = mode;
         if (RecognitionService.Settings != null)
         {
-            RecognitionService.Settings.QREnabled = mode == RecognitionMode.All || mode == RecognitionMode.QR;
-            RecognitionService.Settings.BarcodeEnabled = mode == RecognitionMode.All || mode == RecognitionMode.Barcode;
-            RecognitionService.Settings.OCREnabled = mode == RecognitionMode.All || mode == RecognitionMode.OCR;
+            RecognitionService.Settings.QREnabled  = mode is RecognitionMode.All or RecognitionMode.QR;
+            RecognitionService.Settings.BarcodeEnabled = mode is RecognitionMode.All or RecognitionMode.Barcode;
+            RecognitionService.Settings.OCREnabled = mode is RecognitionMode.All or RecognitionMode.OCR;
         }
         StateHasChanged();
-    }
-
-    private string GetBadgeClass(RecognitionMode mode)
-    {
-        return $"badge-mode {(selectedMode == mode ? "active" : "")}";
     }
 
     protected override async Task OnInitializedAsync()
@@ -586,7 +608,6 @@
             Navigation.NavigateTo("/configuracao-sessao");
             return;
         }
-        
         currentUser = await AuthService.GetCurrentUserAsync();
         appState.IsCameraActive = true;
     }
@@ -594,9 +615,7 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender && !isFormVisible)
-        {
             await StartCamera();
-        }
     }
 
     private async Task StartCamera()
@@ -604,6 +623,7 @@
         try
         {
             await CameraService.StartCameraAsync("camera-feed", useFrontCamera);
+            await StartRecognitionLoop();
             await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
@@ -612,22 +632,101 @@
         }
     }
 
+    private async Task StartRecognitionLoop()
+    {
+        // Inscreve nos eventos antes de iniciar
+        RecognitionService.CodeDetected    += OnCodeDetected;
+        RecognitionService.PatrimonioFound += OnPatrimonioFound;
+        RecognitionService.RecognitionError += OnRecognitionError;
+
+        var started = await RecognitionService.StartRecognitionAsync("camera-feed");
+        if (!started)
+        {
+            SetScanState("error", "FALHA AO INICIAR", "Reconhecimento indisponível", "error");
+            return;
+        }
+
+        SetScanState("", "PROCURANDO...", "Aponte para a placa de patrimônio", "scanning");
+        StartTimeoutTimer();
+    }
+
+    private void StartTimeoutTimer()
+    {
+        _timeoutCts?.Cancel();
+        _timeoutCts = new CancellationTokenSource();
+        var token = _timeoutCts.Token;
+
+        _ = Task.Delay(TimeSpan.FromSeconds(ScanTimeoutSeconds), token).ContinueWith(t =>
+        {
+            if (t.IsCanceled) return;
+            InvokeAsync(() =>
+            {
+                SetScanState("error", "SEM DETECÇÃO", "Tente aproximar mais ou melhorar a iluminação", "error");
+                StateHasChanged();
+            });
+        });
+    }
+
+    private void OnCodeDetected(object? sender, RecognitionEventArgs e)
+    {
+        _timeoutCts?.Cancel(); // Cancela o timeout
+        InvokeAsync(() =>
+        {
+            lastDetectedCode = e.Result.DetectedCode ?? "---";
+            SetScanState("detecting", $"CÓDIGO: {lastDetectedCode}", "Verificando patrimônio...", "detecting");
+            StateHasChanged();
+        });
+    }
+
+    private void OnPatrimonioFound(object? sender, PatrimonioFoundEventArgs e)
+    {
+        _timeoutCts?.Cancel();
+        InvokeAsync(() =>
+        {
+            lastDetectedCode = e.Patrimonio.Nutomb;
+            lastDetectionStatus = $"ENCONTRADO: {e.Patrimonio.Deprod}";
+            SetScanState("found", "PATRIMÔNIO ENCONTRADO", e.Patrimonio.Deprod, "found");
+            StateHasChanged();
+        });
+    }
+
+    private void OnRecognitionError(object? sender, RecognitionErrorEventArgs e)
+    {
+        InvokeAsync(() =>
+        {
+            SetScanState("error", "ERRO", e.ErrorMessage, "error");
+            StateHasChanged();
+        });
+    }
+
+    private void SetScanState(string frameClass, string badgeText, string hint, string dotClass)
+    {
+        scanFrameClass  = frameClass;
+        scanBadgeText   = badgeText;
+        scanBadgeClass  = dotClass;
+        scanHint        = hint;
+        statusDotClass  = dotClass;
+        lastDetectionStatus = badgeText;
+    }
+
     private async Task SwitchCamera()
     {
         useFrontCamera = !useFrontCamera;
+        await StopRecognitionLoop();
         await CameraService.StopCameraAsync("camera-feed");
         await StartCamera();
     }
 
     private async Task CapturePhoto()
     {
-        try 
+        try
         {
             var photoData = await CameraService.TakePhotoAsync("camera-feed");
             if (!string.IsNullOrEmpty(photoData))
             {
                 capturedPhotos.Add(photoData);
                 currentPreviewIndex = capturedPhotos.Count - 1;
+                await StopRecognitionLoop();
                 await CameraService.StopCameraAsync("camera-feed");
                 isFormVisible = true;
                 StateHasChanged();
@@ -639,10 +738,16 @@
         }
     }
 
-    private void ShowForm()
+    private async Task StopRecognitionLoop()
     {
-        isFormVisible = true;
+        _timeoutCts?.Cancel();
+        RecognitionService.CodeDetected    -= OnCodeDetected;
+        RecognitionService.PatrimonioFound -= OnPatrimonioFound;
+        RecognitionService.RecognitionError -= OnRecognitionError;
+        await RecognitionService.StopRecognitionAsync();
     }
+
+    private void ShowForm() => isFormVisible = true;
 
     private async Task AddMorePhoto()
     {
@@ -662,22 +767,20 @@
         isSaving = true;
         try
         {
-            itemModel.Photos = capturedPhotos;
-            itemModel.IdOrgao = appState.CurrentOrgao?.IdOrgao;
-            itemModel.IdUO = appState.CurrentUO?.IdUO;
-            itemModel.IdArea = appState.CurrentArea?.IdArea;
-            itemModel.IdSubarea = appState.CurrentSubarea?.IdSubarea;
-            itemModel.CreatedBy = currentUser?.UsuarioNome ?? "desconhecido";
-            itemModel.Esfera = appState.EsferaAtual ?? currentUser?.Esfera ?? string.Empty;
-            itemModel.Timestamp = DateTime.Now;
-            itemModel.UpdatedAt = DateTime.Now;
-            itemModel.Synced = false;
+            itemModel.Photos      = capturedPhotos;
+            itemModel.IdOrgao     = appState.CurrentOrgao?.IdOrgao;
+            itemModel.IdUO        = appState.CurrentUO?.IdUO;
+            itemModel.IdArea      = appState.CurrentArea?.IdArea;
+            itemModel.IdSubarea   = appState.CurrentSubarea?.IdSubarea;
+            itemModel.CreatedBy   = currentUser?.UsuarioNome ?? "desconhecido";
+            itemModel.Esfera      = appState.EsferaAtual ?? currentUser?.Esfera ?? string.Empty;
+            itemModel.Timestamp   = DateTime.Now;
+            itemModel.UpdatedAt   = DateTime.Now;
+            itemModel.Synced      = false;
 
             await DbService.AddAsync("items", itemModel);
-            
-            // Trigger app state update
             await appState.UpdateStatisticsAsync();
-            
+
             ToastService.ShowSuccess("Item salvo com sucesso!");
             Navigation.NavigateTo("/");
         }
@@ -699,16 +802,20 @@
         Navigation.NavigateTo("/");
     }
 
-    private void CloseCamera()
-    {
-        Navigation.NavigateTo("/");
-    }
+    private void CloseCamera() => Navigation.NavigateTo("/");
 
     public async ValueTask DisposeAsync()
     {
-        try {
+        try
+        {
+            await StopRecognitionLoop();
             await CameraService.StopCameraAsync("camera-feed");
             appState.IsCameraActive = false;
-        } catch { }
+        }
+        catch { }
+        finally
+        {
+            _timeoutCts?.Dispose();
+        }
     }
 }
