@@ -103,6 +103,9 @@ out/
 # Visual Studio Code settings
 .vscode/
 
+# Kiro — Contexto pessoal do desenvolvedor (NÃO vai pro repositório corporativo)
+.kiro/
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
